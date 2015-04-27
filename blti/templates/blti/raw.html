@@ -1,0 +1,33 @@
+<!-- home page for vanilla application -->
+
+{% extends 'blti/base.html' %}
+
+{% block content %}
+
+<div class="clearfix">
+
+<h3>BLTI DATA</h3>
+
+{% if VALIDATION_ERROR %}
+<h3>It appears this service is misconfigured</h3>
+<p>
+  The reason: {{ VALIDATION_ERROR }}
+</p>
+{% endif %}
+
+<div>
+  <table>
+  {% for key, value in LTI_PARAMS.items %}
+    <tr>
+      <td>{{ key }}</td><td>{{ value }}</td>
+    </tr>
+  {% endfor %}
+  </table>
+</div>
+
+
+{% endblock %}
+
+
+{% block javascript %}
+{% endblock %}

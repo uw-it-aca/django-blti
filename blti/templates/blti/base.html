@@ -1,0 +1,52 @@
+<!doctype html>
+<html class="no-js">
+<head>
+    <title>{% block title %}{{ page_title }}{% endblock %}</title>
+	<meta charset="utf-8">
+    <meta name="description" content="">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="MobileOptimized" content="320">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+    <meta http-equiv="cleartype" content="on">
+
+    {% load staticfiles %}
+    {% load compress %}
+
+    <!-- add web fonts if needed -->
+    <link href="//fonts.googleapis.com/css?family=Raleway:400,800" rel="stylesheet" type="text/css"/>
+
+    <!-- mobile first styles -->
+    {% compress css %}
+    {% block mobile_css %}{% endblock %}
+    {% endcompress %}
+
+    {% compress css %}
+    {% block desktop_css %}{% endblock %}
+    {% endcompress %}
+
+</head>
+<body>
+
+    <div id="wrapper" class="container" style="position:relative;">
+
+        <div id="main-wrapper">
+        	<div id="main" role="main">
+        	   <div class="inner">{% block content %}{% endblock %}</div>
+        	</div><!--end #main-->
+        </div>
+
+        <div id="meta-wrapper">
+        	<footer id="footer">
+                <div class="inner">
+                    <!-- <div>Copyright &copy; {% now "Y" %} UW Information Technology</div> -->
+                </div>
+        	</footer><!--end #footer-->
+        </div>
+    </div>
+
+    {% compress js %}
+    {% block javascript %}{% endblock %}
+    {% endcompress %}
+
+</body>
+</html>
