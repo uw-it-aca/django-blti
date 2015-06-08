@@ -7,7 +7,6 @@ before_script:
   - pip install python-coveralls
   - pip install pep8
   - cp travis-ci/manage.py manage.py
-  - python manage.py syncdb --noinput
 script:
   - pep8
   - coverage run --source=blti manage.py test blti
