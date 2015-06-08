@@ -2,9 +2,6 @@ language: python
 python:
   - "2.7"
   - "2.6"
-install:
-  - if [[ $TRAVIS_PYTHON_VERSION == 2.6* ]]; then pip install -r travis-ci/python-2.6-require-django-1.6.txt; fi
-  - pip install -r restclients/requirements.txt
 before_script:
   - pip install coverage
   - pip install python-coveralls
