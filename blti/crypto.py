@@ -9,7 +9,7 @@ class aes128cbc(object):
 
     _key = None
     _iv = None
-                     
+
     def __init__(self, key, iv):
         """
         Advanced Encryption Standard object
@@ -43,9 +43,8 @@ class aes128cbc(object):
             raise CryptoException('Cannot decrypt message: ' + str(err))
 
     def pad(self, s):
-        return s + (self._block_size - len(s) % self._block_size) * chr(self._block_size - len(s) % self._block_size)
+        return s + (self._block_size - len(s) % self._block_size) * chr(
+            self._block_size - len(s) % self._block_size)
 
     def unpad(self, s):
         return s[0:-ord(s[-1])]
-
-

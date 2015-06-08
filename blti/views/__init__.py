@@ -3,7 +3,7 @@ from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from blti import BLTI
 
-# RawBLTI
+
 @csrf_exempt
 def RawBLTI(request, template='blti/raw.html'):
     params = {
