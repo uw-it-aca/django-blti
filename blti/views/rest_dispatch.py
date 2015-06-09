@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.http import HttpResponse
 from django.views.decorators.cache import never_cache
 from blti import BLTI, BLTIException
@@ -18,7 +19,7 @@ class RESTDispatch(object):
         except BLTIException as ex:
             if (not getattr(settings, 'BLTI_NO_AUTH', False) and
                     not request.user.is_authenticated()):
-                return self.error_response(401, ex)
+                return self.error_response(401, "%s" % ex)
 
         return self.run_http_method(*args, **named_args)
 
