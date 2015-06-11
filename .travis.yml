@@ -8,7 +8,7 @@ before_script:
   - pip install pep8
   - cp travis-ci/manage.py manage.py
 script:
-  - pep8
+  - pep8 blti/
   - coverage run --source=blti manage.py test blti
 after_script:
   - coveralls
