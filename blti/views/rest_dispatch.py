@@ -6,8 +6,12 @@ import json
 import re
 
 
-class RESTDispatchAuthorization(Exception): pass
-class RESTDispatchMethod(Exception): pass
+class RESTDispatchAuthorization(Exception):
+    pass
+
+
+class RESTDispatchMethod(Exception):
+    pass
 
 
 class RESTDispatch(object):
@@ -37,7 +41,8 @@ class RESTDispatch(object):
                 raise RESTDispatchAuthorization('%s' % ex)
 
     def dispatch(self, method):
-        methods = dict((m,m) for m in ['GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'PATCH'])
+        methods = dict((m, m) for m in ['GET', 'HEAD', 'POST', 'PUT',
+                                        'DELETE', 'PATCH'])
         try:
             return getattr(self, methods[method])
         except (KeyError, AttributeError):
