@@ -40,8 +40,8 @@ class BLTI(object):
             self._oauth_server._check_signature(oauth_request, consumer, None)
             return oauth_request.get_nonoauth_parameters()
 
-        except oauth.OAuthError, err:
-            raise BLTIException('%s' % (err.message))
+        except oauth.OAuthError as err:
+            raise BLTIException('%s' % err)
 
     def set_session(self, request, **kwargs):
         if not request.session.exists(request.session.session_key):
