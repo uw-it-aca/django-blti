@@ -8,7 +8,7 @@ Installation
 
 **Project directory**
 
-Install Support Tools in your project.
+Install django-blti in your project.
 
     $ cd [project]
     $ pip install -e git+https://github.com/uw-it-aca/django-blti/#egg=django_blti
@@ -18,7 +18,6 @@ Project settings.py
 
 **INSTALLED_APPS**
 
-    # global blti app
     'blti',
     
 **MIDDLEWARE_CLASSES**
@@ -42,5 +41,4 @@ Project settings.py
 
 Project urls.py
 ---------------
-    # support urls
     url(r'^blti/', include('blti.urls')),
