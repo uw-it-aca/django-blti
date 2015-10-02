@@ -16,19 +16,22 @@ class BLTI(object):
     Basic LTI Validator
     """
     def validate(self, request):
+        params = {}
+        body = request.read()
+        if body and len(body):
+            params = dict((k, v) for k, v in [tuple(
+                map(urllib.unquote_plus, kv.split('='))
+            ) for kv in body.split('&')])
+        else:
+            raise BLTIException('Missing or malformed parameter or value')
+
+        return self.oauth_validate(request, params=params)
+
+    def oauth_validate(self, request, params={}):
         try:
             self._oauth_server = oauth.OAuthServer(data_store=BLTIDataStore())
             self._oauth_server.add_signature_method(
                 oauth.OAuthSignatureMethod_HMAC_SHA1())
-
-            params = None
-            body = request.read()
-            if body and len(body):
-                params = dict((k, v) for k, v in [tuple(
-                    map(urllib.unquote_plus, kv.split('='))
-                ) for kv in body.split('&')])
-            else:
-                raise BLTIException('Missing or malformed parameter or value')
 
             oauth_request = oauth.OAuthRequest.from_request(
                 request.method,
@@ -36,9 +39,13 @@ class BLTI(object):
                 headers=request.META,
                 parameters=params
             )
-            consumer = self._oauth_server._get_consumer(oauth_request)
-            self._oauth_server._check_signature(oauth_request, consumer, None)
-            return oauth_request.get_nonoauth_parameters()
+
+            if oauth_request:
+                consumer = self._oauth_server._get_consumer(oauth_request)
+                self._oauth_server._check_signature(oauth_request, consumer, None)
+                return oauth_request.get_nonoauth_parameters()
+
+            raise BLTIException('Invalid OAuth Request')
 
         except oauth.OAuthError as err:
             raise BLTIException('%s' % err)
