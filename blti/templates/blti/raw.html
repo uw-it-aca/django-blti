@@ -8,13 +8,6 @@
 
 <h2>BLTI Launch Parameters</h3>
 
-{% if validation_error %}
-<h3>LTI Service Endpoint Unavailable</h2>
-
-<p>{{ validation_error }}</p>
-{% endif %}
-
-{% if blti_params %}
 <div>
   <table>
   {% for key, value in blti_params.items %}
@@ -24,6 +17,7 @@
   {% endfor %}
   </table>
 </div>
-{% endif %}
+
+</div>
 
 {% endblock %}

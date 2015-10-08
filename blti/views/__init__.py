@@ -13,6 +13,7 @@ def RawBLTI(request, template='blti/raw.html'):
     try:
         params['blti_params'] = BLTI().validate(request)
     except Exception as err:
+        template = 'blti/error.html'
         params['validation_error'] = '%s' % err
 
     t = loader.get_template(template)
