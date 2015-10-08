@@ -42,7 +42,8 @@ class BLTI(object):
 
             if oauth_request:
                 consumer = self._oauth_server._get_consumer(oauth_request)
-                self._oauth_server._check_signature(oauth_request, consumer, None)
+                self._oauth_server._check_signature(oauth_request,
+                                                    consumer, None)
                 return oauth_request.get_nonoauth_parameters()
 
             raise BLTIException('Invalid OAuth Request')
