@@ -9,6 +9,7 @@
     <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
     <meta http-equiv="cleartype" content="on">
 
+    {% load staticfiles %}
     {% load compress %}
 
     <!-- add web fonts if needed -->
@@ -20,6 +21,7 @@
     {% endcompress %}
 
     {% compress css %}
+    <link rel="stylesheet" href="{% static "vendor/css/font-awesome-4.4.0.min.css" %}"/>
     {% block desktop_css %}{% endblock %}
     {% endcompress %}
 

@@ -1,0 +1,22 @@
+{% extends 'blti/base.html' %}
+
+{% load staticfiles %}
+
+{% block mobile_css %}
+    <link rel="stylesheet" type="text/less" href="{% static "blti/css/mobile.less" %}"/>
+{% endblock mobile_css %}
+
+
+{% block content %}
+<div id="unauthorized_holder">
+  <div id="unauthorized_message">
+    <h2 class="ui-state-error">
+        <i class="fa fa-warning"></i> <span>Unauthorized</span>
+    </h2>
+      <p>
+      It appears that you don't have permission to access this page.  Please make sure you're authorized to view this content.
+        If you think you should be able to view this page, please use the "Help" link to notify support of the problem.
+      </p>
+  </div>
+</div>
+{% endblock content %}

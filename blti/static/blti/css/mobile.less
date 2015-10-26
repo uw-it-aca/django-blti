@@ -1,0 +1,70 @@
+
+/*** less variables ***/
+@link: rgba(16, 139, 204, 1);
+@brand-purple: rgba(51, 0, 111, 1); //New UW purple
+@brand-gold: rgba(232, 211, 162, 1); //New UW gold
+@brand-litegold: rgba(250, 242, 223, 1); //lite version
+@green: rgba(0,128,0,1); //darkish green for the scheduler
+@red: rgba(217, 83, 79, 1);  //#d9534f Bootstrap @brand-danger
+@warning-yellow: rgba(231, 213, 0, 1);
+@gray-darker:  lighten(#000, 13.5%); // #222
+@gray-dark:    lighten(#000, 20%);   // #333
+@gray:         lighten(#000, 33.5%); // #555
+@gray-light:   lighten(#000, 46.7%); // #777
+@gray-lighter: lighten(#000, 93.5%); // #eee
+@gray-lightest: lighten(#000, 97%);
+@button-light: rgba(0, 0, 0, 0); 
+@button-dark: lighten(#000, 93.5%); // #eee 
+
+/*** global ***/
+
+#unauthorized_holder {
+    width: 500px;
+    border: 1px solid black;
+    display: block;
+    margin-top: 30px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#unauthorized_message {
+    .ui-state-error {
+        border: 1px solid #c43c35;
+        background: #c43c35;
+        color: #fff;
+        background-image: linear-gradient(to bottom, #ee5f5b, #c43c35);
+        text-shadow: 0 -1px 0 rgba(0,0,0,0.25);
+        border-color: #c43c35 #c43c35 #882a25;
+        border-color: rgba(0,0,0,0.1) rgba(0,0,0,0.1) rgba(0,0,0,0.25);
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.25);
+        height: 60px;
+        line-height: 60px;
+        font-weight: normal;
+        position: relative;
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.25),0 3px 3px -1px rgba(0,0,0,0.25);
+        i { position: absolute; display: inline-block; font-size: 1.75em; padding-left: 20px; margin-top: 12px; }
+        span { margin-left: 76px; }
+        font-size: 1.5em;
+        margin: 0;
+    }
+    p {
+        font-weight: 800;
+        font-size: 14px;
+        padding: 22px;
+    }
+}
+
+body {
+    margin: 0;
+    font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+    font-size: 14px;
+    line-height: 20px;
+    color: #333;
+    background-color: #fff;
+}
+
+html {
+    font-size: 100%;
+    -webkit-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+}
