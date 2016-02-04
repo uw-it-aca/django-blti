@@ -18,6 +18,9 @@ class RESTDispatch(object):
     """ A superclass for views, that handles passing on the request to the
         appropriate view method, based on the request method.
     """
+
+    extra_response_headers = {}
+
     @never_cache
     def run(self, *args, **named_args):
         try:
@@ -28,6 +31,13 @@ class RESTDispatch(object):
             return self.error_response(401, "%s" % ex)
         except RESTDispatchMethod:
             return self.invalid_method_response(*args, **named_args)
+
+    def _http_response(self, content, **kwargs):
+        response = HttpResponse(content, kwargs)
+        for k,v in self.extra_response_headers.iteritems():
+            response[k] = v
+
+        return response
 
     def authorize(self, request):
         self.blti_authorize(request)
@@ -42,22 +52,22 @@ class RESTDispatch(object):
 
     def dispatch(self, method):
         methods = dict((m, m) for m in ['GET', 'HEAD', 'POST', 'PUT',
-                                        'DELETE', 'PATCH'])
+                                        'DELETE', 'PATCH', 'OPTIONS'])
         try:
             return getattr(self, methods[method])
         except (KeyError, AttributeError):
             raise RESTDispatchMethod()
 
     def invalid_method_response(self, *args, **named_args):
-        return HttpResponse('Method not allowed', status=405)
+        return self._http_response('Method not allowed', status=405)
 
     def error_response(self, status, message='', content={}):
         content['error'] = message
-        return HttpResponse(json.dumps(content),
-                            status=status,
-                            content_type='application/json')
+        return self._http_response(json.dumps(content),
+                                   status=status,
+                                   content_type='application/json')
 
     def json_response(self, content='', status=200):
-        return HttpResponse(json.dumps(content),
-                            status=status,
-                            content_type='application/json')
+        return self._http_response(json.dumps(content),
+                                   status=status,
+                                   content_type='application/json')
