@@ -32,8 +32,8 @@ class RESTDispatch(object):
         except RESTDispatchMethod:
             return self.invalid_method_response(*args, **named_args)
 
-    def _http_response(self, content, **kwargs):
-        response = HttpResponse(content, kwargs)
+    def _http_response(self, content, *args, **kwargs):
+        response = HttpResponse(content, *args, **kwargs)
         for k,v in self.extra_response_headers.iteritems():
             response[k] = v
 
@@ -61,11 +61,15 @@ class RESTDispatch(object):
     def invalid_method_response(self, *args, **named_args):
         return self._http_response('Method not allowed', status=405)
 
-    def error_response(self, status, message='', content={}):
+    def error_response(self, status, message=None, content=None):
+        if not content:
+            content = {}
+
+        if not message:
+            messages = "Unknown Error"
+
         content['error'] = message
-        return self._http_response(json.dumps(content),
-                                   status=status,
-                                   content_type='application/json')
+        return self.json_response(content=content, status=status)
 
     def json_response(self, content='', status=200):
         return self._http_response(json.dumps(content),
