@@ -34,7 +34,7 @@ class RESTDispatch(object):
 
     def _http_response(self, content, *args, **kwargs):
         response = HttpResponse(content, *args, **kwargs)
-        for k,v in self.extra_response_headers.iteritems():
+        for k, v in self.extra_response_headers.iteritems():
             response[k] = v
 
         return response
