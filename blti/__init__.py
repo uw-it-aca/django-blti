@@ -5,6 +5,7 @@ from oauth import oauth
 from base64 import b64decode, b64encode
 from django.conf import settings
 from blti.crypto import aes128cbc
+from blti.models import BLTIKeyStore
 import re
 
 
@@ -23,8 +24,8 @@ class BLTI(object):
 
     # https://www.imsglobal.org/specs/ltiv1p1/implementation-guide#toc-19
     LIS_ADMIN = [
-        'AccountAdmin', 'SysAdmin', 'SysSupport', 'Faculty', 'Staff', 'Creator',
-        'Administrator',
+        'AccountAdmin', 'SysAdmin', 'SysSupport', 'Faculty', 'Staff',
+        'Creator', 'Administrator',
         'Administrator/Administrator', 'Administrator/Developer',
         'Administrator/ExternalDeveloper', 'Administrator/ExternalSupport',
         'Administrator/ExternalSystemAdministrator', 'Administrator/Support',
@@ -103,7 +104,8 @@ class BLTI(object):
                     self.has_instructor_role(roles) or
                     (visibility == self.MEMBER and
                      self.has_learner_role(roles))):
-                raise BLTIException('You do not have privilege to view this content.')
+                raise BLTIException(
+                    'You do not have privilege to view this content.')
 
     def has_admin_role(self, roles):
         return self._has_role(roles, self.LIS_ADMIN)
@@ -119,7 +121,8 @@ class BLTI(object):
             if role in lis_roles:
                 return True
 
-            m = re.match(r'^urn:lti:(inst|sys)?role:ims/lis/([A-Za-z]+)$', role)
+            m = re.match(r'^urn:lti:(inst|sys)?role:ims/lis/([A-Za-z]+)$',
+                         role)
             if m and m.group(2) in lis_roles:
                 return True
 
@@ -157,16 +160,17 @@ class BLTI(object):
 
 
 class BLTIDataStore(oauth.OAuthDataStore):
-    def __init__(self):
-        self.consumers = {}
-        for app_key in settings.LTI_CONSUMERS:
-            self.consumers[app_key] = BLTIConsumer(
-                app_key,
-                settings.LTI_CONSUMERS[app_key]
-            )
-
     def lookup_consumer(self, key):
-        return self.consumers.get(key, None)
+        try:
+            model = BLTIKeyStore.objects.get(consumer_key=key)
+            return BLTIConsumer(key, model.shared_secret)
+
+        except BLTIKeyStore.DoesNotExist:
+            try:
+                consumers = getattr(settings, 'LTI_CONSUMERS', {})
+                return BLTIConsumer(key, consumers[key])
+            except KeyError:
+                return None
 
     def lookup_nonce(self, oauth_consumer, oauth_token, nonce):
         return nonce if oauth_consumer.CheckNonce(nonce) else None
