@@ -2,7 +2,6 @@ from django.conf import settings
 from blti.models import BLTIKeyStore
 from blti import BLTIException
 from oauth import oauth
-import urllib
 import time
 import re
 
