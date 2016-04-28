@@ -34,7 +34,7 @@ class BLTI(object):
         blti_data.pop('_blti_session_id', None)
         return blti_data
 
-    def pop_session(self, equest):
+    def pop_session(self, request):
         if 'blti' in request.session:
             request.session.pop('blti', None)
 
