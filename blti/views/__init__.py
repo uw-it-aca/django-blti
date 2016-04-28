@@ -19,11 +19,10 @@ class BLTILaunchView(TemplateView):
             BLTI().set_session(request, **params)
 
         except BLTIException as err:
-            params = {'validation_error': err}
-            self.template_name = 'blti/error.html'
+            return self.error_view(error=err)
 
-        context = self.get_context_data(request=request, blti_params=params,
-                                        **kwargs)
+        context = self.get_context_data(
+            request=request, blti_params=params, **kwargs)
         return self.render_to_response(context)
 
     def validate(self, request):
@@ -44,6 +43,10 @@ class BLTILaunchView(TemplateView):
 
     def get_context_data(self, **kwargs):
         return kwargs
+
+    def error_view(self, **kwargs):
+        self.template_name = 'blti/error.html'
+        return self.render_to_response(kwargs)
 
 
 class RawBLTIView(BLTILaunchView):
