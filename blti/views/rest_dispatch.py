@@ -39,12 +39,15 @@ class RESTDispatch(object):
 
         return response
 
+    def get_session(self, request):
+        return BLTI().get_session(request)
+
     def authorize(self, request):
         self.blti_authorize(request)
 
     def blti_authorize(self, request):
         try:
-            BLTI().get_session(request)
+            self.get_session(request)
         except BLTIException as ex:
             if not (getattr(settings, 'BLTI_NO_AUTH', False) and
                     request.user.is_authenticated()):
