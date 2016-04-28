@@ -1,11 +1,8 @@
-import time
 import json
-import urllib
-from oauth import oauth
 from base64 import b64decode, b64encode
 from django.conf import settings
+from django.core.exceptions import ImproperlyConfigured
 from blti.crypto import aes128cbc
-import re
 
 
 class BLTIException(Exception):
@@ -13,130 +10,24 @@ class BLTIException(Exception):
 
 
 class BLTI(object):
-    """
-    Basic LTI Validator
-    """
-
-    ADMIN = 'admin'
-    MEMBER = 'member'
-    ALL = None
-
-    # https://www.imsglobal.org/specs/ltiv1p1/implementation-guide#toc-19
-    LIS_ADMIN = [
-        'AccountAdmin', 'SysAdmin', 'SysSupport', 'Faculty', 'Staff', 'Creator',
-        'Administrator',
-        'Administrator/Administrator', 'Administrator/Developer',
-        'Administrator/ExternalDeveloper', 'Administrator/ExternalSupport',
-        'Administrator/ExternalSystemAdministrator', 'Administrator/Support',
-        'Administrator/SystemAdministrator',
-        'Manager', 'Manager/AreaManager', 'Manager/CourseCoordinator',
-        'Manager/ExternalObserver', 'Manager/Observer'
-    ]
-
-    LIS_INSTRUCTOR = [
-        'Instructor',
-        'Instructor/ExternalInstructor', 'Instructor/GuestInstructor',
-        'Instructor/Lecturer', 'Instructor/PrimaryInstructor',
-        'TeachingAssistant',
-        'TeachingAssistant/Grader', 'TeachingAssistant/TeachingAssistant',
-        'TeachingAssistant/TeachingAssistantGroup',
-        'TeachingAssistant/TeachingAssistantOffering',
-        'TeachingAssistant/TeachingAssistantSection',
-        'TeachingAssistant/TeachingAssistantSectionAssociation',
-        'TeachingAssistant/TeachingAssistantTemplate'
-    ]
-
-    LIS_LEARNER = [
-        'Alumni', 'Guest', 'Learner', 'Member', 'ProspectiveStudent',
-        'Student', 'Learner', 'Learner/ExternalLearner',
-        'Learner/GuestLearner', 'Learner/Instructor', 'Learner/Learner',
-        'Learner/NonCreditLearner', 'Member', 'Member/Member'
-    ]
-
-    def validate(self, request, visibility=MEMBER):
-        params = {}
-        body = request.read()
-        if body and len(body):
-            params = dict((k, v) for k, v in [tuple(
-                map(urllib.unquote_plus, kv.split('='))
-            ) for kv in body.split('&')])
-        else:
-            raise BLTIException('Missing or malformed parameter or value')
-
-        launch = self.oauth_validate(request, params=params)
-        if visibility:
-            self.visibility_validate(launch, visibility)
-
-        return launch
-
-    def oauth_validate(self, request, params={}):
-        try:
-            self._oauth_server = oauth.OAuthServer(data_store=BLTIDataStore())
-            self._oauth_server.add_signature_method(
-                oauth.OAuthSignatureMethod_HMAC_SHA1())
-
-            oauth_request = oauth.OAuthRequest.from_request(
-                request.method,
-                request.build_absolute_uri(),
-                headers=request.META,
-                parameters=params
-            )
-
-            if oauth_request:
-                consumer = self._oauth_server._get_consumer(oauth_request)
-                self._oauth_server._check_signature(oauth_request,
-                                                    consumer, None)
-                return oauth_request.get_nonoauth_parameters()
-
-            raise BLTIException('Invalid OAuth Request')
-
-        except oauth.OAuthError as err:
-            raise BLTIException('%s' % err)
-
-    def visibility_validate(self, params, visibility):
-        if visibility:
-            roles = ','.join([params.get('roles', ''),
-                              params.get('ext_roles', '')]).split(',')
-
-            # ADMIN includes instructors, MEMBER includes
-            if not (self.has_admin_role(roles) or
-                    self.has_instructor_role(roles) or
-                    (visibility == self.MEMBER and
-                     self.has_learner_role(roles))):
-                raise BLTIException('You do not have privilege to view this content.')
-
-    def has_admin_role(self, roles):
-        return self._has_role(roles, self.LIS_ADMIN)
-
-    def has_instructor_role(self, roles):
-        return self._has_role(roles, self.LIS_INSTRUCTOR)
-
-    def has_learner_role(self, roles):
-        return self._has_role(roles, self.LIS_LEARNER)
-
-    def _has_role(self, roles, lis_roles):
-        for role in roles:
-            if role in lis_roles:
-                return True
-
-            m = re.match(r'^urn:lti:(inst|sys)?role:ims/lis/([A-Za-z]+)$', role)
-            if m and m.group(2) in lis_roles:
-                return True
-
-        return False
+    def __init__(self):
+        if not hasattr(settings, 'BLTI_AES_KEY'):
+            raise ImproperlyConfigured('Missing setting BLTI_AES_KEY')
+        if not hasattr(settings, 'BLTI_AES_IV'):
+            raise ImproperlyConfigured('Missing setting BLTI_AES_IV')
 
     def set_session(self, request, **kwargs):
         if not request.session.exists(request.session.session_key):
             request.session.create()
 
         kwargs['_blti_session_id'] = request.session.session_key
-        request.session['blti'] = self.encrypt_session(kwargs)
+        request.session['blti'] = self._encrypt_session(kwargs)
 
     def get_session(self, request):
         if 'blti' not in request.session:
             raise BLTIException('Invalid Session')
 
-        blti_data = self.decrypt_session(request.session['blti'])
+        blti_data = self._decrypt_session(request.session['blti'])
         if blti_data['_blti_session_id'] != request.session.session_key:
             raise BLTIException('Invalid BLTI session data')
 
@@ -147,56 +38,10 @@ class BLTI(object):
         if 'blti' in request.session:
             request.session.pop('blti', None)
 
-    def encrypt_session(self, data):
+    def _encrypt_session(self, data):
         aes = aes128cbc(settings.BLTI_AES_KEY, settings.BLTI_AES_IV)
         return b64encode(aes.encrypt(aes.pad(json.dumps(data))))
 
-    def decrypt_session(self, string):
+    def _decrypt_session(self, string):
         aes = aes128cbc(settings.BLTI_AES_KEY, settings.BLTI_AES_IV)
         return json.loads(aes.unpad(aes.decrypt(b64decode(string))))
-
-
-class BLTIDataStore(oauth.OAuthDataStore):
-    def __init__(self):
-        self.consumers = {}
-        for app_key in settings.LTI_CONSUMERS:
-            self.consumers[app_key] = BLTIConsumer(
-                app_key,
-                settings.LTI_CONSUMERS[app_key]
-            )
-
-    def lookup_consumer(self, key):
-        return self.consumers.get(key, None)
-
-    def lookup_nonce(self, oauth_consumer, oauth_token, nonce):
-        return nonce if oauth_consumer.CheckNonce(nonce) else None
-
-
-class BLTIConsumer(oauth.OAuthConsumer):
-    """
-    OAuthConsumer superclass that adds nonce caching
-    """
-    def __init__(self, key, secret):
-        oauth.OAuthConsumer.__init__(self, key, secret)
-        self.nonces = []
-
-    def CheckNonce(self, nonce):
-        """
-        Returns True if the nonce has been checked in the last hour
-        """
-        now = time.time()
-        old = now - 3600.0
-        trim = 0
-        for n, t in self.nonces:
-            if t < old:
-                trim = trim + 1
-            else:
-                break
-        if trim:
-            self.nonces = self.nonces[trim:]
-
-        for n, t in self.nonces:
-            if n == nonce:
-                return True
-
-        self.nonces.append((nonce, now))
