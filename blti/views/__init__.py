@@ -2,6 +2,7 @@ from django.views.generic.base import TemplateView
 from django.views.decorators.csrf import csrf_exempt
 from blti import BLTI, BLTIException
 from blti.validators import BLTIOauth, BLTIRoles
+from urllib import unquote_plus
 
 
 class BLTILaunchView(TemplateView):
@@ -9,6 +10,9 @@ class BLTILaunchView(TemplateView):
     authorized_role = 'member'
 
     @csrf_exempt
+    def dispatch(self, *args, **kwargs):
+        return super(BLTILaunchView, self).dispatch(*args, **kwargs)
+
     def post(self, request, *args, **kwargs):
         try:
             params = self.validate(request)
@@ -18,7 +22,8 @@ class BLTILaunchView(TemplateView):
             params = {'validation_error': err}
             self.template_name = 'blti/error.html'
 
-        context = self.get_context_data(request=request, **params)
+        context = self.get_context_data(request=request, blti_params=params,
+                                        **kwargs)
         return self.render_to_response(context)
 
     def validate(self, request):
@@ -26,7 +31,7 @@ class BLTILaunchView(TemplateView):
         body = request.read()
         if body and len(body):
             params = dict((k, v) for k, v in [tuple(
-                map(urllib.unquote_plus, kv.split('='))
+                map(unquote_plus, kv.split('='))
             ) for kv in body.split('&')])
         else:
             raise BLTIException('Missing or malformed parameter or value')
