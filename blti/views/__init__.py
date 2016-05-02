@@ -22,11 +22,11 @@ class BLTIView(TemplateView):
     def get_context_data(self, **kwargs):
         return kwargs
 
-    def get_session(request):
+    def get_session(self, request):
         return BLTI().get_session(request)
 
-    def set_session(request, params):
-        BLTI().set_session(request, **params)
+    def set_session(self, request, **kwargs):
+        BLTI().set_session(request, **kwargs)
 
     def validate(self, request):
         return self.get_session(request)
