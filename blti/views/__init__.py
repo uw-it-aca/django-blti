@@ -17,10 +17,15 @@ class BLTIView(TemplateView):
         context = self.get_context_data(
             request=request, blti_params=params, **kwargs)
 
-        return self.render_to_response(context)
+        response = self.render_to_response(context)
+        self.add_headers(response=response, blti_params=params, **kwargs)
+        return response
 
     def get_context_data(self, **kwargs):
         return kwargs
+
+    def add_headers(self, **kwargs):
+        pass
 
     def get_session(self, request):
         return BLTI().get_session(request)
