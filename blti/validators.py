@@ -13,7 +13,7 @@ class BLTIDataStore(oauth.OAuthDataStore):
     def lookup_consumer(self, key):
         try:
             model = BLTIKeyStore.objects.get(consumer_key=key)
-            return BLTIConsumer(key, model.shared_secret)
+            return BLTIConsumer(key, str(model.shared_secret))
 
         except BLTIKeyStore.DoesNotExist:
             try:
