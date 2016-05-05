@@ -59,7 +59,10 @@ class BLTILaunchView(BLTIView):
 
         context = self.get_context_data(
             request=request, blti_params=params, **kwargs)
-        return self.render_to_response(context)
+
+        response = self.render_to_response(context)
+        self.add_headers(response=response, blti_params=params, **kwargs)
+        return response
 
     def validate(self, request):
         params = {}
