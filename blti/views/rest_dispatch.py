@@ -28,9 +28,9 @@ class RESTDispatch(object):
             self.authorize(request)
             return self.dispatch(request.method)(*args, **named_args)
         except RESTDispatchAuthorization as ex:
-            return self.error_response(401, "%s" % ex)
+            return self.error_response(401, ex)
         except RESTDispatchMethod:
-            return self.invalid_method_response(*args, **named_args)
+            return self.error_response(405, 'Method not allowed')
 
     def _http_response(self, content, *args, **kwargs):
         response = HttpResponse(content, *args, **kwargs)
@@ -61,20 +61,11 @@ class RESTDispatch(object):
         except (KeyError, AttributeError):
             raise RESTDispatchMethod()
 
-    def invalid_method_response(self, *args, **named_args):
-        return self._http_response('Method not allowed', status=405)
-
-    def error_response(self, status, message=None, content=None):
-        if not content:
-            content = {}
-
-        if not message:
-            messages = "Unknown Error"
-
-        content['error'] = message
+    def error_response(self, status, message='', content={}):
+        content['error'] = str(message)
         return self.json_response(content=content, status=status)
 
-    def json_response(self, content='', status=200):
+    def json_response(self, content={}, status=200):
         return self._http_response(json.dumps(content),
                                    status=status,
                                    content_type='application/json')
