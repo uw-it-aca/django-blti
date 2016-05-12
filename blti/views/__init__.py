@@ -12,7 +12,8 @@ class BLTIView(TemplateView):
         try:
             params = self.validate(request)
         except BLTIException as err:
-            return self.error_view('blti/401.html')
+            self.template_name = 'blti/401.html'
+            self.render_to_response({})
 
         context = self.get_context_data(
             request=request, blti_params=params, **kwargs)
@@ -36,10 +37,6 @@ class BLTIView(TemplateView):
     def validate(self, request):
         return self.get_session(request)
 
-    def error_view(self, template_name, **kwargs):
-        self.template_name = template_name
-        return self.render_to_response(**kwargs)
-
 
 class BLTILaunchView(BLTIView):
     http_method_names = ['post']
@@ -55,7 +52,8 @@ class BLTILaunchView(BLTIView):
             self.set_session(request, **params)
 
         except BLTIException as err:
-            return self.error_view('blti/error.html', error=err)
+            self.template_name = 'blti/error.html'
+            self.render_to_response({'error': err})
 
         context = self.get_context_data(
             request=request, blti_params=params, **kwargs)
