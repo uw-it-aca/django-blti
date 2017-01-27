@@ -32,7 +32,8 @@ def log_response_time(func):
             end = time.time()
 
             try:
-                login_id = BLTI().get_session(args[0]).get(
+                request = args[1]
+                login_id = BLTI().get_session(request).get(
                     'custom_canvas_user_login_id')
             except Exception as ex:
                 login_id = 'unknown_user'
