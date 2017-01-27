@@ -2,6 +2,7 @@ from django.conf import settings
 from django.http import HttpResponse
 from django.views.decorators.cache import never_cache
 from blti import BLTI, BLTIException
+from blti.performance import log_response_time
 import json
 import re
 
@@ -22,6 +23,7 @@ class RESTDispatch(object):
     extra_response_headers = {}
 
     @never_cache
+    @log_response_time
     def run(self, *args, **named_args):
         try:
             request = args[0]
