@@ -4,6 +4,28 @@ from blti.crypto import aes128cbc
 from blti import BLTIException
 
 
+class BLTIDataStoreTest(TestCase):
+    def test_lookup_consumer(self):
+        with self.settings(LTI_CONSUMERS={'ABC': '12345'}):
+            consumer = BLTIConsumer('ABC', '12345')
+
+            self.assertEquals(
+                consumer.secret, BLTIDataStore().lookup_consumer('ABC').secret)
+            self.assertEquals(None, BLTIDataStore().lookup_consumer('XYZ'))
+
+
+class BLTIConsumerTest(TestCase):
+    def test_check_nonce(self):
+        consumer = BLTIConsumer('ABC', '12345')
+        self.assertEquals(None, consumer.CheckNonce('8888'))
+        self.assertEquals(True, consumer.CheckNonce('8888'))
+
+        consumer = BLTIConsumer('ABC', '12345')
+        consumer.nonces = [('8888', 10000)]
+        self.assertEquals(None, consumer.CheckNonce('8888'))
+        self.assertEquals(True, consumer.CheckNonce('8888'))
+
+
 class BLTIRolesTest(TestCase):
     def test_has_admin_role(self):
         self.assertEquals(
