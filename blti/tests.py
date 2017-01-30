@@ -66,8 +66,8 @@ class CryptoTest(TestCase):
 
     def test_encrypt(self):
         aes = aes128cbc(self.test_key, self.test_iv)
-        self.assertEquals(aes.encrypt(aes.pad(self.msg)), self.encrypted)
+        self.assertEquals(aes.encrypt(self.padded), self.encrypted)
 
     def test_decrypt(self):
         aes = aes128cbc(self.test_key, self.test_iv)
-        self.assertEquals(aes.unpad(aes.decrypt(self.encrypted)), self.msg)
+        self.assertEquals(aes.decrypt(self.encrypted), self.padded)
