@@ -40,8 +40,8 @@ class BLTI(object):
 
     def _encrypt_session(self, data):
         aes = aes128cbc(settings.BLTI_AES_KEY, settings.BLTI_AES_IV)
-        return b64encode(aes.encrypt(aes.pad(json.dumps(data))))
+        return aes.encrypt(json.dumps(data))
 
     def _decrypt_session(self, string):
         aes = aes128cbc(settings.BLTI_AES_KEY, settings.BLTI_AES_IV)
-        return json.loads(aes.unpad(aes.decrypt(b64decode(string))))
+        return json.loads(aes.decrypt(string))
