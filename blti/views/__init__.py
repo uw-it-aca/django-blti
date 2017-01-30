@@ -2,7 +2,10 @@ from django.views.generic.base import TemplateView
 from django.views.decorators.csrf import csrf_exempt
 from blti import BLTI, BLTIException
 from blti.validators import BLTIOauth, BLTIRoles
-from urllib import unquote_plus
+try:
+    from urllib import unquote_plus
+except ImportError:
+    from urllib.parse import unquote_plus  # Python3
 
 
 class BLTIView(TemplateView):
