@@ -32,14 +32,14 @@ class aes128cbc(object):
         try:
             crypt = AES.new(self._key, AES.MODE_CBC, self._iv)
             return crypt.encrypt(msg)
-        except Exception, err:
+        except Exception as err:
             raise CryptoException('Cannot decrypt message: ' + str(err))
 
     def decrypt(self, msg):
         try:
             crypt = AES.new(self._key, AES.MODE_CBC, self._iv)
             return crypt.decrypt(msg)
-        except Exception, err:
+        except Exception as err:
             raise CryptoException('Cannot decrypt message: ' + str(err))
 
     def pad(self, s):
