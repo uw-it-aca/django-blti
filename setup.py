@@ -16,7 +16,7 @@ setup(
     install_requires = [
         'setuptools',
         'django',
-        'oauth>=1.0.1',
+        'oauth2',
         'PyCrypto'
     ],
     license='Apache License, Version 2.0',  # example license
