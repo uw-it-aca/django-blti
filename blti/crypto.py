@@ -26,12 +26,12 @@ class aes128cbc(object):
     def encrypt(self, msg):
         msg = self._pad(self.str_to_bytes(msg))
         crypt = AES.new(self._key, AES.MODE_CBC, self._iv)
-        return b64encode(self._iv + crypt.encrypt(msg)).decode('utf-8')
+        return b64encode(crypt.encrypt(msg)).decode('utf-8')
 
     def decrypt(self, msg):
         msg = b64decode(msg)
         crypt = AES.new(self._key, AES.MODE_CBC, self._iv)
-        return self._unpad(crypt.decrypt(msg[self._bs:])).decode('utf-8')
+        return self._unpad(crypt.decrypt(msg)).decode('utf-8')
 
     def _pad(self, s):
         return s + (self._bs - len(s) % self._bs) * self.str_to_bytes(chr(
