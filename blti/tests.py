@@ -43,9 +43,11 @@ class BLTIRolesTest(TestCase):
 class CryptoTest(TestCase):
     test_key = 'DUMMY_KEY_FOR_TESTING_1234567890'
     test_iv = 'DUMMY_IV_TESTING'
-    msgs = [('LTI provides a framework through which an LMS can send some '
-             'verifiable information about a user to a third party.'),
-             "'abc': {'key': value}"]
+    msgs = [
+        ('LTI provides a framework through which an LMS can send some '
+         'verifiable information about a user to a third party.'),
+        "'abc': {'key': value}"
+    ]
 
     def test_encrypt_decrypt(self):
         aes = aes128cbc(self.test_key, self.test_iv)
