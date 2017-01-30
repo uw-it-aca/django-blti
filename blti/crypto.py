@@ -1,8 +1,5 @@
 from Crypto.Cipher import AES
-
-
-class CryptoException(Exception):
-    pass
+from base64 import b64decode, b64encode
 
 
 class aes128cbc(object):
@@ -13,38 +10,38 @@ class aes128cbc(object):
     def __init__(self, key, iv):
         """
         Advanced Encryption Standard object
-
-        Raises CryptoException
         """
-        self._block_size = 16
+        self._bs = 16  # Block size
 
         if key is None:
-            raise CryptoException('Missing AES key')
+            raise ValueError('Missing AES key')
         else:
             self._key = key
 
         if iv is None:
-            raise CryptoException('Missing AES initialization vector')
+            raise ValueError('Missing AES initialization vector')
         else:
             self._iv = iv
 
     def encrypt(self, msg):
-        try:
-            crypt = AES.new(self._key, AES.MODE_CBC, self._iv)
-            return crypt.encrypt(msg)
-        except Exception, err:
-            raise CryptoException('Cannot decrypt message: ' + str(err))
+        msg = self._pad(self.str_to_bytes(msg))
+        crypt = AES.new(self._key, AES.MODE_CBC, self._iv)
+        return b64encode(crypt.encrypt(msg)).decode('utf-8')
 
     def decrypt(self, msg):
-        try:
-            crypt = AES.new(self._key, AES.MODE_CBC, self._iv)
-            return crypt.decrypt(msg)
-        except Exception, err:
-            raise CryptoException('Cannot decrypt message: ' + str(err))
+        msg = b64decode(msg)
+        crypt = AES.new(self._key, AES.MODE_CBC, self._iv)
+        return self._unpad(crypt.decrypt(msg)).decode('utf-8')
 
-    def pad(self, s):
-        return s + (self._block_size - len(s) % self._block_size) * chr(
-            self._block_size - len(s) % self._block_size)
+    def _pad(self, s):
+        return s + (self._bs - len(s) % self._bs) * self.str_to_bytes(chr(
+            self._bs - len(s) % self._bs))
 
-    def unpad(self, s):
-        return s[0:-ord(s[-1])]
+    def _unpad(self, s):
+        return s[:-ord(s[len(s)-1:])]
+
+    def str_to_bytes(self, s):
+        u_type = type(b''.decode('utf8'))
+        if isinstance(s, u_type):
+            return s.encode('utf8')
+        return s
