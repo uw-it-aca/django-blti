@@ -56,14 +56,6 @@ class CryptoTest(TestCase):
                  '\xf7\x1a\x90c\xf1\x7f\xe4\x93\xb11=\xd6\xe2\xc1G\xd15\x05'
                  '\x1b\xab\x07\x1c\xf6H\n\xaa3\xc6\x01H\xcc\xea\xbeh\xd5')
 
-    def test_encrypt(self):
-        aes = aes128cbc(self.test_key, self.test_iv)
-        self.assertEquals(aes.encrypt(aes.pad(self.msg)), self.encrypted)
-
-    def test_decrypt(self):
-        aes = aes128cbc(self.test_key, self.test_iv)
-        self.assertEquals(aes.unpad(aes.decrypt(self.encrypted)), self.msg)
-
     def test_pad(self):
         aes = aes128cbc(self.test_key, self.test_iv)
         self.assertEquals(aes.pad(self.msg), self.padded)
@@ -71,3 +63,11 @@ class CryptoTest(TestCase):
     def test_unpad(self):
         aes = aes128cbc(self.test_key, self.test_iv)
         self.assertEquals(aes.unpad(self.padded), self.msg)
+
+    def test_encrypt(self):
+        aes = aes128cbc(self.test_key, self.test_iv)
+        self.assertEquals(aes.encrypt(aes.pad(self.msg)), self.encrypted)
+
+    def test_decrypt(self):
+        aes = aes128cbc(self.test_key, self.test_iv)
+        self.assertEquals(aes.unpad(aes.decrypt(self.encrypted)), self.msg)
