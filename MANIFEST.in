@@ -1,0 +1,2 @@
+include blti/VERSION
+recursive-include blti *
