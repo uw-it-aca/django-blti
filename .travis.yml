@@ -1,18 +1,31 @@
 sudo: false
 language: python
 python:
-  - "2.7"
-  - "3.6"
-before_install:
-    - cp travis-ci/test_requirements.txt requirements.txt
-install: pip install -r requirements.txt
+- '2.7'
+- '3.4'
+- '3.5'
+- '3.6'
 before_script:
-  - pip install coverage
-  - pip install python-coveralls
-  - pip install pep8
-  - cp travis-ci/manage.py manage.py
+- pip install -e .
+- pip install pep8
+- pip install coverage
+- pip install python-coveralls
+- cp travis-ci/manage.py manage.py
 script:
-  - pep8 blti/
-  - coverage run --source=blti manage.py test blti
-after_script:
-  - coveralls
+- pep8 blti/
+- coverage run --source=blti manage.py test blti
+after_success:
+- coveralls
+before_deploy:
+- find blti/ -name \*.pyc -exec rm {} \;
+- echo $TRAVIS_TAG > blti/VERSION
+deploy:
+  provider: pypi
+  server: https://pypi.python.org/pypi
+  user: uw-it-aca
+  skip_cleanup: true
+  password:
+    secure: dy9zyEUl6vrWeshxQoXpKBPVEofXfKQqHMpKpNyqKTcct1vVNimKeN2cuM7bOy9mDpZKVGIJKci+xdGAZfZ16DOJ/9Lg6tg2EcNjXM3CnT2Vw3HbFa5OZRRoWgOJbEejVDCTYGQyXSP8ekdgv92iXeSagq3MqJzZ1Xa9jGn1ykU=
+  on:
+    tags: true
+    python: '3.5'
