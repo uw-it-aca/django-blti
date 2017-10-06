@@ -1,10 +1,18 @@
 from django.test import TestCase
-from blti.validators import *
+from django.core.exceptions import ImproperlyConfigured
+from blti.validators import BLTIOauth, BLTIRoles
 from blti.crypto import aes128cbc
-from blti import BLTIException
+from blti import BLTI, BLTIException
 
 
 class BLTIOAuthTest(TestCase):
+    def test_no_config(self):
+        self.assertRaises(ImproperlyConfigured, BLTIOauth)
+
+    def test_no_consumer(self):
+        with self.settings(LTI_CONSUMERS={'ABC': '12345'}):
+            self.assertRaises(BLTIOauth().get_consumer('DEF'), None)
+
     def test_get_consumer(self):
         with self.settings(LTI_CONSUMERS={'ABC': '12345'}):
             self.assertEquals(BLTIOauth().get_consumer('ABC').secret, '12345')

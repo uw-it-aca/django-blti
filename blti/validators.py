@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.core.exceptions import ImproperlyConfigured
 from blti.models import BLTIKeyStore
 from blti import BLTIException
 import oauth2 as oauth
@@ -6,6 +7,10 @@ import re
 
 
 class BLTIOauth(object):
+    def __init__(self):
+        if not hasattr(settings, 'LTI_CONSUMERS'):
+            raise ImproperlyConfigured('Missing setting LTI_CONSUMERS')
+
     def validate(self, request, params={}):
         oauth_server = oauth.Server()
         oauth_server.add_signature_method(
