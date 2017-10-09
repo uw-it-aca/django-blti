@@ -13,7 +13,7 @@ before_script:
 - pip install python-coveralls
 - cp travis-ci/manage.py manage.py
 script:
-- pep8 blti/
+- pep8 blti/ --exclude=migrations
 - coverage run --source=blti manage.py test blti
 after_success:
 - coveralls
