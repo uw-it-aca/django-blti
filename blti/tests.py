@@ -10,13 +10,15 @@ class BLTIOAuthTest(TestCase):
         self.assertRaises(ImproperlyConfigured, BLTIOauth)
 
     def test_no_consumer(self):
+        with self.settings(LTI_CONSUMERS={}):
+            self.assertRaises(BLTIException, BLTIOauth().get_consumer, 'XYZ')
+
         with self.settings(LTI_CONSUMERS={'ABC': '12345'}):
-            self.assertEquals(BLTIOauth().get_consumer('DEF'), None)
+            self.assertRaises(BLTIException, BLTIOauth().get_consumer, 'XYZ')
 
     def test_get_consumer(self):
         with self.settings(LTI_CONSUMERS={'ABC': '12345'}):
             self.assertEquals(BLTIOauth().get_consumer('ABC').secret, '12345')
-            self.assertEquals(None, BLTIOauth().get_consumer('XYZ'))
 
 
 class BLTIRolesTest(TestCase):

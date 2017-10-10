@@ -44,7 +44,7 @@ class BLTIOauth(object):
                 consumers = getattr(settings, 'LTI_CONSUMERS', {})
                 return oauth.Consumer(key, consumers[key])
             except KeyError:
-                return None
+                raise BLTIException('No Matching Consumer')
 
 
 class BLTIRoles(object):
