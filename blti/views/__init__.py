@@ -16,7 +16,7 @@ class BLTIView(TemplateView):
             params = self.validate(request)
         except BLTIException as err:
             self.template_name = 'blti/401.html'
-            return self.render_to_response({})
+            return self.render_to_response({}, status=401)
 
         context = self.get_context_data(
             request=request, blti_params=params, **kwargs)
@@ -55,7 +55,7 @@ class BLTILaunchView(BLTIView):
             self.set_session(request, **params)
         except BLTIException as err:
             self.template_name = 'blti/error.html'
-            return self.render_to_response({'error': err})
+            return self.render_to_response({'error': err}, status=400)
 
         context = self.get_context_data(
             request=request, blti_params=params, **kwargs)
@@ -67,11 +67,11 @@ class BLTILaunchView(BLTIView):
     def validate(self, request):
         params = {}
         body = request.read()
-        if body and len(body):
+        try:
             params = dict((k, v) for k, v in [tuple(
                 map(unquote_plus, kv.split('='))
             ) for kv in body.split('&')])
-        else:
+        except Exception:
             raise BLTIException('Missing or malformed parameter or value')
 
         blti_params = BLTIOauth().validate(request, params=params)
