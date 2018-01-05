@@ -7,14 +7,14 @@ from blti import BLTI, BLTIException
 
 class BLTIOAuthTest(TestCase):
     def test_no_config(self):
-        self.assertEquals(BLTIOauth().get_consumer('ABC'), None)
+        self.assertRaises(ImproperlyConfigured, BLTIOauth)
 
     def test_no_consumer(self):
         with self.settings(LTI_CONSUMERS={}):
-            self.assertEquals(BLTIOauth().get_consumer('ABC'), None)
+            self.assertRaises(BLTIException, BLTIOauth().get_consumer, 'XYZ')
 
         with self.settings(LTI_CONSUMERS={'ABC': '12345'}):
-            self.assertEquals(BLTIOauth().get_consumer('XYZ'), None)
+            self.assertRaises(BLTIException, BLTIOauth().get_consumer, 'XYZ')
 
     def test_get_consumer(self):
         with self.settings(LTI_CONSUMERS={'ABC': '12345'}):
