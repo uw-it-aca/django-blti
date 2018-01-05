@@ -61,11 +61,11 @@ class BLTILaunchView(BLTIView):
     def validate(self, request):
         params = {}
         body = request.read()
-        if body and len(body):
+        try:
             params = dict((k, v) for k, v in [tuple(
                 map(unquote_plus, kv.split('='))
             ) for kv in body.split('&')])
-        else:
+        except Exception:
             raise BLTIException('Missing or malformed parameter or value')
 
         blti_params = BLTIOauth().validate(request, params=params)
