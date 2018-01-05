@@ -1,5 +1,4 @@
 from django.conf import settings
-from django.core.exceptions import ImproperlyConfigured
 from blti.models import BLTIKeyStore
 from blti import BLTIException
 import oauth2 as oauth
@@ -7,10 +6,6 @@ import re
 
 
 class BLTIOauth(object):
-    def __init__(self):
-        if not hasattr(settings, 'LTI_CONSUMERS'):
-            raise ImproperlyConfigured('Missing setting LTI_CONSUMERS')
-
     def validate(self, request, params={}):
         oauth_server = oauth.Server()
         oauth_server.add_signature_method(
@@ -44,7 +39,7 @@ class BLTIOauth(object):
                 consumers = getattr(settings, 'LTI_CONSUMERS', {})
                 return oauth.Consumer(key, consumers[key])
             except KeyError:
-                raise BLTIException('No Matching Consumer')
+                return None
 
 
 class BLTIRoles(object):
@@ -105,15 +100,17 @@ class BLTIRoles(object):
     def has_learner_role(self, roles):
         return self._has_role(roles, self.LIS_LEARNER)
 
-    def validate(self, blti, visibility):
-        if visibility:
-            roles = ','.join([blti.get('roles', ''),
-                              blti.get('ext_roles', '')]).split(',')
+    def validate(self, blti, visibility='member'):
+        if blti is None:
+            raise BLTIException('Missing LTI parameters')
 
-            # ADMIN includes instructors, MEMBER includes
-            if not (self.has_admin_role(roles) or
-                    self.has_instructor_role(roles) or
-                    (visibility == self.MEMBER and
-                    self.has_learner_role(roles))):
-                raise BLTIException(
-                    'You do not have privilege to view this content.')
+        roles = ','.join([blti.get('roles', ''),
+                          blti.get('ext_roles', '')]).split(',')
+
+        # ADMIN includes instructors, MEMBER includes
+        if not (self.has_admin_role(roles) or
+                self.has_instructor_role(roles) or
+                (visibility == self.MEMBER and
+                self.has_learner_role(roles))):
+            raise BLTIException(
+                'You do not have privilege to view this content.')

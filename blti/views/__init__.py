@@ -9,24 +9,21 @@ except ImportError:
 
 
 class BLTIView(TemplateView):
-    http_method_names = ['get', 'options']
+    authorized_role = 'member'
 
-    def get(self, request, *args, **kwargs):
+    def dispatch(self, request, *args, **kwargs):
         try:
-            params = self.validate(request)
+            kwargs['blti_params'] = self.validate(request)
         except BLTIException as err:
             self.template_name = 'blti/401.html'
-            return self.render_to_response({}, status=401)
+            return self.render_to_response({})
 
-        context = self.get_context_data(
-            request=request, blti_params=params, **kwargs)
+        return super(BLTIView, self).dispatch(request, *args, **kwargs)
 
-        response = self.render_to_response(context)
-        self.add_headers(response=response, blti_params=params, **kwargs)
+    def render_to_response(self, context, **kwargs):
+        response = super(BLTIView, self).render_to_response(context, **kwargs)
+        self.add_headers(response=response, **kwargs)
         return response
-
-    def get_context_data(self, **kwargs):
-        return kwargs
 
     def add_headers(self, **kwargs):
         pass
@@ -38,46 +35,41 @@ class BLTIView(TemplateView):
         BLTI().set_session(request, **kwargs)
 
     def validate(self, request):
-        return self.get_session(request)
+        blti_params = self.get_session(request)
+        self.authorize(blti_params)
+        return blti_params
+
+    def authorize(self, blti_params):
+        BLTIRoles().validate(blti_params, visibility=self.authorized_role)
 
 
 class BLTILaunchView(BLTIView):
     http_method_names = ['post']
-    authorized_role = 'member'
 
     @csrf_exempt
-    def dispatch(self, *args, **kwargs):
-        return super(BLTILaunchView, self).dispatch(*args, **kwargs)
-
-    def post(self, request, *args, **kwargs):
+    def dispatch(self, request, *args, **kwargs):
         try:
             params = self.validate(request)
+            kwargs['blti_params'] = params
             self.set_session(request, **params)
         except BLTIException as err:
             self.template_name = 'blti/error.html'
-            return self.render_to_response({'error': err}, status=400)
+            return self.render_to_response({'error': err})
 
-        context = self.get_context_data(
-            request=request, blti_params=params, **kwargs)
-
-        response = self.render_to_response(context)
-        self.add_headers(response=response, blti_params=params, **kwargs)
-        return response
+        return super(BLTIView, self).dispatch(request, *args, **kwargs)
 
     def validate(self, request):
         params = {}
         body = request.read()
-        try:
+        if body and len(body):
             params = dict((k, v) for k, v in [tuple(
                 map(unquote_plus, kv.split('='))
             ) for kv in body.split('&')])
-        except Exception:
+        else:
             raise BLTIException('Missing or malformed parameter or value')
 
         blti_params = BLTIOauth().validate(request, params=params)
-        if blti_params:
-            BLTIRoles().validate(blti_params, visibility=self.authorized_role)
-
+        self.authorize(blti_params)
         return blti_params
 
 

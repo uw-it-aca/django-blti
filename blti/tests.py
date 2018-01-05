@@ -7,14 +7,14 @@ from blti import BLTI, BLTIException
 
 class BLTIOAuthTest(TestCase):
     def test_no_config(self):
-        self.assertRaises(ImproperlyConfigured, BLTIOauth)
+        self.assertEquals(BLTIOauth().get_consumer('ABC'), None)
 
     def test_no_consumer(self):
         with self.settings(LTI_CONSUMERS={}):
-            self.assertRaises(BLTIException, BLTIOauth().get_consumer, 'XYZ')
+            self.assertEquals(BLTIOauth().get_consumer('ABC'), None)
 
         with self.settings(LTI_CONSUMERS={'ABC': '12345'}):
-            self.assertRaises(BLTIException, BLTIOauth().get_consumer, 'XYZ')
+            self.assertEquals(BLTIOauth().get_consumer('XYZ'), None)
 
     def test_get_consumer(self):
         with self.settings(LTI_CONSUMERS={'ABC': '12345'}):
@@ -40,6 +40,10 @@ class BLTIRolesTest(TestCase):
             False, BLTIRoles().has_learner_role(['Faculty', 'Staff']))
 
     def test_validate(self):
+        blti = None
+        self.assertRaises(
+            BLTIException, BLTIRoles().validate, blti, 'member')
+
         blti = {'roles': 'Member'}
         self.assertEquals(None, BLTIRoles().validate(blti, 'member'))
         self.assertRaises(
