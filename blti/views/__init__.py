@@ -16,7 +16,7 @@ class BLTIView(TemplateView):
             kwargs['blti_params'] = self.validate(request)
         except BLTIException as err:
             self.template_name = 'blti/401.html'
-            return self.render_to_response({})
+            return self.render_to_response({}, status=401)
 
         return super(BLTIView, self).dispatch(request, *args, **kwargs)
 
@@ -54,7 +54,7 @@ class BLTILaunchView(BLTIView):
             self.set_session(request, **params)
         except BLTIException as err:
             self.template_name = 'blti/error.html'
-            return self.render_to_response({'error': err})
+            return self.render_to_response({'error': err}, status=400)
 
         return super(BLTIView, self).dispatch(request, *args, **kwargs)
 
