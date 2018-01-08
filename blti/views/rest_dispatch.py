@@ -2,6 +2,7 @@ from django.conf import settings
 from django.views import View
 from django.http import HttpResponse
 from blti import BLTI, BLTIException
+from blti.models import BLTIData
 from blti.validators import BLTIRoles
 from blti.performance import log_response_time
 import json
@@ -35,6 +36,7 @@ class RESTDispatch(View):
 
     def authorize(self, blti_params):
         BLTIRoles().validate(blti_params, visibility=self.authorized_role)
+        self.blti = BLTIData(blti_params)
 
     def get_session(self, request):
         return BLTI().get_session(request)

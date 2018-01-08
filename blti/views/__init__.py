@@ -1,6 +1,7 @@
 from django.views.generic.base import TemplateView
 from django.views.decorators.csrf import csrf_exempt
 from blti import BLTI, BLTIException
+from blti.models import BLTIData
 from blti.validators import BLTIOauth, BLTIRoles
 try:
     from urllib import unquote_plus
@@ -41,6 +42,7 @@ class BLTIView(TemplateView):
 
     def authorize(self, blti_params):
         BLTIRoles().validate(blti_params, visibility=self.authorized_role)
+        self.blti = BLTIData(blti_params)
 
 
 class BLTILaunchView(BLTIView):

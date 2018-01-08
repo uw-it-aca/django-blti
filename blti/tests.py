@@ -1,7 +1,9 @@
+from django.conf import settings
 from django.test import TestCase
 from django.core.exceptions import ImproperlyConfigured
 from blti.validators import BLTIOauth, BLTIRoles
 from blti.crypto import aes128cbc
+from blti.models import BLTIData
 from blti import BLTI, BLTIException
 
 
@@ -19,6 +21,38 @@ class BLTIOAuthTest(TestCase):
     def test_get_consumer(self):
         with self.settings(LTI_CONSUMERS={'ABC': '12345'}):
             self.assertEquals(BLTIOauth().get_consumer('ABC').secret, '12345')
+
+
+class BLTIDataTest(TestCase):
+    def test_attributes(self):
+        params = getattr(settings, 'CANVAS_LTI_V1_LAUNCH_PARAMS', {})
+        blti = BLTIData(**params)
+
+        self.assertEquals(blti.link_title, 'Example App')
+        self.assertEquals(blti.return_url,
+                          'https://example.instructure.com/courses/123456')
+        self.assertEquals(blti.canvas_course_id, '123456')
+        self.assertEquals(blti.course_sis_id, '2018-spring-ABC-101-A')
+        self.assertEquals(blti.course_short_name, 'ABC 101 A')
+        self.assertEquals(blti.course_long_name, 'ABC 101 A: Example Course')
+        self.assertEquals(blti.canvas_user_id, '123456')
+        self.assertEquals(blti.user_login_id, 'javerage')
+        self.assertEquals(blti.user_sis_id, 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')
+        self.assertEquals(blti.user_full_name, 'James Average')
+        self.assertEquals(blti.user_first_name, 'James')
+        self.assertEquals(blti.user_last_name, 'Average')
+        self.assertEquals(blti.user_email, 'javerage@example.edu')
+        self.assertEquals(blti.canvas_account_id, '12345')
+        self.assertEquals(blti.account_sis_id, 'example:account')
+
+    def test_get(self):
+        params = getattr(settings, 'CANVAS_LTI_V1_LAUNCH_PARAMS', {})
+        blti = BLTIData(**params)
+
+        self.assertEquals(blti.get('custom_canvas_course_id'), '123456')
+        self.assertEquals(blti.get('lis_person_contact_email_primary'),
+                          'javerage@example.edu')
+        self.assertEquals(blti.get('invalid_param_name'), None)
 
 
 class BLTIRolesTest(TestCase):
