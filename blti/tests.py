@@ -42,8 +42,13 @@ class BLTIDataTest(TestCase):
         self.assertEquals(blti.user_first_name, 'James')
         self.assertEquals(blti.user_last_name, 'Average')
         self.assertEquals(blti.user_email, 'javerage@example.edu')
+        self.assertEquals(
+            blti.user_avatar_url, (
+                'https://example.instructure.com/images/thumbnails/123456/'
+                'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'))
         self.assertEquals(blti.canvas_account_id, '12345')
         self.assertEquals(blti.account_sis_id, 'example:account')
+        self.assertEquals(blti.canvas_api_domain, 'example.instructure.com')
 
     def test_get(self):
         params = getattr(settings, 'CANVAS_LTI_V1_LAUNCH_PARAMS', {})

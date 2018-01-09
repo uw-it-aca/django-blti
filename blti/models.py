@@ -29,10 +29,14 @@ class BLTIData(object):
         self.user_first_name = kwargs.get('lis_person_name_given')
         self.user_last_name = kwargs.get('lis_person_name_family')
         self.user_email = kwargs.get('lis_person_contact_email_primary')
+        self.user_avatar_url = kwargs.get('user_image')
 
         # LTI app attributes
         self.link_title = kwargs.get('resource_link_title')
         self.return_url = kwargs.get('launch_presentation_return_url')
+
+        # Canvas hostname
+        self.canvas_api_domain = kwargs.get('custom_canvas_api_domain')
 
         self.data = kwargs
 
