@@ -105,15 +105,17 @@ class BLTIRoles(object):
     def has_learner_role(self, roles):
         return self._has_role(roles, self.LIS_LEARNER)
 
-    def validate(self, blti, visibility):
-        if visibility:
-            roles = ','.join([blti.get('roles', ''),
-                              blti.get('ext_roles', '')]).split(',')
+    def validate(self, blti, visibility='member'):
+        if blti is None:
+            raise BLTIException('Missing LTI parameters')
 
-            # ADMIN includes instructors, MEMBER includes
-            if not (self.has_admin_role(roles) or
-                    self.has_instructor_role(roles) or
-                    (visibility == self.MEMBER and
-                    self.has_learner_role(roles))):
-                raise BLTIException(
-                    'You do not have privilege to view this content.')
+        roles = ','.join([blti.get('roles', ''),
+                          blti.get('ext_roles', '')]).split(',')
+
+        # ADMIN includes instructors, MEMBER includes
+        if not (self.has_admin_role(roles) or
+                self.has_instructor_role(roles) or
+                (visibility == self.MEMBER and
+                self.has_learner_role(roles))):
+            raise BLTIException(
+                'You do not have privilege to view this content.')
