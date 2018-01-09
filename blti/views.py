@@ -45,7 +45,7 @@ class BLTIView(TemplateView):
 
     def authorize(self, blti_params):
         BLTIRoles().validate(blti_params, visibility=self.authorized_role)
-        self.blti = BLTIData(blti_params)
+        self.blti = BLTIData(**blti_params)
 
 
 class BLTILaunchView(BLTIView):
@@ -70,6 +70,10 @@ class BLTILaunchView(BLTIView):
         self.set_session(request, **blti_params)
 
         return blti_params
+
+    def post(self, request, *args, **kwargs):
+        context = self.get_context_data(**kwargs)
+        return self.render_to_response(context)
 
 
 class RawBLTIView(BLTILaunchView):
