@@ -1,7 +1,7 @@
-ACA BLTI Provider
+Django BLTI Provider
 =================
 
-A Django Application on which to build IMS BLTI Tool Providers
+A Django application on which to build IMS BLTI Tool Providers
 
 Installation
 ------------
@@ -11,7 +11,7 @@ Installation
 Install django-blti in your project.
 
     $ cd [project]
-    $ pip install -e git+https://github.com/uw-it-aca/django-blti/#egg=django_blti
+    $ pip install django-blti==1.1
 
 Project settings.py
 ------------------
@@ -19,7 +19,7 @@ Project settings.py
 **INSTALLED_APPS**
 
     'blti',
-    
+
 **MIDDLEWARE_CLASSES**
 
     'django.middleware.common.CommonMiddleware',
@@ -28,11 +28,11 @@ Project settings.py
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
 
-**BLTI App settings**
+**Additional settings**
 
      # BLTI consumer key:secret pairs
      LTI_CONSUMERS = {
-         '<unique_cousumer_key>': '<32_or_more_bytes_of_entropy>'
+         '<unique_consumer_key>': '<32_or_more_bytes_of_entropy>'
      }
 
      # BLTI session object encryption values
