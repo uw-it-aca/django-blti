@@ -17,7 +17,7 @@ class BLTIView(TemplateView):
             kwargs['blti_params'] = self.validate(request)
         except BLTIException as err:
             self.template_name = 'blti/401.html'
-            return self.render_to_response({}, status=401)
+            return self.render_to_response({'error': err}, status=401)
 
         return super(BLTIView, self).dispatch(request, *args, **kwargs)
 
@@ -50,15 +50,7 @@ class BLTILaunchView(BLTIView):
 
     @csrf_exempt
     def dispatch(self, request, *args, **kwargs):
-        try:
-            params = self.validate(request)
-            kwargs['blti_params'] = params
-            self.set_session(request, **params)
-        except BLTIException as err:
-            self.template_name = 'blti/error.html'
-            return self.render_to_response({'error': err}, status=400)
-
-        return super(BLTIView, self).dispatch(request, *args, **kwargs)
+        return super(BLTILaunchView, self).dispatch(request, *args, **kwargs)
 
     def validate(self, request):
         params = {}
@@ -72,6 +64,8 @@ class BLTILaunchView(BLTIView):
 
         blti_params = BLTIOauth().validate(request, params=params)
         self.authorize(blti_params)
+        self.set_session(request, **blti_params)
+
         return blti_params
 
 
