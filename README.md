@@ -11,7 +11,7 @@ Installation
 Install django-blti in your project.
 
     $ cd [project]
-    $ pip install django-blti==1.1
+    $ pip install django-blti==1.2
 
 Project settings.py
 ------------------
