@@ -104,5 +104,5 @@ class RESTDispatch(BLTIView):
         response = HttpResponse(json.dumps(content),
                                 status=status,
                                 content_type='application/json')
-        self.add_headers(response=response, **kwargs)
+        self.add_headers(response=response)
         return response
