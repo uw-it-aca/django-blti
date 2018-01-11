@@ -17,7 +17,7 @@ class BLTIView(TemplateView):
 
     def dispatch(self, request, *args, **kwargs):
         try:
-            kwargs['blti_params'] = self.validate(request)
+            self.validate(request)
         except BLTIException as err:
             self.template_name = 'blti/401.html'
             return self.render_to_response({'error': err}, status=401)
@@ -41,7 +41,6 @@ class BLTIView(TemplateView):
     def validate(self, request):
         blti_params = self.get_session(request)
         self.authorize(blti_params)
-        return blti_params
 
     def authorize(self, blti_params):
         BLTIRoles().validate(blti_params, visibility=self.authorized_role)
@@ -69,8 +68,6 @@ class BLTILaunchView(BLTIView):
         self.authorize(blti_params)
         self.set_session(request, **blti_params)
 
-        return blti_params
-
     def post(self, request, *args, **kwargs):
         context = self.get_context_data(**kwargs)
         return self.render_to_response(context)
@@ -90,7 +87,7 @@ class RESTDispatch(BLTIView):
     @log_response_time
     def dispatch(self, request, *args, **kwargs):
         try:
-            kwargs['blti_params'] = self.validate(request)
+            self.validate(request)
         except BLTIException as ex:
             return self.error_response(401, ex)
 
