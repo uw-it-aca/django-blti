@@ -39,8 +39,9 @@ class BLTIView(TemplateView):
         BLTI().set_session(request, **kwargs)
 
     def validate(self, request):
-        blti_params = self.get_session(request)
-        self.authorize(blti_params)
+        if request.method != 'OPTIONS':
+            blti_params = self.get_session(request)
+            self.authorize(blti_params)
 
     def authorize(self, blti_params):
         BLTIRoles().validate(blti_params, visibility=self.authorized_role)
@@ -104,5 +105,5 @@ class RESTDispatch(BLTIView):
         response = HttpResponse(json.dumps(content),
                                 status=status,
                                 content_type='application/json')
-        self.add_headers(response=response, **kwargs)
+        self.add_headers(response=response)
         return response
