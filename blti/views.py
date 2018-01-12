@@ -41,11 +41,11 @@ class BLTIView(TemplateView):
     def validate(self, request):
         if request.method != 'OPTIONS':
             blti_params = self.get_session(request)
-            self.authorize(blti_params)
+            self.blti = BLTIData(**blti_params)
+            self.authorize(self.authorized_role)
 
-    def authorize(self, blti_params):
-        BLTIRoles().validate(blti_params, visibility=self.authorized_role)
-        self.blti = BLTIData(**blti_params)
+    def authorize(self, visibility):
+        BLTIRoles().validate(self.blti.data, visibility=visibility)
 
 
 class BLTILaunchView(BLTIView):
@@ -66,7 +66,8 @@ class BLTILaunchView(BLTIView):
             raise BLTIException('Missing or malformed parameter or value')
 
         blti_params = BLTIOauth().validate(request, params=params)
-        self.authorize(blti_params)
+        self.blti = BLTIData(**blti_params)
+        self.authorize(self.authorized_role)
         self.set_session(request, **blti_params)
 
     def post(self, request, *args, **kwargs):
