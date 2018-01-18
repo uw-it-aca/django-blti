@@ -47,75 +47,43 @@ class BLTIOauth(object):
                 raise BLTIException('No Matching Consumer')
 
 
-class BLTIRoles(object):
-    ADMIN = 'admin'
-    MEMBER = 'member'
-    ALL = None
+class Roles(object):
+    # https://www.imsglobal.org/specs/ltiv1p1/implementation-guide#toc-30
+    CANVAS_ROLES = {
+        'member': ['Administrator', 'Instructor', 'TeachingAssistant',
+                   'ContentDeveloper', 'Learner', 'Observer'],
+        'admin': ['Administrator', 'Instructor', 'TeachingAssistant',
+                  'ContentDeveloper'],
+    }
 
-    # https://www.imsglobal.org/specs/ltiv1p1/implementation-guide#toc-19
-    LIS_ADMIN = [
-        'AccountAdmin', 'SysAdmin', 'SysSupport', 'Faculty', 'Staff',
-        'Creator', 'Administrator',
-        'Administrator/Administrator', 'Administrator/Developer',
-        'Administrator/ExternalDeveloper', 'Administrator/ExternalSupport',
-        'Administrator/ExternalSystemAdministrator', 'Administrator/Support',
-        'Administrator/SystemAdministrator',
-        'Manager', 'Manager/AreaManager', 'Manager/CourseCoordinator',
-        'Manager/ExternalObserver', 'Manager/Observer'
-    ]
+    RE_ROLE_NS = re.compile(r'^urn:lti:(?:inst|sys)?role:ims/lis/([A-Za-z]+)$')
 
-    LIS_INSTRUCTOR = [
-        'Instructor',
-        'Instructor/ExternalInstructor', 'Instructor/GuestInstructor',
-        'Instructor/Lecturer', 'Instructor/PrimaryInstructor',
-        'TeachingAssistant',
-        'TeachingAssistant/Grader', 'TeachingAssistant/TeachingAssistant',
-        'TeachingAssistant/TeachingAssistantGroup',
-        'TeachingAssistant/TeachingAssistantOffering',
-        'TeachingAssistant/TeachingAssistantSection',
-        'TeachingAssistant/TeachingAssistantSectionAssociation',
-        'TeachingAssistant/TeachingAssistantTemplate'
-    ]
-
-    LIS_LEARNER = [
-        'Alumni', 'Guest', 'Learner', 'Member', 'ProspectiveStudent',
-        'Student', 'Learner', 'Learner/ExternalLearner',
-        'Learner/GuestLearner', 'Learner/Instructor', 'Learner/Learner',
-        'Learner/NonCreditLearner', 'Member', 'Member/Member'
-    ]
-
-    def _has_role(self, roles, lis_roles):
-        for role in roles:
-            if role in lis_roles:
-                return True
-
-            m = re.match(r'^urn:lti:(inst|sys)?role:ims/lis/([A-Za-z]+)$',
-                         role)
-            if m and m.group(2) in lis_roles:
-                return True
-
-        return False
-
-    def has_admin_role(self, roles):
-        return self._has_role(roles, self.LIS_ADMIN)
-
-    def has_instructor_role(self, roles):
-        return self._has_role(roles, self.LIS_INSTRUCTOR)
-
-    def has_learner_role(self, roles):
-        return self._has_role(roles, self.LIS_LEARNER)
-
-    def validate(self, blti, visibility='member'):
+    def authorize(self, blti, role='member'):
         if blti is None:
             raise BLTIException('Missing LTI parameters')
 
-        roles = ','.join([blti.get('roles', ''),
-                          blti.get('ext_roles', '')]).split(',')
+        lti_consumer = blti.data.get(
+            'tool_consumer_info_product_family_code', '').lower()
 
-        # ADMIN includes instructors, MEMBER includes
-        if not (self.has_admin_role(roles) or
-                self.has_instructor_role(roles) or
-                (visibility == self.MEMBER and
-                self.has_learner_role(roles))):
-            raise BLTIException(
-                'You do not have privilege to view this content.')
+        if lti_consumer == 'canvas':
+            if (not role or role == 'public'):
+                pass
+            elif (role in self.CANVAS_ROLES):  # member/admin
+                self._has_role(blti, self.CANVAS_ROLES[role])
+            else:  # specific role?
+                self._has_role(blti, [role])
+        else:
+            raise BLTIException('authorize() not implemented for "%s"!' % (
+                lti_consumer))
+
+    def _has_role(self, blti, valid_roles):
+        roles = blti.data.get('roles', '').split(',')
+        for role in roles:
+            if role in valid_roles:
+                return
+
+            m = self.RE_ROLE_NS.match(role)
+            if m and m.group(1) in valid_roles:
+                return
+
+        raise BLTIException('You are not authorized to view this content')
