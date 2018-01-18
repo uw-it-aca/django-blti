@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.test import TestCase
 from django.core.exceptions import ImproperlyConfigured
-from blti.validators import BLTIOauth, BLTIRoles
+from blti.validators import BLTIOauth, Roles
 from blti.crypto import aes128cbc
 from blti.models import BLTIData
 from blti import BLTI, BLTIException
@@ -60,37 +60,77 @@ class BLTIDataTest(TestCase):
         self.assertEquals(blti.get('invalid_param_name'), None)
 
 
-class BLTIRolesTest(TestCase):
-    def test_has_admin_role(self):
-        self.assertEquals(
-            True, BLTIRoles().has_admin_role(['Faculty', 'Alumni']))
-        self.assertEquals(False, BLTIRoles().has_admin_role(['Guest']))
+class CanvasRolesTest(TestCase):
+    def setUp(self):
+        params = {
+            'tool_consumer_info_product_family_code': 'canvas',
+            'roles': '',
+            'ext_roles': ''
+        }
+        self.blti = BLTIData(**params)
 
-    def test_has_instructor_role(self):
-        self.assertEquals(
-            True, BLTIRoles().has_instructor_role(['TeachingAssistant']))
-        self.assertEquals(
-            False, BLTIRoles().has_instructor_role(['Faculty', 'Alumni']))
-
-    def test_has_learner_role(self):
-        self.assertEquals(
-            True, BLTIRoles().has_learner_role(['Member']))
-        self.assertEquals(
-            False, BLTIRoles().has_learner_role(['Faculty', 'Staff']))
-
-    def test_validate(self):
-        blti = None
+    def test_authorize_nodata(self):
+        # no blti object
         self.assertRaises(
-            BLTIException, BLTIRoles().validate, blti, 'member')
+            BLTIException, Roles().authorize, None, role='member')
 
-        blti = {'roles': 'Member'}
-        self.assertEquals(None, BLTIRoles().validate(blti, 'member'))
+        # unimplemented product code
+        self.blti.data['tool_consumer_info_product_family_code'] = 'my_lms'
         self.assertRaises(
-            BLTIException, BLTIRoles().validate, blti, 'admin')
+            BLTIException, Roles().authorize, self.blti, role='member')
 
-        blti = {'roles': 'Faculty,Staff'}
-        self.assertEquals(None, BLTIRoles().validate(blti, 'member'))
-        self.assertEquals(None, BLTIRoles().validate(blti, 'admin'))
+    def test_authorize_public(self):
+        self.assertEquals(None, Roles().authorize(self.blti, role='public'))
+        self.assertEquals(None, Roles().authorize(self.blti, role=None))
+
+    def test_authorize_member(self):
+        self.assertRaises(
+            BLTIException, Roles().authorize, self.blti, role='member')
+
+        self.blti.data['roles'] = 'Administrator'
+        self.assertEquals(None, Roles().authorize(self.blti, role='member'))
+
+        self.blti.data['roles'] = 'urn:lti:instrole:ims/lis/Observer'
+        self.assertEquals(None, Roles().authorize(self.blti, role='member'))
+
+    def test_authorize_admin(self):
+        self.assertRaises(
+            BLTIException, Roles().authorize, self.blti, role='admin')
+
+        self.blti.data['roles'] = 'Learner'
+        self.assertRaises(
+            BLTIException, Roles().authorize, self.blti, role='admin')
+
+        self.blti.data['roles'] = 'urn:lti:instrole:ims/lis/Administrator'
+        self.assertEquals(None, Roles().authorize(self.blti, role='admin'))
+
+        self.blti.data['roles'] = 'urn:lti:role:ims/lis/TeachingAssistant'
+        self.assertEquals(None, Roles().authorize(self.blti, role='admin'))
+
+        self.blti.data['roles'] = 'Learner,ContentDeveloper'
+        self.assertEquals(None, Roles().authorize(self.blti, role='admin'))
+
+        # ignores ext_roles
+        self.blti.data['roles'] = 'Learner'
+        self.blti.data['ext_roles'] = 'urn:lti:role:ims/lis/Instructor'
+        self.assertRaises(
+            BLTIException, Roles().authorize, self.blti, role='admin')
+
+    def test_authorize_specific(self):
+        self.blti.data['roles'] = 'Learner'
+        self.assertEquals(None, Roles().authorize(self.blti, role='Learner'))
+
+        self.blti.data['roles'] = 'urn:lti:role:ims/lis/Learner'
+        self.assertEquals(None, Roles().authorize(self.blti, role='Learner'))
+
+        self.blti.data['roles'] = 'Learner,ContentDeveloper'
+        self.assertRaises(
+            BLTIException, Roles().authorize, self.blti, role='Instructor')
+
+        # unknown role
+        self.blti.data['roles'] = 'Learner'
+        self.assertRaises(
+            BLTIException, Roles().authorize, self.blti, role='Manager')
 
 
 class CryptoTest(TestCase):
