@@ -20,7 +20,7 @@ setup(
     packages=['blti'],
     include_package_data=True,
     install_requires=[
-        'Django>=1.10,<1.11',
+        'Django',
         'oauth2',
         'PyCrypto',
     ],
