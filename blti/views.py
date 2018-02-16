@@ -79,6 +79,9 @@ class RawBLTIView(BLTILaunchView):
     template_name = 'blti/raw.html'
     authorized_role = 'admin'
 
+    def get_context_data(self, **kwargs):
+        return {'blti_params': sorted(self.blti.data.items())}
+
 
 class RESTDispatch(BLTIView):
     """
