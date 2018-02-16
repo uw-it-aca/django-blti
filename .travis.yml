@@ -2,8 +2,6 @@ sudo: false
 language: python
 python:
 - '2.7'
-- '3.4'
-- '3.5'
 - '3.6'
 before_script:
 - pip install -e .
@@ -27,4 +25,4 @@ deploy:
     secure: dy9zyEUl6vrWeshxQoXpKBPVEofXfKQqHMpKpNyqKTcct1vVNimKeN2cuM7bOy9mDpZKVGIJKci+xdGAZfZ16DOJ/9Lg6tg2EcNjXM3CnT2Vw3HbFa5OZRRoWgOJbEejVDCTYGQyXSP8ekdgv92iXeSagq3MqJzZ1Xa9jGn1ykU=
   on:
     tags: true
-    python: '3.5'
+    python: '3.6'
