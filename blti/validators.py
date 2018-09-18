@@ -30,7 +30,7 @@ class BLTIOauth(object):
                 oauth_server._check_signature(oauth_request, consumer, None)
                 return oauth_request.get_nonoauth_parameters()
             except oauth.Error as err:
-                raise BLTIException(err)
+                raise BLTIException(str(err))
 
         raise BLTIException('Invalid OAuth Request')
 
