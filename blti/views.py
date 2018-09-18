@@ -1,3 +1,5 @@
+import json
+from urllib.parse import unquote_plus
 from django.http import HttpResponse
 from django.views.generic.base import TemplateView
 from django.views.decorators.csrf import csrf_exempt
@@ -5,11 +7,6 @@ from blti import BLTI, BLTIException
 from blti.models import BLTIData
 from blti.validators import BLTIOauth, Roles
 from blti.performance import log_response_time
-import json
-try:
-    from urllib import unquote_plus
-except ImportError:
-    from urllib.parse import unquote_plus  # Python3
 
 
 class BLTIView(TemplateView):
@@ -20,7 +17,7 @@ class BLTIView(TemplateView):
             self.validate(request)
         except BLTIException as err:
             self.template_name = 'blti/401.html'
-            return self.render_to_response({'error': err}, status=401)
+            return self.render_to_response({'error': str(err)}, status=401)
 
         return super(BLTIView, self).dispatch(request, *args, **kwargs)
 

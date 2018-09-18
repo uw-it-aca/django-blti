@@ -20,7 +20,7 @@ setup(
     packages=['blti'],
     include_package_data=True,
     install_requires=[
-        'Django',
+        'Django>2.1,<3.0',
         'oauth2',
         'PyCrypto',
     ],
@@ -37,7 +37,6 @@ setup(
         'License :: OSI Approved :: Apache Software License',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
-        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3.6',
     ],
 )
