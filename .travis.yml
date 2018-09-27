@@ -6,7 +6,7 @@ before_script:
 - pip install -e .
 - pip install pycodestyle
 - pip install coverage
-- pip install python-coveralls
+- pip install coveralls
 - cp travis-ci/manage.py manage.py
 script:
 - pycodestyle blti/ --exclude=migrations
