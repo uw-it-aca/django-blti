@@ -1,26 +1,43 @@
 from django.conf import settings
-from django.test import TestCase
+from django.test import RequestFactory, TestCase
 from django.core.exceptions import ImproperlyConfigured
-from blti.validators import BLTIOauth, Roles
+from blti.validators import BLTIRequestValidator, Roles
 from blti.crypto import aes128cbc
 from blti.models import BLTIData
 from blti import BLTI, BLTIException
 
 
 class BLTIOAuthTest(TestCase):
-    def test_no_config(self):
-        self.assertRaises(ImproperlyConfigured, BLTIOauth)
+    def setUp(self):
+        self.request = RequestFactory().post(
+            '/test', data=getattr(settings, 'CANVAS_LTI_V1_LAUNCH_PARAMS', {}),
+            secure=True)
 
-    def test_no_consumer(self):
+    def test_validate_client_key(self):
         with self.settings(LTI_CONSUMERS={}):
-            self.assertRaises(BLTIException, BLTIOauth().get_consumer, 'XYZ')
+            self.assertFalse(
+                BLTIRequestValidator().validate_client_key('X', self.request))
 
-        with self.settings(LTI_CONSUMERS={'ABC': '12345'}):
-            self.assertRaises(BLTIException, BLTIOauth().get_consumer, 'XYZ')
+        with self.settings(LTI_CONSUMERS={'A': '12345'}):
+            self.assertTrue(
+                BLTIRequestValidator().validate_client_key('A', self.request))
 
-    def test_get_consumer(self):
-        with self.settings(LTI_CONSUMERS={'ABC': '12345'}):
-            self.assertEquals(BLTIOauth().get_consumer('ABC').secret, '12345')
+    def test_get_client_secret(self):
+        with self.settings(LTI_CONSUMERS={}):
+            self.assertEquals(
+                BLTIRequestValidator().get_client_secret('X', self.request),
+                'dummy')
+
+        with self.settings(LTI_CONSUMERS={'A': '12345'}):
+            self.assertEquals(
+                BLTIRequestValidator().get_client_secret('A', self.request),
+                '12345')
+
+    def test_validate_timestamp_and_nonce(self):
+        with self.settings(LTI_CONSUMERS={'A': '12345'}):
+            self.assertTrue(
+                BLTIRequestValidator().validate_timestamp_and_nonce(
+                    'X', '123456789', 'ABCDEFG', self.request))
 
 
 class BLTIDataTest(TestCase):

@@ -53,16 +53,8 @@ class BLTILaunchView(BLTIView):
         return super(BLTILaunchView, self).dispatch(request, *args, **kwargs)
 
     def validate(self, request):
-        params = {}
-        body = request.read()
-        try:
-            params = dict((k, v) for k, v in [tuple(
-                map(unquote_plus, kv.split('='))
-            ) for kv in body.split('&')])
-        except Exception:
-            raise BLTIException('Missing or malformed parameter or value')
-
-        blti_params = BLTIOauth().validate(request, params=params)
+        blti_params = BLTIOauth().validate(
+            request.build_absolute_uri(), body=request.read())
         self.blti = BLTIData(**blti_params)
         self.authorize(self.authorized_role)
         self.set_session(request, **blti_params)

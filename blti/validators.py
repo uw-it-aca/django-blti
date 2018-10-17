@@ -1,50 +1,62 @@
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
+from oauthlib.oauth1.rfc5849.request_validator import RequestValidator
+from oauthlib.oauth1.rfc5849.endpoints.signature_only import (
+    SignatureOnlyEndpoint)
 from blti.models import BLTIKeyStore
 from blti import BLTIException
-import oauth2 as oauth
 import re
 
 
-class BLTIOauth(object):
+class BLTIRequestValidator(RequestValidator):
     def __init__(self):
-        if not hasattr(settings, 'LTI_CONSUMERS'):
-            raise ImproperlyConfigured('Missing setting LTI_CONSUMERS')
+        self._dummy = {'key': 'dummy', 'secret': 'dummy'}
+        self._client_secret = None
 
-    def validate(self, request, params={}):
-        oauth_server = oauth.Server()
-        oauth_server.add_signature_method(
-            oauth.SignatureMethod_HMAC_SHA1())
+    @property
+    def dummy_client(self):
+        return self._dummy['key']
 
-        oauth_request = oauth.Request.from_request(
-            request.method,
-            request.build_absolute_uri(),
-            headers=request.META,
-            parameters=params
-        )
+    def validate_client_key(self, client_key, request):
+        client_secret = self.get_client_secret(client_key, request)
+        if client_secret == self._dummy['secret']:
+            return False
+        return True
 
-        if oauth_request:
+    def get_client_secret(self, client_key, request):
+        if self._client_secret is None:
             try:
-                key = oauth_request.get_parameter('oauth_consumer_key')
-                consumer = self.get_consumer(key)
-                oauth_server._check_signature(oauth_request, consumer, None)
-                return oauth_request.get_nonoauth_parameters()
-            except oauth.Error as err:
-                raise BLTIException(str(err))
+                self._client_secret = BLTIKeyStore.objects.get(
+                    consumer_key=client_key).shared_secret
+            except BLTIKeyStore.DoesNotExist:
+                try:
+                    self._client_secret = getattr(
+                        settings, 'LTI_CONSUMERS', {})[client_key]
+                except KeyError:
+                    self._client_secret = self._dummy['secret']
+        return self._client_secret
 
-        raise BLTIException('Invalid OAuth Request')
+    def validate_timestamp_and_nonce(self, client_key, timestamp, nonce,
+                                     request, request_token=None,
+                                     access_token=None):
+        return True
 
-    def get_consumer(self, key):
+
+class BLTIOauth(object):
+    def validate(uri, http_method='POST', body=None, headers=None):
+        request_validator = BLTIRequestValidator()
+
+        endpoint = SignatureOnlyEndpoint(request_validator)
         try:
-            model = BLTIKeyStore.objects.get(consumer_key=key)
-            return oauth.Consumer(key, str(model.shared_secret))
+            valid, request = endpoint.validate_request(
+                uri, http_method, body, headers)
+        except AttributeError as ex:
+            raise BLTIException(ex)
 
-        except BLTIKeyStore.DoesNotExist:
-            try:
-                consumers = getattr(settings, 'LTI_CONSUMERS', {})
-                return oauth.Consumer(key, consumers[key])
-            except KeyError:
-                raise BLTIException('No Matching Consumer')
+        if not valid:
+            raise BLTIException('Invalid OAuth Request')
+
+        return request.params
 
 
 class Roles(object):
