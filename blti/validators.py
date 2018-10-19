@@ -1,25 +1,40 @@
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from oauthlib.oauth1.rfc5849.request_validator import RequestValidator
-from oauthlib.oauth1.rfc5849.endpoints.signature_only import (
-    SignatureOnlyEndpoint)
+from oauthlib.oauth1.rfc5849.utils import UNICODE_ASCII_CHARACTER_SET
 from blti.models import BLTIKeyStore
 from blti import BLTIException
+import time
 import re
 
 
 class BLTIRequestValidator(RequestValidator):
     def __init__(self):
-        self._dummy = {'key': 'dummy', 'secret': 'dummy'}
         self._client_secret = None
 
     @property
+    def allowed_signature_methods(self):
+        return ['HMAC-SHA1']
+
+    @property
     def dummy_client(self):
-        return self._dummy['key']
+        return 'dummy'
+
+    @property
+    def client_key_length(self):
+        return 12, 30
+
+    @property
+    def nonce_length(self):
+        return 20, 50
+
+    @property
+    def safe_characters(self):
+        return set(UNICODE_ASCII_CHARACTER_SET) | set('-_')
 
     def validate_client_key(self, client_key, request):
         client_secret = self.get_client_secret(client_key, request)
-        if client_secret == self._dummy['secret']:
+        if client_secret == self.dummy_client:
             return False
         return True
 
@@ -33,30 +48,14 @@ class BLTIRequestValidator(RequestValidator):
                     self._client_secret = getattr(
                         settings, 'LTI_CONSUMERS', {})[client_key]
                 except KeyError:
-                    self._client_secret = self._dummy['secret']
+                    self._client_secret = self.dummy_client
         return self._client_secret
 
     def validate_timestamp_and_nonce(self, client_key, timestamp, nonce,
                                      request, request_token=None,
                                      access_token=None):
-        return True
-
-
-class BLTIOauth(object):
-    def validate(uri, http_method='POST', body=None, headers=None):
-        request_validator = BLTIRequestValidator()
-
-        endpoint = SignatureOnlyEndpoint(request_validator)
-        try:
-            valid, request = endpoint.validate_request(
-                uri, http_method, body, headers)
-        except AttributeError as ex:
-            raise BLTIException(ex)
-
-        if not valid:
-            raise BLTIException('Invalid OAuth Request')
-
-        return request.params
+        now = int(time.time())
+        return (now - 60) <= timestamp <= (now + 60)
 
 
 class Roles(object):

@@ -21,7 +21,8 @@ class BLTI(object):
             request.session.create()
 
         kwargs['_blti_session_id'] = request.session.session_key
-        request.session['blti'] = self._encrypt_session(kwargs)
+        request.session['blti'] = self._encrypt_session(
+            self.filter_oauth_params(kwargs))
 
     def get_session(self, request):
         if 'blti' not in request.session:
@@ -37,6 +38,9 @@ class BLTI(object):
     def pop_session(self, request):
         if 'blti' in request.session:
             request.session.pop('blti', None)
+
+    def filter_oauth_params(self, params):
+        return {k: v for k, v in params.items() if not k.startswith('oauth_')}
 
     def _encrypt_session(self, data):
         aes = aes128cbc(settings.BLTI_AES_KEY, settings.BLTI_AES_IV)

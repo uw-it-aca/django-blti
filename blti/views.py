@@ -5,8 +5,10 @@ from django.views.generic.base import TemplateView
 from django.views.decorators.csrf import csrf_exempt
 from blti import BLTI, BLTIException
 from blti.models import BLTIData
-from blti.validators import BLTIOauth, Roles
+from blti.validators import BLTIRequestValidator, Roles
 from blti.performance import log_response_time
+from oauthlib.oauth1.rfc5849.endpoints.signature_only import (
+    SignatureOnlyEndpoint)
 
 
 class BLTIView(TemplateView):
@@ -52,16 +54,25 @@ class BLTILaunchView(BLTIView):
     def dispatch(self, request, *args, **kwargs):
         return super(BLTILaunchView, self).dispatch(request, *args, **kwargs)
 
-    def validate(self, request):
-        blti_params = BLTIOauth().validate(
-            request.build_absolute_uri(), body=request.read())
-        self.blti = BLTIData(**blti_params)
-        self.authorize(self.authorized_role)
-        self.set_session(request, **blti_params)
-
     def post(self, request, *args, **kwargs):
         context = self.get_context_data(**kwargs)
         return self.render_to_response(context)
+
+    def validate(self, request):
+        request_validator = BLTIRequestValidator()
+        endpoint = SignatureOnlyEndpoint(request_validator)
+
+        valid, oauth_req = endpoint.validate_request(
+            request.build_absolute_uri(), request.method, body=request.read(),
+            headers={'Content-Type': 'application/x-www-form-urlencoded'})
+
+        if not valid:
+            raise BLTIException('Invalid OAuth Request')
+
+        blti_params = dict(oauth_req.params)
+        self.set_session(request, **blti_params)
+
+        super(BLTILaunchView, self).validate(request)
 
 
 class RawBLTIView(BLTILaunchView):
