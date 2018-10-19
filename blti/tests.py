@@ -64,6 +64,10 @@ class RequestValidatorTest(TestCase):
             BLTIRequestValidator().validate_timestamp_and_nonce(
                 'X', time.time() + 65, '', self.request))
 
+        self.assertFalse(
+            BLTIRequestValidator().validate_timestamp_and_nonce(
+                'X', '1234567890', '', self.request))
+
 
 class BLTIDataTest(TestCase):
     def test_attributes(self):
