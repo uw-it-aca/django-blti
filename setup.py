@@ -21,7 +21,7 @@ setup(
     include_package_data=True,
     install_requires=[
         'Django>2.1,<3.0',
-        'oauth2',
+        'oauthlib',
         'PyCrypto',
     ],
     license='Apache License, Version 2.0',

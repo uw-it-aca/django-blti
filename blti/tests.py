@@ -1,26 +1,68 @@
 from django.conf import settings
-from django.test import TestCase
-from django.core.exceptions import ImproperlyConfigured
-from blti.validators import BLTIOauth, Roles
+from django.test import RequestFactory, TestCase
+from blti.validators import BLTIRequestValidator, Roles
 from blti.crypto import aes128cbc
 from blti.models import BLTIData
 from blti import BLTI, BLTIException
+import time
 
 
-class BLTIOAuthTest(TestCase):
-    def test_no_config(self):
-        self.assertRaises(ImproperlyConfigured, BLTIOauth)
+class RequestValidatorTest(TestCase):
+    def setUp(self):
+        self.request = RequestFactory().post(
+            '/test', data=getattr(settings, 'CANVAS_LTI_V1_LAUNCH_PARAMS', {}),
+            secure=True)
 
-    def test_no_consumer(self):
+    def test_check_client_key(self):
+        self.assertTrue(BLTIRequestValidator().check_client_key('x' * 12))
+        self.assertTrue(BLTIRequestValidator().check_client_key('5' * 30))
+        self.assertTrue(BLTIRequestValidator().check_client_key('-' * 20))
+        self.assertTrue(BLTIRequestValidator().check_client_key('_' * 20))
+        self.assertFalse(BLTIRequestValidator().check_client_key('x' * 11))
+        self.assertFalse(BLTIRequestValidator().check_client_key('x' * 31))
+        self.assertFalse(BLTIRequestValidator().check_client_key('*' * 40))
+
+    def test_check_nonce(self):
+        self.assertTrue(BLTIRequestValidator().check_nonce('x' * 20))
+        self.assertTrue(BLTIRequestValidator().check_nonce('5' * 50))
+        self.assertTrue(BLTIRequestValidator().check_nonce('-' * 20))
+        self.assertTrue(BLTIRequestValidator().check_nonce('_' * 20))
+        self.assertFalse(BLTIRequestValidator().check_nonce('*' * 20))
+        self.assertFalse(BLTIRequestValidator().check_nonce('x' * 19))
+        self.assertFalse(BLTIRequestValidator().check_nonce('x' * 51))
+
+    def test_validate_client_key(self):
         with self.settings(LTI_CONSUMERS={}):
-            self.assertRaises(BLTIException, BLTIOauth().get_consumer, 'XYZ')
+            self.assertFalse(
+                BLTIRequestValidator().validate_client_key('X', self.request))
 
-        with self.settings(LTI_CONSUMERS={'ABC': '12345'}):
-            self.assertRaises(BLTIException, BLTIOauth().get_consumer, 'XYZ')
+        with self.settings(LTI_CONSUMERS={'A': '12345'}):
+            self.assertTrue(
+                BLTIRequestValidator().validate_client_key('A', self.request))
 
-    def test_get_consumer(self):
-        with self.settings(LTI_CONSUMERS={'ABC': '12345'}):
-            self.assertEquals(BLTIOauth().get_consumer('ABC').secret, '12345')
+    def test_get_client_secret(self):
+        with self.settings(LTI_CONSUMERS={}):
+            self.assertEquals(
+                BLTIRequestValidator().get_client_secret('X', self.request),
+                'dummy')
+
+        with self.settings(LTI_CONSUMERS={'A': '12345'}):
+            self.assertEquals(
+                BLTIRequestValidator().get_client_secret('A', self.request),
+                '12345')
+
+    def test_validate_timestamp_and_nonce(self):
+        self.assertTrue(
+            BLTIRequestValidator().validate_timestamp_and_nonce(
+                'X', time.time(), '', self.request))
+
+        self.assertFalse(
+            BLTIRequestValidator().validate_timestamp_and_nonce(
+                'X', time.time() - 65, '', self.request))
+
+        self.assertFalse(
+            BLTIRequestValidator().validate_timestamp_and_nonce(
+                'X', time.time() + 65, '', self.request))
 
 
 class BLTIDataTest(TestCase):
@@ -133,18 +175,27 @@ class CanvasRolesTest(TestCase):
             BLTIException, Roles().authorize, self.blti, role='Manager')
 
 
-class CryptoTest(TestCase):
-    test_key = 'DUMMY_KEY_FOR_TESTING_1234567890'
-    test_iv = 'DUMMY_IV_TESTING'
-    msgs = [
-        ('LTI provides a framework through which an LMS can send some '
-         'verifiable information about a user to a third party.'),
-        "'abc': {'key': value}"
-    ]
+class BLTISessionTest(TestCase):
+    def test_encrypt_decrypt_session(self):
+        with self.settings(BLTI_AES_KEY='DUMMY_KEY_FOR_TESTING_1234567890',
+                           BLTI_AES_IV='DUMMY_IV_TESTING'):
 
-    def test_encrypt_decrypt(self):
-        aes = aes128cbc(self.test_key, self.test_iv)
+            data = {'abc': {'key': 123},
+                    'xyz': ('LTI provides a framework through which an LMS '
+                            'can send some verifiable information about a '
+                            'user to a third party.')}
 
-        for msg in self.msgs:
-            enc = aes.encrypt(msg)
-            self.assertEquals(aes.decrypt(enc), msg)
+            enc = BLTI()._encrypt_session(data)
+            self.assertEquals(BLTI()._decrypt_session(enc), data)
+
+    def test_filter_oauth_params(self):
+        with self.settings(BLTI_AES_KEY='DUMMY_KEY_FOR_TESTING_1234567890',
+                           BLTI_AES_IV='DUMMY_IV_TESTING'):
+            data = getattr(settings, 'CANVAS_LTI_V1_LAUNCH_PARAMS', {})
+
+            self.assertEquals(len(data), 43)
+            self.assertEquals(data['oauth_consumer_key'], 'XXXXXXXXXXXXXX')
+
+            data = BLTI().filter_oauth_params(data)
+            self.assertEquals(len(data), 36)
+            self.assertRaises(KeyError, lambda: data['oauth_consumer_key'])
