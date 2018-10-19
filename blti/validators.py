@@ -55,7 +55,7 @@ class BLTIRequestValidator(RequestValidator):
                                      request, request_token=None,
                                      access_token=None):
         now = int(time.time())
-        return (now - 60) <= timestamp <= (now + 60)
+        return (now - 60) <= int(timestamp) <= (now + 60)
 
 
 class Roles(object):
