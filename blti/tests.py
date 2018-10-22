@@ -203,3 +203,9 @@ class BLTISessionTest(TestCase):
             data = BLTI().filter_oauth_params(data)
             self.assertEquals(len(data), 36)
             self.assertRaises(KeyError, lambda: data['oauth_consumer_key'])
+
+
+class BLTILaunchViewTest(TestCase):
+    def test_launch_view(self):
+        response = self.client.post('/blti/')
+        self.assertEquals(response.status_code, 401)
