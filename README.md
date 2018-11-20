@@ -1,8 +1,10 @@
+# Django BLTI Provider                                                          
+                                                                                
 [![Build Status](https://api.travis-ci.org/uw-it-aca/django-blti.svg?branch=master)](https://travis-ci.org/uw-it-aca/django-blti)
 [![Coverage Status](https://coveralls.io/repos/uw-it-aca/django-blti/badge.png?branch=master)](https://coveralls.io/r/uw-it-aca/django-blti?branch=master)
+[![PyPi Version](https://img.shields.io/pypi/v/django-blti.svg)](https://pypi.python.org/pypi/django-blti)
+![Python versions](https://img.shields.io/pypi/pyversions/django-blti.svg)
 
-Django BLTI Provider
-=================
 
 A Django application on which to build IMS BLTI Tool Providers
 
