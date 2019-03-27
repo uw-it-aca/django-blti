@@ -4,7 +4,9 @@ from django.contrib.sessions.middleware import SessionMiddleware
 from blti.validators import BLTIRequestValidator, Roles
 from blti.crypto import aes128cbc
 from blti.models import BLTIData
+from blti.performance import log_response_time
 from blti import BLTI, BLTIException
+from mock import Mock
 import time
 
 
@@ -226,3 +228,25 @@ class BLTILaunchViewTest(TestCase):
     def test_launch_view(self):
         response = self.client.post('/blti/')
         self.assertEquals(response.status_code, 401)
+
+
+class BLTIDecoratorTest(TestCase):
+    def setUp(self):
+        self.request = RequestFactory().post(
+            '/test', data=getattr(settings, 'CANVAS_LTI_V1_LAUNCH_PARAMS', {}),
+            secure=True)
+        SessionMiddleware().process_request(self.request)
+
+    def test_log_response_time(self):
+        func = Mock()
+        func.__name__ = 'test'
+        decorated_func = log_response_time(func)
+
+        with self.assertLogs(level='INFO') as cm:
+            response = decorated_func(self.request, 'test1', test_id=123)
+
+        self.assertIn(
+            'INFO:blti.performance:user: None, method: '
+            'django.core.handlers.wsgi.test, args: (\'test1\',), '
+            'kwargs: {\'test_id\': 123}, time: ',
+            cm.output[0])

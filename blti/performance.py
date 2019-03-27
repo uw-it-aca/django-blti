@@ -2,7 +2,6 @@ import time
 from logging import getLogger
 from blti import BLTI
 
-
 logger = getLogger(__name__)
 
 
@@ -36,19 +35,14 @@ def log_response_time(func):
                 login_id = BLTI().get_session(request).get(
                     'custom_canvas_user_login_id')
             except Exception as ex:
-                login_id = 'unknown_user'
+                login_id = None
 
             arg_str = arg_str.replace("#", "___")
             kw_str = kw_str.replace("#", "___")
 
-            margs = (login_id,
-                     module,
-                     function,
-                     arg_str,
-                     kw_str,
-                     end-start)
-
-            msg = "user# %s method# %s.%s args# %s kwargs# %s time# %s" % margs
-            logger.info(msg)
+            logger.info(
+                'user: {}, method: {}.{}, args: {}, kwargs: {}, '
+                'time: {}'.format(
+                    login_id, module, function, arg_str, kw_str, end - start))
         return val
     return wrapper

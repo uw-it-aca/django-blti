@@ -24,6 +24,7 @@ setup(
         'oauthlib',
         'PyCrypto',
         'django-compressor',
+        'mock',
     ],
     license='Apache License, Version 2.0',
     description='A Django Application on which to build IMS BLTI Tool Providers',
