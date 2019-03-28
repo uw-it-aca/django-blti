@@ -35,10 +35,6 @@ class BLTI(object):
         blti_data.pop('_blti_session_id', None)
         return blti_data
 
-    def pop_session(self, request):
-        if 'blti' in request.session:
-            request.session.pop('blti', None)
-
     def filter_oauth_params(self, params):
         return {k: v for k, v in params.items() if not k.startswith('oauth_')}
 

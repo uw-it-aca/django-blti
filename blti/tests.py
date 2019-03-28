@@ -1,9 +1,12 @@
 from django.conf import settings
-from django.test import RequestFactory, TestCase
+from django.test import RequestFactory, TestCase, override_settings
+from django.contrib.sessions.middleware import SessionMiddleware
 from blti.validators import BLTIRequestValidator, Roles
 from blti.crypto import aes128cbc
 from blti.models import BLTIData
+from blti.performance import log_response_time
 from blti import BLTI, BLTIException
+from mock import Mock
 import time
 
 
@@ -179,33 +182,71 @@ class CanvasRolesTest(TestCase):
             BLTIException, Roles().authorize, self.blti, role='Manager')
 
 
+@override_settings(BLTI_AES_KEY='DUMMY_KEY_FOR_TESTING_1234567890',
+                   BLTI_AES_IV='DUMMY_IV_TESTING')
 class BLTISessionTest(TestCase):
+    def setUp(self):
+        self.request = RequestFactory().post(
+            '/test', data=getattr(settings, 'CANVAS_LTI_V1_LAUNCH_PARAMS', {}),
+            secure=True)
+        SessionMiddleware().process_request(self.request)
+
+    def test_set_session(self):
+        blti = BLTI()
+        self.assertFalse('blti' in self.request.session)
+        blti.set_session(self.request)
+        self.assertTrue('blti' in self.request.session)
+
+    def test_get_session(self):
+        blti = BLTI()
+        self.assertRaises(BLTIException, blti.get_session, self.request)
+
+        blti.set_session(self.request)
+        self.assertEqual(blti.get_session(self.request), {})
+
     def test_encrypt_decrypt_session(self):
-        with self.settings(BLTI_AES_KEY='DUMMY_KEY_FOR_TESTING_1234567890',
-                           BLTI_AES_IV='DUMMY_IV_TESTING'):
+        data = {'abc': {'key': 123},
+                'xyz': ('LTI provides a framework through which an LMS '
+                        'can send some verifiable information about a '
+                        'user to a third party.')}
 
-            data = {'abc': {'key': 123},
-                    'xyz': ('LTI provides a framework through which an LMS '
-                            'can send some verifiable information about a '
-                            'user to a third party.')}
-
-            enc = BLTI()._encrypt_session(data)
-            self.assertEquals(BLTI()._decrypt_session(enc), data)
+        enc = BLTI()._encrypt_session(data)
+        self.assertEquals(BLTI()._decrypt_session(enc), data)
 
     def test_filter_oauth_params(self):
-        with self.settings(BLTI_AES_KEY='DUMMY_KEY_FOR_TESTING_1234567890',
-                           BLTI_AES_IV='DUMMY_IV_TESTING'):
-            data = getattr(settings, 'CANVAS_LTI_V1_LAUNCH_PARAMS', {})
+        data = getattr(settings, 'CANVAS_LTI_V1_LAUNCH_PARAMS', {})
 
-            self.assertEquals(len(data), 43)
-            self.assertEquals(data['oauth_consumer_key'], 'XXXXXXXXXXXXXX')
+        self.assertEquals(len(data), 43)
+        self.assertEquals(data['oauth_consumer_key'], 'XXXXXXXXXXXXXX')
 
-            data = BLTI().filter_oauth_params(data)
-            self.assertEquals(len(data), 36)
-            self.assertRaises(KeyError, lambda: data['oauth_consumer_key'])
+        data = BLTI().filter_oauth_params(data)
+        self.assertEquals(len(data), 36)
+        self.assertRaises(KeyError, lambda: data['oauth_consumer_key'])
 
 
 class BLTILaunchViewTest(TestCase):
     def test_launch_view(self):
         response = self.client.post('/blti/')
         self.assertEquals(response.status_code, 401)
+
+
+class BLTIDecoratorTest(TestCase):
+    def setUp(self):
+        self.request = RequestFactory().post(
+            '/test', data=getattr(settings, 'CANVAS_LTI_V1_LAUNCH_PARAMS', {}),
+            secure=True)
+        SessionMiddleware().process_request(self.request)
+
+    def test_log_response_time(self):
+        func = Mock()
+        func.__name__ = 'test'
+        decorated_func = log_response_time(func)
+
+        with self.assertLogs(level='INFO') as cm:
+            response = decorated_func(self.request, 'test1', test_id=123)
+
+        self.assertIn(
+            'INFO:blti.performance:user: None, method: '
+            'django.core.handlers.wsgi.test, args: (\'test1\',), '
+            'kwargs: {\'test_id\': 123}, time: ',
+            cm.output[0])
