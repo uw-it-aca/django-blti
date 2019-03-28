@@ -1,7 +1,7 @@
-# Django BLTI Provider                                                          
-                                                                                
+# Django BLTI Provider
+
 [![Build Status](https://api.travis-ci.org/uw-it-aca/django-blti.svg?branch=master)](https://travis-ci.org/uw-it-aca/django-blti)
-[![Coverage Status](https://coveralls.io/repos/uw-it-aca/django-blti/badge.png?branch=master)](https://coveralls.io/r/uw-it-aca/django-blti?branch=master)
+[![Coverage Status](https://coveralls.io/repos/github/uw-it-aca/django-blti/badge.svg?branch=master)](https://coveralls.io/github/uw-it-aca/django-blti?branch=master)
 [![PyPi Version](https://img.shields.io/pypi/v/django-blti.svg)](https://pypi.python.org/pypi/django-blti)
 ![Python versions](https://img.shields.io/pypi/pyversions/django-blti.svg)
 
@@ -16,7 +16,7 @@ Installation
 Install django-blti in your project.
 
     $ cd [project]
-    $ pip install django-blti==1.2
+    $ pip install django-blti
 
 Project settings.py
 ------------------
