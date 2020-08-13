@@ -61,10 +61,20 @@ class BLTILaunchView(BLTIView):
     def validate(self, request):
         request_validator = BLTIRequestValidator()
         endpoint = SignatureOnlyEndpoint(request_validator)
+        uri = request.build_absolute_uri()
+        headers = {'Content-Type': 'application/x-www-form-urlencoded'}
+        body = request.read()
 
         valid, oauth_req = endpoint.validate_request(
-            request.build_absolute_uri(), request.method, body=request.read(),
-            headers={'Content-Type': 'application/x-www-form-urlencoded'})
+            uri, request.method, body, headers)
+
+        # if non-ssl fixup scheme to validate signature generated
+        # on the other side of ingress
+        if (not valid and
+                request_validator.enforce_ssl is False and
+                uri[:5] == "http:"):
+            valid, oauth_req = endpoint.validate_request(
+                "https{}".format(uri[4:]), request.method, body, headers)
 
         if not valid:
             raise BLTIException('Invalid OAuth Request')
