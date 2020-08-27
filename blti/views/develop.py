@@ -29,6 +29,8 @@ class BLTIDevLaunch(BLTIDevBase):
 
     # well known dev client
     _client_key = '0000-0000-0000'
+    _client_secrets = getattr(
+        settings, 'LTI_CONSUMERS', {'0000-0000-0000': '01234567ABCDEF'})
 
     _lti_role = {
         'administrator': 'urn:lti:instrole:ims/lis/Administrator',
@@ -124,8 +126,8 @@ class BLTIDevLaunch(BLTIDevBase):
                                     base_string_uri(uri),
                                     normalize_parameters(lti_parameters))
         client_key = self._client_key
-        client_secrets = getattr(settings, 'LTI_CONSUMERS', {})
-        client = Client(client_key, client_secret=client_secrets[client_key])
+        client = Client(
+            client_key, client_secret=self._client_secrets[client_key])
         signature = sign_hmac_sha1_with_client(sbs, client)
         lti_parameters.append(("oauth_signature", signature))
 
