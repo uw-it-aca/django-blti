@@ -121,7 +121,8 @@ class BLTIDevLaunch(BLTIDevBase):
 
         # sign payload
         raw_uri = self.request.build_absolute_uri()
-        uri = raw_uri[0:raw_uri.index('/' + self.lti_app()) + 8]
+        lti_app_len = len(self.lti_app())
+        uri = raw_uri[0:raw_uri.index('/' + self.lti_app()) + lti_app_len + 1]
         sbs = signature_base_string('POST',
                                     base_string_uri(uri),
                                     normalize_parameters(lti_parameters))
