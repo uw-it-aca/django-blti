@@ -1,0 +1,52 @@
+<!doctype html>
+<html class="no-js">
+<head>
+    <title>Prepare Development Launch for {{ lti_app }}</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="HandheldFriendly" content="true">
+
+    {% load staticfiles %}
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+
+</head>
+<body>
+
+    <div id="wrapper" class="container" style="position:relative;">
+
+        <div id="main-wrapper">
+            <div id="main">
+               <div class="inner">
+                 <h2>LTI Context Settings for {{ lti_app }} Launch</h3>
+                 <form action="/blti/dev/launch" method="get" id="form1">
+                   <div class="form-row">
+                   <div class="form-group col-md-6">
+                     <label for="campus">Campus:</label>
+                     <select id="campus" name="campus" class="form-control">
+                       <option value="seattle">Seattle</option>
+                       <option value="bothell">Bothell</option>
+                       <option value="tacoma">Tacoma</option>
+                     </select>
+                   </div>
+                   <div class="form-group col-md-6">
+                     <label for="role">Role:</label>
+                     <select id="role" name="role" class="form-control">
+                       <option value="instructor">Instructor</option>
+                       <option value="ta">TA</option>
+                       <option value="student">Student</option>
+                       <option value="administrator">Administrator</option>
+                   </select>
+                   </div>
+                   </div>
+                 <button class="btn btn-primary" type="submit" form="form1" value="Launch">Prepare to Launch {{ lti_app }}</button>
+               </div>
+            </div><!--end #main-->
+        </div>
+    </div>
+
+</body>
+</html>

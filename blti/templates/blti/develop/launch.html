@@ -1,0 +1,37 @@
+<!doctype html>
+<html class="no-js">
+<head>
+    <title>Launch Development Page for {{ lti_app }}</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="HandheldFriendly" content="true">
+
+    {% load staticfiles %}
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+</head>
+<body>
+
+    <div id="wrapper" class="container" style="position:relative;">
+
+        <div id="main-wrapper">
+          <br />
+
+            <div id="main">
+               <div class="inner">
+                 <form action="/{{ lti_app }}" method="POST" id="form1">
+                   {% for k, v in lti_parameters %}
+                   <input type="hidden" name="{{ k }}" value="{{ v }}">
+                   {% endfor %}
+                 </form>
+
+                 <button class="btn btn-primary" type="submit" form="form1" value="Launch">Launch {{ lti_app }} LTI as {{ role_name|title }} in {{ campus|title }}</button>
+               </div>
+            </div><!--end #main-->
+        </div>
+    </div>
+
+</body>
+</html>

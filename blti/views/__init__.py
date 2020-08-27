@@ -1,5 +1,4 @@
 import json
-from urllib.parse import unquote_plus
 from django.http import HttpResponse
 from django.views.generic.base import TemplateView
 from django.views.decorators.csrf import csrf_exempt
