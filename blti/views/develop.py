@@ -6,6 +6,7 @@ from oauthlib.oauth1.rfc5849.signature import (
     base_string_uri, signature_base_string,
     normalize_parameters, sign_hmac_sha1_with_client)
 from blti import BLTIException
+import re
 
 
 class BLTIDevBase(TemplateView):
@@ -18,9 +19,15 @@ class BLTIDevBase(TemplateView):
         except AttributeError:
             raise BLTIException("Missing setting: LTI_DEVELOP_APP")
 
+    def lti_app_uri(self):
+        blti_match = re.match(r'^(http[s]?://[^/]+/)blti.*',
+                              self.request.build_absolute_uri())
+        return "{}{}".format(blti_match.group(1), self.lti_app())
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['lti_app'] = self.lti_app()
+        return context
 
 
 class BLTIDevPrepare(BLTIDevBase):
@@ -123,11 +130,9 @@ class BLTIDevLaunch(BLTIDevBase):
         lti_parameters += self._static_lti_parameters
 
         # sign payload
-        raw_uri = self.request.build_absolute_uri()
-        lti_app_len = len(self.lti_app())
-        uri = raw_uri[0:raw_uri.index('/' + self.lti_app()) + lti_app_len + 1]
+        lti_app_uri = self.lti_app_uri()
         sbs = signature_base_string('POST',
-                                    base_string_uri(uri),
+                                    base_string_uri(lti_app_uri),
                                     normalize_parameters(lti_parameters))
         client_key = self._client_key
         client = Client(
@@ -136,7 +141,7 @@ class BLTIDevLaunch(BLTIDevBase):
         lti_parameters.append(("oauth_signature", signature))
 
         context = super().get_context_data(**kwargs)
-        context['uri'] = uri
+        context['uri'] = lti_app_uri
         context['campus'] = campus
         context['role_name'] = role
         context['lti_parameters'] = lti_parameters
