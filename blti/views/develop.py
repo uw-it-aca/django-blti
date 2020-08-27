@@ -11,6 +11,9 @@ from blti import BLTIException
 class BLTIDevBase(TemplateView):
     def lti_app(self):
         try:
+            if len(settings.LTI_DEVELOP_APP) <= 0:
+                raise BLTIException("Empty setting: LTI_DEVELOP_APP")
+
             return settings.LTI_DEVELOP_APP
         except AttributeError:
             raise BLTIException("Missing setting: LTI_DEVELOP_APP")
@@ -95,8 +98,6 @@ class BLTIDevLaunch(BLTIDevBase):
         ("lti_version", "LTI-1p0"),
         ("oauth_callback", "about:blank"),
         ("resource_link_id", "E9a206DC909a330e9F8eF183b7BB4B9718aBB62d"),
-        ("resource_link_title",
-         "UW LTI Development ({})".format(self.lti_app())),
         ("tool_consumer_info_product_family_code", "canvas"),
         ("tool_consumer_instance_name", "University of Washington"),
         ("user_id", "e1ec31bd10a32f61dd65975ce4eb98e9f106bd7d"),
@@ -115,6 +116,8 @@ class BLTIDevLaunch(BLTIDevBase):
              'uwcourse:{}:arts-&-sciences:psych:psych'.format(campus)),
             ("oauth_timestamp", generate_timestamp()),
             ("oauth_nonce", generate_nonce()),
+            ("resource_link_title",
+             "UW LTI Development ({})".format(self.lti_app())),
         ]
 
         lti_parameters += self._static_lti_parameters
