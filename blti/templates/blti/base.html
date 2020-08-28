@@ -13,7 +13,8 @@
     {% load compress %}
 
     <!-- add web fonts if needed -->
-    <link href="//fonts.googleapis.com/css?family=Raleway:400,800" rel="stylesheet" type="text/css"/>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway:400,800">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
 
     <!-- mobile first styles -->
     {% compress css %}
@@ -21,7 +22,6 @@
     {% endcompress %}
 
     {% compress css %}
-    <link rel="stylesheet" href="{% static "vendor/css/font-awesome-4.4.0.min.css" %}"/>
     {% block desktop_css %}{% endblock %}
     {% endcompress %}
 
