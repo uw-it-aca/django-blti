@@ -23,7 +23,6 @@ setup(
         'Django>2.1,<3.0',
         'oauthlib',
         'PyCrypto',
-        'django-compressor',
         'mock',
     ],
     license='Apache License, Version 2.0',

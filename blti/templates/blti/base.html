@@ -10,20 +10,15 @@
     <meta http-equiv="cleartype" content="on">
 
     {% load staticfiles %}
-    {% load compress %}
 
     <!-- add web fonts if needed -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway:400,800">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
 
     <!-- mobile first styles -->
-    {% compress css %}
     {% block mobile_css %}{% endblock %}
-    {% endcompress %}
 
-    {% compress css %}
     {% block desktop_css %}{% endblock %}
-    {% endcompress %}
 
     <style>
         body { font-family: "Helvetica Neue",Helvetica,Arial,sans-serif; font-size: 13px; color: #333; }
@@ -48,9 +43,7 @@
         </div>
     </div>
 
-    {% compress js %}
     {% block javascript %}{% endblock %}
-    {% endcompress %}
 
 </body>
 </html>
