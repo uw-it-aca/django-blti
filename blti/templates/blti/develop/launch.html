@@ -21,7 +21,7 @@
 
             <div id="main">
                <div class="inner">
-                 <form action="/{{ lti_app }}" method="POST" id="form1">
+                 <form action="/{{ lti_app }}/" method="POST" id="form1">
                    {% for k, v in lti_parameters %}
                    <input type="hidden" name="{{ k }}" value="{{ v }}">
                    {% endfor %}
