@@ -132,7 +132,7 @@ class BLTIDevLaunch(BLTIDevBase):
         # sign payload
         lti_app_uri = self.lti_app_uri()
         sbs = signature_base_string('POST',
-                                    base_string_uri(lti_app_uri),
+                                    base_string_uri(lti_app_uri + '/'),
                                     normalize_parameters(lti_parameters))
         client_key = self._client_key
         client = Client(
