@@ -21,10 +21,19 @@
     {% block desktop_css %}{% endblock %}
 
     <style>
-        body { font-family: "Helvetica Neue",Helvetica,Arial,sans-serif; font-size: 13px; color: #333; }
-        table { border-collapse: collapse; }
-        td { padding: 5px; }
-        table, td { border: 1px solid #666; }
+      #unauthorized_holder {width: 500px; border: 1px solid black; display: block; margin-top: 30px; margin-left: auto; margin-right: auto;}
+
+      #unauthorized_message .ui-state-error {border: 1px solid #c43c35; background: #c43c35; color: #fff; background-image: linear-gradient(to bottom, #ee5f5b, #c43c35); text-shadow: 0 -1px 0 rgba(0,0,0,0.25); border-color: #c43c35 #c43c35 #882a25; border-color: rgba(0,0,0,0.1) rgba(0,0,0,0.1) rgba(0,0,0,0.25); box-shadow: inset 0 1px 0 rgba(255,255,255,0.25); height: 60px; line-height: 60px; font-weight: normal; position: relative; box-shadow: inset 0 1px 0 rgba(255,255,255,0.25),0 3px 3px -1px rgba(0,0,0,0.25); font-size: 1.5em; margin: 0;}
+
+      #unauthorized_message .ui-state-error i { position: absolute; display: inline-block; font-size: 1.75em; padding-left: 20px; margin-top: 12px; }
+
+      #unauthorized_message .ui-state-error span { margin-left: 76px; }
+
+      #unauthorized_message p {font-weight: 800; font-size: 14px; padding: 22px;}
+
+      body {margin: 0; font-family: "Helvetica Neue",Helvetica,Arial,sans-serif; font-size: 14px; line-height: 20px; color: #333; background-color: #fff;}
+
+      html {font-size: 100%; -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%;}
     </style>
 </head>
 <body>

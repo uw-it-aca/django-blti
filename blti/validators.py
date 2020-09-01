@@ -2,16 +2,12 @@ from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from oauthlib.oauth1.rfc5849.request_validator import RequestValidator
 from oauthlib.oauth1.rfc5849.utils import UNICODE_ASCII_CHARACTER_SET
-from blti.models import BLTIKeyStore
 from blti import BLTIException
 import time
 import re
 
 
 class BLTIRequestValidator(RequestValidator):
-    def __init__(self):
-        self._client_secret = None
-
     @property
     def allowed_signature_methods(self):
         return ['HMAC-SHA1']
@@ -38,23 +34,15 @@ class BLTIRequestValidator(RequestValidator):
         return set(UNICODE_ASCII_CHARACTER_SET) | set('-_')
 
     def validate_client_key(self, client_key, request):
-        client_secret = self.get_client_secret(client_key, request)
-        if client_secret == self.dummy_client:
-            return False
-        return True
+        return self.get_client_secret(
+            client_key, request) != self.dummy_client
 
     def get_client_secret(self, client_key, request):
-        if self._client_secret is None:
-            try:
-                self._client_secret = BLTIKeyStore.objects.get(
-                    consumer_key=client_key).shared_secret
-            except BLTIKeyStore.DoesNotExist:
-                try:
-                    self._client_secret = getattr(
-                        settings, 'LTI_CONSUMERS', {})[client_key]
-                except KeyError:
-                    self._client_secret = self.dummy_client
-        return self._client_secret
+        try:
+            return getattr(
+                settings, 'LTI_CONSUMERS', {})[client_key]
+        except KeyError:
+            return self.dummy_client
 
     def validate_timestamp_and_nonce(self, client_key, timestamp, nonce,
                                      request, request_token=None,
