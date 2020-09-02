@@ -23,3 +23,12 @@ class SessionHeaderMiddleware(MiddlewareMixin):
         if session_id is not None:
             session_key = settings.SESSION_COOKIE_NAME
             request.COOKIES[session_key] = session_id
+
+
+class SameSiteMiddleware(MiddlewareMixin):
+    def process_response(self, request, response):
+        if 'sessionid' in response.cookies:
+                response.cookies['sessionid']['samesite'] = 'None'
+        if 'csrftoken' in response.cookies:
+                response.cookies['csrftoken']['samesite'] = 'None'
+        return response
