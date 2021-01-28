@@ -1,6 +1,6 @@
 # Django BLTI Provider
 
-[![Build Status](https://api.travis-ci.org/uw-it-aca/django-blti.svg?branch=master)](https://travis-ci.org/uw-it-aca/django-blti)
+[![Build Status](https://github.com/uw-it-aca/django-blti/workflows/tests/badge.svg?branch=master)](https://github.com/uw-it-aca/django-blti/actions)
 [![Coverage Status](https://coveralls.io/repos/github/uw-it-aca/django-blti/badge.svg?branch=master)](https://coveralls.io/github/uw-it-aca/django-blti?branch=master)
 [![PyPi Version](https://img.shields.io/pypi/v/django-blti.svg)](https://pypi.python.org/pypi/django-blti)
 ![Python versions](https://img.shields.io/pypi/pyversions/django-blti.svg)

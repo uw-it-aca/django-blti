@@ -1,0 +1,118 @@
+#
+# Example GitHub Actions config for UW-IT AXD2 app testing and publishing to PyPi
+#
+# Preconditions:
+#
+#  1) Application contains a setup.py file
+#
+#  2) Application repo has access to the required secret
+#     at https://github.com/organizations/uw-it-aca/settings/secrets:
+#
+#     PYPI_API_TOKEN
+#
+# To adapt this config to a specific Python app:
+#
+#  1) Set APP_NAME to the name of the package name/directory.
+#
+#  2) Set CONF_PATH to a path containing a urls.py and/or settings.py file
+#     used by the test suite, if any
+#
+#  3) Verify that the lists of branches for push/pull_request is appropriate,
+#     and add other branch names if needed.
+#
+#  4) Update the matrix of django versions to test, if necessary.
+#
+---
+name: tests
+
+env:
+  APP_NAME: blti
+  CONF_PATH: conf
+  COVERAGE_DJANGO_VERSION: 2.2
+
+on:
+  push:
+    branches: [main, master, qa, develop]
+  pull_request:
+    branches: [main, master, qa, develop]
+    types: [opened, reopened, synchronize]
+  release:
+    branches: [main, master]
+    types: [published]
+
+jobs:
+  test:
+    runs-on: ubuntu-18.04
+
+    strategy:
+      matrix:
+        django-version:
+          - '2.1'
+          - '2.2'
+          - '3.1'
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v2
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.6
+
+      - name: Install Dependencies
+        run: |
+          sudo apt-get install python-dev libxml2-dev libxmlsec1-dev
+          python -m pip install --upgrade pip
+          pip install -e .
+          pip install pycodestyle coverage coveralls==2.2.0
+
+      - name: Upgrade Django Version
+        run: pip install "Django~=${{ matrix.django-version }}.0"
+
+      - name: Setup Django
+        run: |
+          django-admin startproject project .
+          test -f ${CONF_PATH}/urls.py && cp ${CONF_PATH}/urls.py project/
+          test -f ${CONF_PATH}/settings.py && cat ${CONF_PATH}/settings.py >> project/settings.py
+
+      - name: Run Pycodestyle
+        run: pycodestyle ${APP_NAME}/
+
+      - name: Run Migrations
+        run: python manage.py migrate
+
+      - name: Run Tests
+        run: |
+          python -m compileall ${APP_NAME}/
+          coverage run --source=${APP_NAME}/ manage.py test ${APP_NAME}
+
+      - name: Report Test Coverage
+        if: matrix.django-version == env.COVERAGE_DJANGO_VERSION
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: coveralls
+
+  publish:
+    if: github.event_name == 'release' && startsWith(github.ref, 'refs/tags')
+
+    needs: test
+
+    runs-on: ubuntu-18.04
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v2
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+
+      - name: Publish to PyPi
+        uses: uw-it-aca/actions/publish-pypi@main
+        with:
+          app_name: ${APP_NAME}
+          tag_name: ${{ github.event.release.tag_name }}
+          api_token: ${{ secrets.PYPI_API_TOKEN }}
