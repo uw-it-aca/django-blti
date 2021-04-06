@@ -1,3 +1,6 @@
+# Copyright 2021 UW-IT, University of Washington
+# SPDX-License-Identifier: Apache-2.0
+
 import json
 from django.http import HttpResponse
 from django.views.generic.base import TemplateView
