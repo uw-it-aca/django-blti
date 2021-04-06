@@ -1,3 +1,6 @@
+# Copyright 2021 UW-IT, University of Washington
+# SPDX-License-Identifier: Apache-2.0
+
 from Crypto.Cipher import AES
 from base64 import b64decode, b64encode
 
