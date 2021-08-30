@@ -48,7 +48,7 @@ jobs:
       matrix:
         django-version:
           - '2.2'
-          - '3.2`'
+          - '3.2'
 
     steps:
       - name: Checkout Repo
