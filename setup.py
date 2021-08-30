@@ -19,7 +19,7 @@ setup(
     packages=['blti'],
     include_package_data=True,
     install_requires=[
-        'Django>2.1,<3.2',
+        'Django>2.1',
         'oauthlib',
         'PyCrypto',
         'mock',
