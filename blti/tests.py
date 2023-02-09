@@ -10,8 +10,8 @@ from blti.crypto import aes128cbc
 from blti.models import BLTIData
 from blti.performance import log_response_time
 from blti import BLTI, BLTIException
-from mock import Mock
 import time
+import mock
 
 
 class RequestValidatorTest(TestCase):
@@ -193,7 +193,8 @@ class BLTISessionTest(TestCase):
         self.request = RequestFactory().post(
             '/test', data=getattr(settings, 'CANVAS_LTI_V1_LAUNCH_PARAMS', {}),
             secure=True)
-        SessionMiddleware().process_request(self.request)
+        SessionMiddleware(get_response=mock.MagicMock()).process_request(
+            self.request)
 
     def test_set_session(self):
         blti = BLTI()
@@ -239,10 +240,11 @@ class BLTIDecoratorTest(TestCase):
         self.request = RequestFactory().post(
             '/test', data=getattr(settings, 'CANVAS_LTI_V1_LAUNCH_PARAMS', {}),
             secure=True)
-        SessionMiddleware().process_request(self.request)
+        SessionMiddleware(get_response=mock.MagicMock()).process_request(
+            self.request)
 
     def test_log_response_time(self):
-        func = Mock()
+        func = mock.Mock()
         func.__name__ = 'test'
         decorated_func = log_response_time(func)
 
