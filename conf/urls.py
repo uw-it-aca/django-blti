@@ -1,5 +1,6 @@
-from django.conf.urls import include, url
+from django.conf.urls import include
+from django.urls import re_path
 
 urlpatterns = [
-    url(r'^blti/', include('blti.urls')),
+    re_path(r'^blti/', include('blti.urls')),
 ]

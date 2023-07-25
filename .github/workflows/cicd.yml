@@ -28,7 +28,7 @@ name: tests
 env:
   APP_NAME: blti
   CONF_PATH: conf
-  COVERAGE_DJANGO_VERSION: 2.2
+  COVERAGE_DJANGO_VERSION: 3.2
 
 on:
   push:
@@ -42,29 +42,29 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
 
     strategy:
       matrix:
         django-version:
-          - '2.2'
           - '3.2'
+          - '4.2'
 
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Setup Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
-          python-version: 3.6
+          python-version: '3.8'
 
       - name: Install Dependencies
         run: |
           sudo apt-get install python-dev libxml2-dev libxmlsec1-dev
           python -m pip install --upgrade pip
           pip install -e .
-          pip install coverage coveralls==2.2.0
+          pip install coverage coveralls==3.3.1
 
       - name: Upgrade Django Version
         run: pip install "Django~=${{ matrix.django-version }}.0"
@@ -101,16 +101,16 @@ jobs:
 
     needs: test
 
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
 
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Setup Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
-          python-version: '3.x'
+          python-version: '3.8'
 
       - name: Publish to PyPi
         uses: uw-it-aca/actions/publish-pypi@main
