@@ -20,12 +20,12 @@ class aes128cbc(object):
         if key is None:
             raise ValueError('Missing AES key')
         else:
-            self._key = key
+            self._key = key.encode('utf8')
 
         if iv is None:
             raise ValueError('Missing AES initialization vector')
         else:
-            self._iv = iv
+            self._iv = iv.encode('utf8')
 
     def encrypt(self, msg):
         msg = self._pad(self.str_to_bytes(msg))

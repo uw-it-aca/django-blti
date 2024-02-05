@@ -21,7 +21,7 @@ setup(
     install_requires=[
         'Django>=3.2,<5',
         'oauthlib',
-        'PyCrypto',
+        'pycryptodome',
         'mock',
     ],
     license='Apache License, Version 2.0',
