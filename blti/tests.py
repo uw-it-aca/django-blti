@@ -1,4 +1,4 @@
-# Copyright 2023 UW-IT, University of Washington
+# Copyright 2024 UW-IT, University of Washington
 # SPDX-License-Identifier: Apache-2.0
 
 
@@ -210,13 +210,25 @@ class BLTISessionTest(TestCase):
         self.assertEqual(blti.get_session(self.request), {})
 
     def test_encrypt_decrypt_session(self):
+        blti = BLTI()
         data = {'abc': {'key': 123},
                 'xyz': ('LTI provides a framework through which an LMS '
                         'can send some verifiable information about a '
                         'user to a third party.')}
 
-        enc = BLTI()._encrypt_session(data)
-        self.assertEquals(BLTI()._decrypt_session(enc), data)
+        enc = blti._encrypt_session(data)
+        self.assertEquals(blti._decrypt_session(enc), data)
+
+        bdata = b'abcdef'
+        self.assertRaises(TypeError, blti._encrypt_session, bdata)
+
+    def test_missing_key_iv(self):
+        blti = BLTI()
+        with override_settings(BLTI_AES_KEY=None):
+            self.assertRaises(ValueError, blti._encrypt_session, '')
+
+        with override_settings(BLTI_AES_IV=None):
+            self.assertRaises(ValueError, blti._encrypt_session, '')
 
     def test_filter_oauth_params(self):
         data = getattr(settings, 'CANVAS_LTI_V1_LAUNCH_PARAMS', {})

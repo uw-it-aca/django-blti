@@ -1,48 +1,55 @@
-# Copyright 2023 UW-IT, University of Washington
+# Copyright 2024 UW-IT, University of Washington
 # SPDX-License-Identifier: Apache-2.0
 
 
-from Crypto.Cipher import AES
+from cryptography.hazmat.primitives import padding
+from cryptography.hazmat.primitives.ciphers import Cipher, modes
+from cryptography.hazmat.primitives.ciphers.algorithms import AES
 from base64 import b64decode, b64encode
 
 
 class aes128cbc(object):
+    """
+    Advanced Encryption Standard object
+
+    For reference:
+    https://cryptography.io/en/latest/hazmat/primitives/symmetric-encryption/
+    """
 
     _key = None
     _iv = None
 
     def __init__(self, key, iv):
-        """
-        Advanced Encryption Standard object
-        """
-        self._bs = 16  # Block size
-
         if key is None:
             raise ValueError('Missing AES key')
-        else:
-            self._key = key
-
         if iv is None:
             raise ValueError('Missing AES initialization vector')
-        else:
-            self._iv = iv
+
+        self._key = key.encode('utf8')
+        self._iv = iv.encode('utf8')
 
     def encrypt(self, msg):
         msg = self._pad(self.str_to_bytes(msg))
-        crypt = AES.new(self._key, AES.MODE_CBC, self._iv)
-        return b64encode(crypt.encrypt(msg)).decode('utf-8')
+        cipher = Cipher(AES(self._key), modes.CBC(self._iv))
+        encryptor = cipher.encryptor()
+        ct = encryptor.update(msg) + encryptor.finalize()
+        return ct
 
     def decrypt(self, msg):
-        msg = b64decode(msg)
-        crypt = AES.new(self._key, AES.MODE_CBC, self._iv)
-        return self._unpad(crypt.decrypt(msg)).decode('utf-8')
+        cipher = Cipher(AES(self._key), modes.CBC(self._iv))
+        decryptor = cipher.decryptor()
+        dct = decryptor.update(msg) + decryptor.finalize()
+        return self._unpad(dct).decode('utf-8')
 
     def _pad(self, s):
-        return s + (self._bs - len(s) % self._bs) * self.str_to_bytes(chr(
-            self._bs - len(s) % self._bs))
+        padder = padding.PKCS7(AES.block_size).padder()
+        pd = padder.update(s) + padder.finalize()
+        return pd
 
     def _unpad(self, s):
-        return s[:-ord(s[len(s)-1:])]
+        unpadder = padding.PKCS7(AES.block_size).unpadder()
+        upd = unpadder.update(s) + unpadder.finalize()
+        return upd
 
     def str_to_bytes(self, s):
         u_type = type(b''.decode('utf8'))
