@@ -222,13 +222,20 @@ class BLTISessionTest(TestCase):
         bdata = b'abcdef'
         self.assertRaises(TypeError, blti._encrypt_session, bdata)
 
-    def test_missing_key_iv(self):
-        blti = BLTI()
         with override_settings(BLTI_AES_KEY=None):
             self.assertRaises(ValueError, blti._encrypt_session, '')
 
         with override_settings(BLTI_AES_IV=None):
             self.assertRaises(ValueError, blti._encrypt_session, '')
+
+        # test bytes
+        with override_settings(BLTI_AES_KEY=b'11111111111111111111111111111111'):  # noqa
+            enc = blti._encrypt_session(data)
+            self.assertEquals(blti._decrypt_session(enc), data)
+
+        with override_settings(BLTI_AES_IV=b'1111111111111111'):
+            enc = blti._encrypt_session(data)
+            self.assertEquals(blti._decrypt_session(enc), data)
 
     def test_filter_oauth_params(self):
         data = getattr(settings, 'CANVAS_LTI_V1_LAUNCH_PARAMS', {})
