@@ -29,10 +29,10 @@ class aes128cbc(object):
         self._iv = iv.encode('utf8')
 
     def encrypt(self, msg):
-        msg = msg.encode('utf8')
+        msg = self._pad(self.str_to_bytes(msg))
         cipher = Cipher(AES(self._key), modes.CBC(self._iv))
         encryptor = cipher.encryptor()
-        ct = encryptor.update(self._pad(msg)) + encryptor.finalize()
+        ct = encryptor.update(msg) + encryptor.finalize()
         return ct
 
     def decrypt(self, msg):
@@ -50,3 +50,9 @@ class aes128cbc(object):
         unpadder = padding.PKCS7(AES.block_size).unpadder()
         upd = unpadder.update(s) + unpadder.finalize()
         return upd
+
+    def str_to_bytes(self, s):
+        u_type = type(b''.decode('utf8'))
+        if isinstance(s, u_type):
+            return s.encode('utf8')
+        return s
