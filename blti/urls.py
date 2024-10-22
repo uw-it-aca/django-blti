@@ -3,9 +3,8 @@
 
 
 from django.conf import settings
-from django.urls import path, re_path
-from blti.views import RawBLTIView, login, launch, get_jwks
-from .views import 
+from django.urls import re_path
+from blti.views import RawBLTIView, login, get_jwks
 
 
 urlpatterns = [
