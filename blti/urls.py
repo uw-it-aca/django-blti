@@ -10,7 +10,6 @@ from .views import
 
 urlpatterns = [
     re_path(r'^login/$', login, name='login'),
-    re_path(r'^launch/$', launch, name='launch'),
     re_path(r'^jwks/$', get_jwks, name='jwks'),
     re_path(r'^$', RawBLTIView.as_view(), name='launch_view'),
 ]

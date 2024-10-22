@@ -5,6 +5,7 @@
 import json
 import logging
 from django.http import HttpResponse
+from django.conf import settings
 from django.views.generic.base import TemplateView
 from django.views.decorators.csrf import csrf_exempt
 from blti.models import BLTIData
@@ -20,10 +21,18 @@ from oauthlib.oauth1.rfc5849.endpoints.signature_only import (
 
 
 logger = logging.getLogger(__name__)
+CONFIG_DIRECTORY_NAME = 'lti_config'
+CONFIG_FILE_NAME = 'tool.json'
+
+
+def get_lti_config_directory():
+    return os.environ.get(
+        'LTI_CONFIG_DIRECTORY',
+        os.path.join(settings.BASE_DIR, '..', CONFIG_DIRECTORY_NAME))
 
 
 def get_lti_config_path():
-    return os.path.join(settings.BASE_DIR, '..', 'configs', 'tool.json')
+    return os.path.join(get_lti_config_directory(), CONFIG_FILE_NAME)
 
 
 def get_tool_conf():
@@ -31,7 +40,7 @@ def get_tool_conf():
 
 
 def get_jwk_from_public_key(key_name):
-    key_path = os.path.join(settings.BASE_DIR, '..', 'configs', key_name)
+    key_path = os.path.join(get_lti_config_directory(), key_name)
     with open(key_path, 'r') as f:
         return Registration.get_jwk(f.read())
 
