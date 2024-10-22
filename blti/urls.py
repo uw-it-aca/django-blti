@@ -3,12 +3,16 @@
 
 
 from django.conf import settings
-from django.urls import re_path
-from blti.views import RawBLTIView
+from django.urls import path, re_path
+from blti.views import RawBLTIView, login, launch, get_jwks
+from .views import 
 
 
 urlpatterns = [
-    re_path(r'^$', RawBLTIView.as_view()),
+    re_path(r'^login/$', login, name='login'),
+    re_path(r'^launch/$', launch, name='launch'),
+    re_path(r'^jwks/$', get_jwks, name='jwks'),
+    re_path(r'^$', RawBLTIView.as_view(), name='launch_view'),
 ]
 
 if (getattr(settings, 'LTI_DEVELOP_APP', None)
@@ -16,5 +20,7 @@ if (getattr(settings, 'LTI_DEVELOP_APP', None)
     from blti.views.develop import BLTIDevPrepare, BLTIDevLaunch
     urlpatterns += [
         re_path(r'^dev[/]?$', BLTIDevPrepare.as_view()),
+        re_path(r'^dev/login/$', BLTIDevLogin.as_view()),
+        re_path(r'^dev/jwks/$', get_jwks, name='jwks'),
         re_path(r'^dev/launch/$', BLTIDevLaunch.as_view()),
     ]

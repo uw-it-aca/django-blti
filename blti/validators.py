@@ -2,57 +2,9 @@
 # SPDX-License-Identifier: Apache-2.0
 
 
-from django.conf import settings
-from django.core.exceptions import ImproperlyConfigured
-from oauthlib.oauth1.rfc5849.request_validator import RequestValidator
-from oauthlib.oauth1.rfc5849.utils import UNICODE_ASCII_CHARACTER_SET
-from blti import BLTIException
+from blti.exceptions import BLTIException
 import time
 import re
-
-
-class BLTIRequestValidator(RequestValidator):
-    @property
-    def allowed_signature_methods(self):
-        return ['HMAC-SHA1']
-
-    @property
-    def dummy_client(self):
-        return 'dummy'
-
-    @property
-    def client_key_length(self):
-        return 12, 30
-
-    @property
-    def nonce_length(self):
-        return 20, 50
-
-    @property
-    def enforce_ssl(self):
-        return getattr(
-            settings, 'LTI_ENFORCE_SSL', True)
-
-    @property
-    def safe_characters(self):
-        return set(UNICODE_ASCII_CHARACTER_SET) | set('-_')
-
-    def validate_client_key(self, client_key, request):
-        return self.get_client_secret(
-            client_key, request) != self.dummy_client
-
-    def get_client_secret(self, client_key, request):
-        try:
-            return getattr(
-                settings, 'LTI_CONSUMERS', {})[client_key]
-        except KeyError:
-            return self.dummy_client
-
-    def validate_timestamp_and_nonce(self, client_key, timestamp, nonce,
-                                     request, request_token=None,
-                                     access_token=None):
-        now = int(time.time())
-        return (now - 60) <= int(timestamp) <= (now + 60)
 
 
 class Roles(object):

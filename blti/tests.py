@@ -5,75 +5,12 @@
 from django.conf import settings
 from django.test import RequestFactory, TestCase, override_settings
 from django.contrib.sessions.middleware import SessionMiddleware
-from blti.validators import BLTIRequestValidator, Roles
-from blti.crypto import aes128cbc
+from blti.validators import Roles
 from blti.models import BLTIData
 from blti.performance import log_response_time
 from blti import BLTI, BLTIException
 import time
 import mock
-
-
-class RequestValidatorTest(TestCase):
-    def setUp(self):
-        self.request = RequestFactory().post(
-            '/test', data=getattr(settings, 'CANVAS_LTI_V1_LAUNCH_PARAMS', {}),
-            secure=True)
-
-    def test_check_client_key(self):
-        self.assertTrue(BLTIRequestValidator().check_client_key('x' * 12))
-        self.assertTrue(BLTIRequestValidator().check_client_key('5' * 30))
-        self.assertTrue(BLTIRequestValidator().check_client_key('-' * 20))
-        self.assertTrue(BLTIRequestValidator().check_client_key('_' * 20))
-        self.assertFalse(BLTIRequestValidator().check_client_key('x' * 11))
-        self.assertFalse(BLTIRequestValidator().check_client_key('x' * 31))
-        self.assertFalse(BLTIRequestValidator().check_client_key('*' * 40))
-
-    def test_check_nonce(self):
-        self.assertTrue(BLTIRequestValidator().check_nonce('x' * 20))
-        self.assertTrue(BLTIRequestValidator().check_nonce('5' * 50))
-        self.assertTrue(BLTIRequestValidator().check_nonce('-' * 20))
-        self.assertTrue(BLTIRequestValidator().check_nonce('_' * 20))
-        self.assertFalse(BLTIRequestValidator().check_nonce('*' * 20))
-        self.assertFalse(BLTIRequestValidator().check_nonce('x' * 19))
-        self.assertFalse(BLTIRequestValidator().check_nonce('x' * 51))
-
-    def test_validate_client_key(self):
-        with self.settings(LTI_CONSUMERS={}):
-            self.assertFalse(
-                BLTIRequestValidator().validate_client_key('X', self.request))
-
-        with self.settings(LTI_CONSUMERS={'A': '12345'}):
-            self.assertTrue(
-                BLTIRequestValidator().validate_client_key('A', self.request))
-
-    def test_get_client_secret(self):
-        with self.settings(LTI_CONSUMERS={}):
-            self.assertEquals(
-                BLTIRequestValidator().get_client_secret('X', self.request),
-                'dummy')
-
-        with self.settings(LTI_CONSUMERS={'A': '12345'}):
-            self.assertEquals(
-                BLTIRequestValidator().get_client_secret('A', self.request),
-                '12345')
-
-    def test_validate_timestamp_and_nonce(self):
-        self.assertTrue(
-            BLTIRequestValidator().validate_timestamp_and_nonce(
-                'X', time.time(), '', self.request))
-
-        self.assertFalse(
-            BLTIRequestValidator().validate_timestamp_and_nonce(
-                'X', time.time() - 65, '', self.request))
-
-        self.assertFalse(
-            BLTIRequestValidator().validate_timestamp_and_nonce(
-                'X', time.time() + 65, '', self.request))
-
-        self.assertFalse(
-            BLTIRequestValidator().validate_timestamp_and_nonce(
-                'X', '1234567890', '', self.request))
 
 
 class BLTIDataTest(TestCase):
