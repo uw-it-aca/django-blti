@@ -4,7 +4,6 @@
 
 import time
 from logging import getLogger
-from blti import BLTI
 
 logger = getLogger(__name__)
 
@@ -36,8 +35,8 @@ def log_response_time(func):
 
             try:
                 request = args[1]
-                login_id = BLTI().get_session(request).get(
-                    'custom_canvas_user_login_id')
+                launch_data = request.session.get('lti_launch_data', {})
+                login_id = launch_data..get('custom_canvas_user_login_id')
             except Exception as ex:
                 login_id = None
 

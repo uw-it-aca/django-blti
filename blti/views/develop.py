@@ -4,12 +4,7 @@
 
 from django.conf import settings
 from django.views.generic import TemplateView
-from oauthlib.common import generate_timestamp, generate_nonce
-from oauthlib.oauth1.rfc5849 import Client
-from oauthlib.oauth1.rfc5849.signature import (
-    base_string_uri, signature_base_string,
-    normalize_parameters, sign_hmac_sha1_with_client)
-from blti import BLTIException
+from blti.exceptions import BLTIException
 import re
 
 
