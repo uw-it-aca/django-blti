@@ -36,7 +36,7 @@ def log_response_time(func):
             try:
                 request = args[1]
                 launch_data = request.session.get('lti_launch_data', {})
-                login_id = launch_data..get('custom_canvas_user_login_id')
+                login_id = launch_data.get('custom_canvas_user_login_id')
             except Exception as ex:
                 login_id = None
 
