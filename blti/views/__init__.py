@@ -8,6 +8,7 @@ from django.http import HttpResponse
 from django.conf import settings
 from django.views.generic.base import TemplateView
 from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 from blti.models import BLTIData
 from blti.validators import Roles
 from blti.performance import log_response_time
@@ -94,6 +95,7 @@ class BLTIViewBase(TemplateView):
         Roles().authorize(self.blti, role=role)
 
 
+@method_decorator(csrf_exempt, name='dispatch')
 class BLTILaunchView(BLTIViewBase):
     http_method_names = ['post']
 
