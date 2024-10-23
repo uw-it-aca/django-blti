@@ -16,8 +16,6 @@ from pylti1p3.exception import LtiException
 from pylti1p3.tool_config import ToolConfJsonFile
 from pylti1p3.contrib.django import (
     DjangoOIDCLogin, DjangoMessageLaunch, DjangoCacheDataStorage)
-from oauthlib.oauth1.rfc5849.endpoints.signature_only import (
-    SignatureOnlyEndpoint)
 
 
 logger = logging.getLogger(__name__)
