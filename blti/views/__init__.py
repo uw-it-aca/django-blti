@@ -2,16 +2,79 @@
 # SPDX-License-Identifier: Apache-2.0
 
 
+import os
 import json
+import logging
+from importlib import resources
 from django.http import HttpResponse
 from django.views.generic.base import TemplateView
+from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
-from blti import BLTI, BLTIException
 from blti.models import BLTIData
+from blti.exceptions import BLTIException
 from blti.validators import BLTIRequestValidator, Roles
 from blti.performance import log_response_time
 from oauthlib.oauth1.rfc5849.endpoints.signature_only import (
     SignatureOnlyEndpoint)
+
+
+logger = logging.getLogger(__name__)
+LTI_DATA_KEY = 'lti_launch_data'
+LTI1P3_CONFIG_DIRECTORY_NAME = 'lti_config'
+LTI1P3_CONFIG_FILE_NAME = 'tool.json'
+
+
+def get_mock_config_directory():
+    os.path.join(resources.files('blti'), 'resources', 'lti_config')
+
+
+def get_lti_config_directory():
+    directory = os.environ.get(
+        'LTI_CONFIG_DIRECTORY',
+        os.path.join(settings.BASE_DIR, '..', LTI1P3_CONFIG_DIRECTORY_NAME))
+    return get_mock_config_directory() if directory == 'MOCK' else directory
+
+
+def get_lti_config_path():
+    return os.path.join(get_lti_config_directory(), LTI1P3_CONFIG_FILE_NAME)
+
+
+def get_tool_conf():
+    return ToolConfJsonFile(get_lti_config_path())
+
+
+def get_jwk_from_public_key(key_name):
+    key_path = os.path.join(get_lti_config_directory(), key_name)
+    with open(key_path, 'r') as f:
+        return Registration.get_jwk(f.read())
+
+
+def get_launch_data_storage():
+    return DjangoCacheDataStorage()
+
+
+def get_launch_url(request):
+    try:
+        return request.POST.get(
+            'target_link_uri', request.GET['target_link_uri'])
+    except KeyError:
+        raise Exception('Missing "target_link_uri" param')
+
+
+def login(request):
+    tool_conf = get_tool_conf()
+    launch_data_storage = get_launch_data_storage()
+
+    oidc_login = DjangoOIDCLogin(
+        request, tool_conf, launch_data_storage=launch_data_storage)
+    target_link_uri = get_launch_url(request)
+    logger.info('login redirect: %s', target_link_uri)
+    return oidc_login.enable_check_cookies().redirect(target_link_uri)
+
+
+def get_jwks(request):
+    tool_conf = get_tool_conf()
+    return JsonResponse(tool_conf.get_jwks(), safe=False)
 
 
 class BLTIView(TemplateView):
@@ -34,34 +97,62 @@ class BLTIView(TemplateView):
     def add_headers(self, **kwargs):
         pass
 
-    def get_session(self, request):
-        return BLTI().get_session(request)
-
     def set_session(self, request, **kwargs):
-        BLTI().set_session(request, **kwargs)
+        if not request.session.exists(request.session.session_key):
+            request.session.create()
+
+        # filter LTI 1.1 oauth_* parameters
+        for key in list(filter(
+                lambda key: key.startswith('oauth_'), kwargs.keys())):
+            kwargs.pop(key)
+
+        request.session[LTI_DATA_KEY] = kwargs
+
+    def get_session(self, request):
+        try:
+            return request.session[LTI_DATA_KEY]
+        except KeyError:
+            raise BLTIException('Invalid Session')
 
     def validate(self, request):
         if request.method != 'OPTIONS':
-            blti_params = self.get_session(request)
-            self.blti = BLTIData(**blti_params)
-            self.authorize(self.authorized_role)
+            self.authorize(request, self.authorized_role)
 
     def authorize(self, role):
-        Roles().authorize(self.blti, role=role)
+        Roles().authorize(self.get_session(request), role=role)
 
 
+@method_decorator(csrf_exempt, name='dispatch')
 class BLTILaunchView(BLTIView):
     http_method_names = ['post']
-
-    @csrf_exempt
-    def dispatch(self, request, *args, **kwargs):
-        return super(BLTILaunchView, self).dispatch(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
         context = self.get_context_data(**kwargs)
         return self.render_to_response(context)
 
     def validate(self, request):
+        try:
+            return self.validate_1p1(request)
+        except BLTIException as ex:
+            try:
+                return self.validate_1p3(request)
+            except LtiException as exx:
+                logger.error(f"LTI launch error: {ex}")
+                self.template_name = 'blti/401.html'
+                return self.render_to_response({'error': str(ex)}, status=401)
+
+        super(BLTILaunchView, self).validate(request)
+
+    def validate_1p3(self, request):
+        tool_conf = get_tool_conf()
+        launch_data_storage = get_launch_data_storage()
+
+        message_launch = DjangoMessageLaunch(
+            request, tool_conf, launch_data_storage=launch_data_storage)
+        message_launch_data = message_launch.get_launch_data()
+        self.set_session(request, **message_launch_data)
+
+    def validate_1p1(self, request):
         request_validator = BLTIRequestValidator()
         endpoint = SignatureOnlyEndpoint(request_validator)
         uri = request.build_absolute_uri()
@@ -84,8 +175,6 @@ class BLTILaunchView(BLTIView):
 
         blti_params = dict(oauth_req.params)
         self.set_session(request, **blti_params)
-
-        super(BLTILaunchView, self).validate(request)
 
 
 class RawBLTIView(BLTILaunchView):
