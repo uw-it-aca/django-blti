@@ -19,7 +19,6 @@ from oauthlib.oauth1.rfc5849.endpoints.signature_only import (
 
 
 logger = logging.getLogger(__name__)
-LTI_DATA_KEY = 'lti_launch_data'
 LTI1P3_CONFIG_DIRECTORY_NAME = 'lti_config'
 LTI1P3_CONFIG_FILE_NAME = 'tool.json'
 
@@ -98,21 +97,10 @@ class BLTIView(TemplateView):
         pass
 
     def set_session(self, request, **kwargs):
-        if not request.session.exists(request.session.session_key):
-            request.session.create()
-
-        # filter LTI 1.1 oauth_* parameters
-        for key in list(filter(
-                lambda key: key.startswith('oauth_'), kwargs.keys())):
-            kwargs.pop(key)
-
-        request.session[LTI_DATA_KEY] = kwargs
+        BLTI().set_session(request, **kwargs)
 
     def get_session(self, request):
-        try:
-            return request.session[LTI_DATA_KEY]
-        except KeyError:
-            raise BLTIException('Invalid Session')
+        return BLTI().get_session(request)
 
     def validate(self, request):
         if request.method != 'OPTIONS':
