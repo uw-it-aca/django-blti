@@ -29,13 +29,13 @@ LTI1P3_CONFIG_FILE_NAME = 'tool.json'
 
 
 def get_mock_config_directory():
-    os.path.join(resources.files('blti'), 'resources', 'lti_config')
+    return os.path.join(resources.files('blti'), 'resources', 'lti_config')
 
 
 def get_lti_config_directory():
     directory = os.environ.get(
         'LTI_CONFIG_DIRECTORY',
-        os.path.join(settings.BASE_DIR, '..', LTI1P3_CONFIG_DIRECTORY_NAME))
+        os.path.join(settings.BASE_DIR, LTI1P3_CONFIG_DIRECTORY_NAME))
     return get_mock_config_directory() if directory == 'MOCK' else directory
 
 
@@ -129,7 +129,7 @@ class BLTILaunchView(BLTIView):
         except BLTIException as ex:
             try:
                 return self.validate_1p3(request)
-            except LtiException as exx:
+            except LtiException as ex:
                 logger.error(f"LTI launch error: {ex}")
                 self.template_name = 'blti/401.html'
                 return self.render_to_response({'error': str(ex)}, status=401)
