@@ -20,10 +20,10 @@ setup(
     include_package_data=True,
     install_requires=[
         'Django>=3.2,<5',
+        'PyLTI1p3==2.0.0',
         'oauthlib',
         'cryptography',
         'mock',
-        'PyLTI1p3==2.0.0',
     ],
     license='Apache License, Version 2.0',
     description='A Django Application on which to build IMS BLTI Tool Providers',
