@@ -15,6 +15,7 @@ from pylti1p3.exception import LtiException
 from pylti1p3.tool_config import ToolConfJsonFile
 from pylti1p3.contrib.django import (
     DjangoOIDCLogin, DjangoMessageLaunch, DjangoCacheDataStorage)
+from blti import BLTI
 from blti.models import BLTIData
 from blti.exceptions import BLTIException
 from blti.validators import BLTIRequestValidator, Roles
