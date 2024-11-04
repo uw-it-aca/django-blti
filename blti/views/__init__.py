@@ -7,6 +7,7 @@ import json
 import logging
 from importlib import resources
 from django.http import HttpResponse
+from django.conf import settings
 from django.views.generic.base import TemplateView
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
