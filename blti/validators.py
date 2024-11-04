@@ -6,7 +6,7 @@ from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from oauthlib.oauth1.rfc5849.request_validator import RequestValidator
 from oauthlib.oauth1.rfc5849.utils import UNICODE_ASCII_CHARACTER_SET
-from blti import BLTIException
+from blti.exceptions import BLTIException
 import time
 import re
 
