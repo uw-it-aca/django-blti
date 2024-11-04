@@ -4,7 +4,7 @@
 
 from django.conf import settings
 from django.urls import re_path
-from blti.views import RawBLTIView
+from blti.views import login, get_jwks, RawBLTIView
 
 
 urlpatterns = [
