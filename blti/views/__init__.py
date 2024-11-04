@@ -6,7 +6,7 @@ import os
 import json
 import logging
 from importlib import resources
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.conf import settings
 from django.views.generic.base import TemplateView
 from django.utils.decorators import method_decorator
