@@ -101,18 +101,18 @@ class BLTIView(TemplateView):
     def add_headers(self, **kwargs):
         pass
 
-    def set_session(self, request, **kwargs):
-        BLTI().set_session(request, **kwargs)
+    def set_session(self, **kwargs):
+        BLTI().set_session(self.request, **kwargs)
 
-    def get_session(self, request):
-        return BLTI().get_session(request)
+    def get_session(self):
+        return BLTI().get_session(self.request)
 
     def validate(self, request):
         if request.method != 'OPTIONS':
             self.authorize(request, self.authorized_role)
 
     def authorize(self, role):
-        Roles().authorize(self.get_session(request), role=role)
+        Roles().authorize(self.get_session(), role=role)
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -143,7 +143,7 @@ class BLTILaunchView(BLTIView):
         message_launch = DjangoMessageLaunch(
             request, tool_conf, launch_data_storage=launch_data_storage)
         message_launch_data = message_launch.get_launch_data()
-        self.set_session(request, **message_launch_data)
+        self.set_session(**message_launch_data)
 
     def validate_1p1(self, request):
         request_validator = BLTIRequestValidator()
@@ -167,7 +167,7 @@ class BLTILaunchView(BLTIView):
             raise BLTIException('Invalid OAuth Request')
 
         blti_params = dict(oauth_req.params)
-        self.set_session(request, **blti_params)
+        self.set_session(**blti_params)
 
 
 class RawBLTIView(BLTILaunchView):
@@ -175,7 +175,7 @@ class RawBLTIView(BLTILaunchView):
     authorized_role = 'admin'
 
     def get_context_data(self, **kwargs):
-        return {'blti_params': sorted(self.blti.data.items())}
+        return {'blti_params': sorted(self.get_session().items())}
 
 
 class RESTDispatch(BLTIView):
