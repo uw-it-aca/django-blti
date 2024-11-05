@@ -8,12 +8,12 @@ from django.http import HttpResponse, JsonResponse
 from django.views.generic.base import TemplateView
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
-from pylti1p3.exception import LtiException
+from pylti1p3.exception import LtiException, OIDCException
 from pylti1p3.contrib.django import DjangoOIDCLogin, DjangoMessageLaunch
 from blti import BLTI
 from blti.models import BLTIData
 from blti.config import get_tool_conf, get_launch_data_storage
-from blti.exceptions import BLTIException, OIDCException
+from blti.exceptions import BLTIException
 from blti.validators import BLTIRequestValidator, Roles
 from blti.performance import log_response_time
 from oauthlib.oauth1.rfc5849.endpoints.signature_only import (
