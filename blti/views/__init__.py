@@ -13,7 +13,7 @@ from pylti1p3.contrib.django import DjangoOIDCLogin, DjangoMessageLaunch
 from blti import BLTI
 from blti.models import BLTIData
 from blti.config import get_tool_conf, get_launch_data_storage
-from blti.exceptions import BLTIException
+from blti.exceptions import BLTIException, OIDCException
 from blti.validators import BLTIRequestValidator, Roles
 from blti.performance import log_response_time
 from oauthlib.oauth1.rfc5849.endpoints.signature_only import (
@@ -44,7 +44,10 @@ def login(request):
         request, tool_conf, launch_data_storage=launch_data_storage)
     target_link_uri = get_launch_url(request)
     logger.info('login redirect: %s', target_link_uri)
-    return oidc_login.enable_check_cookies().redirect(target_link_uri)
+    try:
+        return oidc_login.enable_check_cookies().redirect(target_link_uri)
+    except OIDCException as ex:
+        return HttpResponse(str(ex), status=401)
 
 
 def get_jwks(request):
