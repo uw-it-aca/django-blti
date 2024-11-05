@@ -3,6 +3,7 @@
 
 
 from django.conf import settings
+from django.urls import reverse
 from django.test import RequestFactory, TestCase, override_settings
 from django.contrib.sessions.middleware import SessionMiddleware
 from blti.validators import BLTIRequestValidator, Roles
@@ -10,8 +11,10 @@ from blti.models import BLTIData
 from blti.performance import log_response_time
 from blti import BLTI, LTI_DATA_KEY
 from blti.exceptions import BLTIException
+from urllib.parse import urlencode
 import time
 import mock
+import os
 
 
 class RequestValidatorTest(TestCase):
@@ -213,14 +216,17 @@ class BLTISessionTest(TestCase):
         self.assertEquals(len(data), 43)
         self.assertEquals(data['oauth_consumer_key'], 'XXXXXXXXXXXXXX')
 
-        data = BLTI().filter_oauth_params(data)
-        self.assertEquals(len(data), 36)
-        self.assertRaises(KeyError, lambda: data['oauth_consumer_key'])
+        blti = BLTI()
+        blti.set_session(self.request, **data)
+        blti_data = blti.get_session(self.request)
+        self.assertEquals(len(blti_data), 36)
+        self.assertRaises(KeyError, lambda: blti_data['oauth_consumer_key'])
 
 
+@mock.patch.dict(os.environ, {'LTI_CONFIG_DIRECTORY': 'MOCK'})
 class BLTILaunchViewTest(TestCase):
     def test_launch_view(self):
-        response = self.client.post('/blti/')
+        response = self.client.post(reverse('launch_view'))
         self.assertEquals(response.status_code, 401)
 
 

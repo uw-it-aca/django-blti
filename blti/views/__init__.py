@@ -2,21 +2,17 @@
 # SPDX-License-Identifier: Apache-2.0
 
 
-import os
 import json
 import logging
-from importlib import resources
 from django.http import HttpResponse, JsonResponse
-from django.conf import settings
 from django.views.generic.base import TemplateView
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from pylti1p3.exception import LtiException
-from pylti1p3.tool_config import ToolConfJsonFile
-from pylti1p3.contrib.django import (
-    DjangoOIDCLogin, DjangoMessageLaunch, DjangoCacheDataStorage)
+from pylti1p3.contrib.django import DjangoOIDCLogin, DjangoMessageLaunch
 from blti import BLTI
 from blti.models import BLTIData
+from blti.config import get_tool_conf, get_launch_data_storage
 from blti.exceptions import BLTIException
 from blti.validators import BLTIRequestValidator, Roles
 from blti.performance import log_response_time
@@ -25,37 +21,11 @@ from oauthlib.oauth1.rfc5849.endpoints.signature_only import (
 
 
 logger = logging.getLogger(__name__)
-LTI1P3_CONFIG_DIRECTORY_NAME = 'lti_config'
-LTI1P3_CONFIG_FILE_NAME = 'tool.json'
-
-
-def get_mock_config_directory():
-    return os.path.join(resources.files('blti'), 'resources', 'lti_config')
-
-
-def get_lti_config_directory():
-    directory = os.environ.get(
-        'LTI_CONFIG_DIRECTORY',
-        os.path.join(settings.BASE_DIR, LTI1P3_CONFIG_DIRECTORY_NAME))
-    return get_mock_config_directory() if directory == 'MOCK' else directory
-
-
-def get_lti_config_path():
-    return os.path.join(get_lti_config_directory(), LTI1P3_CONFIG_FILE_NAME)
-
-
-def get_tool_conf():
-    return ToolConfJsonFile(get_lti_config_path())
 
 
 def get_jwk_from_public_key(key_name):
-    key_path = os.path.join(get_lti_config_directory(), key_name)
-    with open(key_path, 'r') as f:
+    with open(get_lti_public_key_path(key_name), 'r') as f:
         return Registration.get_jwk(f.read())
-
-
-def get_launch_data_storage():
-    return DjangoCacheDataStorage()
 
 
 def get_launch_url(request):
@@ -124,7 +94,7 @@ class BLTILaunchView(BLTIView):
         context = self.get_context_data(**kwargs)
         return self.render_to_response(context)
 
-    def validate(self, request):
+    def dispatch(self, request):
         try:
             return self.validate_1p1(request)
         except BLTIException as ex:
@@ -135,7 +105,7 @@ class BLTILaunchView(BLTIView):
                 self.template_name = 'blti/401.html'
                 return self.render_to_response({'error': str(ex)}, status=401)
 
-        super(BLTILaunchView, self).validate(request)
+        super(BLTILaunchView, self).dispatch(request)
 
     def validate_1p3(self, request):
         tool_conf = get_tool_conf()
