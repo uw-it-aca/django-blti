@@ -61,7 +61,7 @@ def get_launch_data_storage():
 def get_launch_url(request):
     try:
         return request.POST.get(
-            'target_link_uri', request.GET.get['target_link_uri'])
+            'target_link_uri', request.GET.get('target_link_uri'))
     except KeyError:
         raise BLTIException('Missing "target_link_uri" param')
 

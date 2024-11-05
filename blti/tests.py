@@ -6,10 +6,10 @@ from django.conf import settings
 from django.test import RequestFactory, TestCase, override_settings
 from django.contrib.sessions.middleware import SessionMiddleware
 from blti.validators import BLTIRequestValidator, Roles
-from blti.crypto import aes128cbc
 from blti.models import BLTIData
 from blti.performance import log_response_time
-from blti import BLTI, BLTIException
+from blti import BLTI, LTI_DATA_KEY
+from blti.exceptions import BLTIException
 import time
 import mock
 
@@ -186,8 +186,6 @@ class CanvasRolesTest(TestCase):
             BLTIException, Roles().authorize, self.blti, role='Manager')
 
 
-@override_settings(BLTI_AES_KEY='DUMMY_KEY_FOR_TESTING_1234567890',
-                   BLTI_AES_IV='DUMMY_IV_TESTING')
 class BLTISessionTest(TestCase):
     def setUp(self):
         self.request = RequestFactory().post(
@@ -198,9 +196,9 @@ class BLTISessionTest(TestCase):
 
     def test_set_session(self):
         blti = BLTI()
-        self.assertFalse('blti' in self.request.session)
+        self.assertFalse(LTI_DATA_KEY in self.request.session)
         blti.set_session(self.request)
-        self.assertTrue('blti' in self.request.session)
+        self.assertTrue(LTI_DATA_KEY in self.request.session)
 
     def test_get_session(self):
         blti = BLTI()
@@ -208,34 +206,6 @@ class BLTISessionTest(TestCase):
 
         blti.set_session(self.request)
         self.assertEqual(blti.get_session(self.request), {})
-
-    def test_encrypt_decrypt_session(self):
-        blti = BLTI()
-        data = {'abc': {'key': 123},
-                'xyz': ('LTI provides a framework through which an LMS '
-                        'can send some verifiable information about a '
-                        'user to a third party.')}
-
-        enc = blti._encrypt_session(data)
-        self.assertEquals(blti._decrypt_session(enc), data)
-
-        bdata = b'abcdef'
-        self.assertRaises(TypeError, blti._encrypt_session, bdata)
-
-        with override_settings(BLTI_AES_KEY=None):
-            self.assertRaises(ValueError, blti._encrypt_session, '')
-
-        with override_settings(BLTI_AES_IV=None):
-            self.assertRaises(ValueError, blti._encrypt_session, '')
-
-        # test bytes
-        with override_settings(BLTI_AES_KEY=b'11111111111111111111111111111111'):  # noqa
-            enc = blti._encrypt_session(data)
-            self.assertEquals(blti._decrypt_session(enc), data)
-
-        with override_settings(BLTI_AES_IV=b'1111111111111111'):
-            enc = blti._encrypt_session(data)
-            self.assertEquals(blti._decrypt_session(enc), data)
 
     def test_filter_oauth_params(self):
         data = getattr(settings, 'CANVAS_LTI_V1_LAUNCH_PARAMS', {})
