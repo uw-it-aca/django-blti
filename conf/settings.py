@@ -1,3 +1,5 @@
+SECRET_KEY = '!izbxcmzmqdnm1b+%s&dpwmluqh(775+f*1dhf&^rtyy(a!67*'
+
 INSTALLED_APPS += [
     'blti',
 ]

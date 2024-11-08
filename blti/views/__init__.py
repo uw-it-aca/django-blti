@@ -37,16 +37,15 @@ def get_launch_url(request):
 
 
 def login(request):
-    tool_conf = get_tool_conf()
-    launch_data_storage = get_launch_data_storage()
-
-    oidc_login = DjangoOIDCLogin(
-        request, tool_conf, launch_data_storage=launch_data_storage)
-    target_link_uri = get_launch_url(request)
-    logger.info('login redirect: %s', target_link_uri)
     try:
+        tool_conf = get_tool_conf()
+        launch_data_storage = get_launch_data_storage()
+
+        oidc_login = DjangoOIDCLogin(
+            request, tool_conf, launch_data_storage=launch_data_storage)
+        target_link_uri = get_launch_url(request)
         return oidc_login.enable_check_cookies().redirect(target_link_uri)
-    except OIDCException as ex:
+    except Exception as ex:
         return HttpResponse(str(ex), status=401)
 
 
@@ -82,11 +81,14 @@ class BLTIView(TemplateView):
         return BLTI().get_session(self.request)
 
     def validate(self, request):
+        # legacy reference to LTI launch data
+        self.blti = BLTIData(**self.get_session())
+
         if request.method != 'OPTIONS':
-            self.authorize(request, self.authorized_role)
+            self.authorize(self.authorized_role)
 
     def authorize(self, role):
-        Roles().authorize(self.get_session(), role=role)
+        Roles().authorize(self.blti, role=role)
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -97,18 +99,24 @@ class BLTILaunchView(BLTIView):
         context = self.get_context_data(**kwargs)
         return self.render_to_response(context)
 
-    def dispatch(self, request):
+    def dispatch(self, request, *args, **kwargs):
         try:
-            return self.validate_1p1(request)
+            self.validate_1p1(request)
         except BLTIException as ex:
             try:
-                return self.validate_1p3(request)
-            except LtiException as ex:
+                self.validate_1p3(request)
+            except OIDCException as ex:
+                logger.error(f"LTI authentication failure: {ex}")
+                self.template_name = 'blti/401.html'
+                return self.render_to_response(
+                    {'LTI authentication failure': str(ex)}, status=401)
+            except Exception as ex:
                 logger.error(f"LTI launch error: {ex}")
                 self.template_name = 'blti/401.html'
-                return self.render_to_response({'error': str(ex)}, status=401)
+                return self.render_to_response(
+                    {'LTI launch failure': str(ex)}, status=401)
 
-        super(BLTILaunchView, self).dispatch(request)
+        return super(BLTILaunchView, self).dispatch(request, *args, **kwargs)
 
     def validate_1p3(self, request):
         tool_conf = get_tool_conf()
