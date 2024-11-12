@@ -9,8 +9,11 @@ from oauthlib.oauth1.rfc5849 import Client
 from oauthlib.oauth1.rfc5849.signature import (
     base_string_uri, signature_base_string,
     normalize_parameters, sign_hmac_sha1_with_client)
+from importlib import resources
 from blti import BLTIException
+import json
 import re
+import os
 
 
 class BLTIDevBase(TemplateView):
@@ -80,31 +83,21 @@ class BLTIDevLaunch(BLTIDevBase):
         + 'urn:lti:role:ims/lis/Learner,urn:lti:sysrole:ims/lis/User'
     }
 
-    _static_lti_parameters = [
+    _static_oauth_lti_parameters = [
         ("oauth_consumer_key", "0000-0000-0000"),
         ("oauth_signature_method", "HMAC-SHA1"),
         ("oauth_version", "1.0"),
+    ]
+    _static_lti_parameters = [
         ("context_id", "3F2DcDcF6aCBef17a2eccCDdA498e9e5Cc333A96"),
-        ("context_label", "PSYCH 101 A"),
-        ("context_title", "PSYCH 101 A Au 19: Introduction To Psychology"),
         ("custom_application_type", "UWBLTIDevelopment"),
         ("custom_canvas_account_id", "8675309"),
         ("custom_canvas_api_domain", "uw.test.instructure.com"),
         ("custom_canvas_course_id", "88675309"),
-        ("custom_canvas_enrollment_state", "active"),
-        ("custom_canvas_user_id", "700007"),
-        ("custom_canvas_user_login_id", "javerage"),
-        ("custom_canvas_workflow_state", "available"),
         ("launch_presentation_document_target", "iframe"),
         ("launch_presentation_height", "400"),
         ("launch_presentation_locale", "en"),
         ("launch_presentation_width", "800"),
-        ("lis_course_offering_sourcedid", "2019-autumn-PSYCH-101-A"),
-        ("lis_person_contact_email_primary", "javerage@u.washington.edu"),
-        ("lis_person_name_family", "Average"),
-        ("lis_person_name_full", "James Average"),
-        ("lis_person_name_given", "James"),
-        ("lis_person_sourcedid", "0C8F043FA5CBE23F2B1E1A63B1BD80B8"),
         ("lti_message_type", "basic-lti-launch-request"),
         ("lti_version", "LTI-1p0"),
         ("oauth_callback", "about:blank"),
@@ -115,6 +108,29 @@ class BLTIDevLaunch(BLTIDevBase):
         ("user_image", '/images/thumbnails/1499380/'
          + '24ZSCuR73P2mrG98Yq6gicMHjcd0p8NMhM2iGhgz'),
     ]
+
+    def get_course_parameters(self):
+        parameters = []
+        mock_parameter_path = os.path.join(
+            resources.files('blti'), 'resources',
+            'lti1p1', 'course_parameters.json')
+
+        for app in settings.INSTALLED_APPS:
+            try:
+                path = os.path.join(resources.files(app), 'resources',
+                                    'lti1p1', 'course_parameters.json')
+            except Exception:
+                continue
+
+            if path != mock_parameter_path and os.path.exists(path):
+                mock_parameter_path = path
+                break
+
+        with open(mock_parameter_path, 'r') as f:
+            for k, v in json.load(f):
+                parameters.append((k, v))
+
+        return parameters
 
     def get_context_data(self, **kwargs):
         role = self.request.GET.get('role', '')
@@ -129,9 +145,9 @@ class BLTIDevLaunch(BLTIDevBase):
             ("oauth_nonce", generate_nonce()),
             ("resource_link_title",
              "UW LTI Development ({})".format(self.lti_app())),
-        ]
-
-        lti_parameters += self._static_lti_parameters
+        ] + self._static_oauth_lti_parameters + sorted(
+            self._static_lti_parameters + self.get_course_parameters(),
+            key=lambda x: x[0])
 
         # sign payload
         lti_app_uri = self.lti_app_uri()

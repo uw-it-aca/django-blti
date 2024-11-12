@@ -11,6 +11,9 @@ against request forgeries from other sites.
 
 from django.conf import settings
 from django.utils.deprecation import MiddlewareMixin
+from django.contrib.auth import authenticate, login
+from blti import BLTI
+from blti.exceptions import BLTIException
 
 
 class CSRFHeaderMiddleware(MiddlewareMixin):
@@ -27,6 +30,18 @@ class SessionHeaderMiddleware(MiddlewareMixin):
         if session_id is not None:
             session_key = settings.SESSION_COOKIE_NAME
             request.COOKIES[session_key] = session_id
+
+
+class LTISessionAuthenticationMiddleware(MiddlewareMixin):
+    def process_request(self, request):
+        try:
+            lti_launch_parameters = BLTI().get_session(request)
+            user = authenticate(
+                request, remote_user=lti_launch_parameters.get(
+                    'custom_canvas_user_login_id'))
+            login(request, user)
+        except BLTIException:
+            pass
 
 
 class SameSiteMiddleware(MiddlewareMixin):
