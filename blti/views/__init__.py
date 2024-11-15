@@ -36,6 +36,7 @@ def get_launch_url(request):
         raise BLTIException('Missing "target_link_uri" param')
 
 
+@csrf_exempt
 def login(request):
     try:
         tool_conf = get_tool_conf()
@@ -49,11 +50,13 @@ def login(request):
         return HttpResponse(str(ex), status=401)
 
 
+@csrf_exempt
 def get_jwks(request):
     tool_conf = get_tool_conf()
     return JsonResponse(tool_conf.get_jwks(), safe=False)
 
 
+@method_decorator(csrf_exempt, name='dispatch')
 class BLTIView(TemplateView):
     authorized_role = 'member'
 
