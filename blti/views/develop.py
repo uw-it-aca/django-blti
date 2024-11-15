@@ -4,6 +4,8 @@
 
 from django.conf import settings
 from django.views.generic import TemplateView
+from django.urls import reverse
+from django.urls.exceptions import NoReverseMatch
 from oauthlib.common import generate_timestamp, generate_nonce
 from oauthlib.oauth1.rfc5849 import Client
 from oauthlib.oauth1.rfc5849.signature import (
@@ -19,17 +21,14 @@ import os
 class BLTIDevBase(TemplateView):
     def lti_app(self):
         try:
-            if len(settings.LTI_DEVELOP_APP) <= 0:
-                raise BLTIException("Empty setting: LTI_DEVELOP_APP")
-
-            return settings.LTI_DEVELOP_APP
-        except AttributeError:
-            raise BLTIException("Missing setting: LTI_DEVELOP_APP")
+            return reverse('lti-launch')
+        except NoReverseMatch:
+            raise BLTIException("Cannot find 'lti-launch' url")
 
     def lti_app_uri(self):
-        blti_match = re.match(r'^(http[s]?://[^/]+/)blti.*',
+        blti_match = re.match(r'^(http[s]?://[^/?]+)/.*',
                               self.request.build_absolute_uri())
-        return "{}{}".format(blti_match.group(1), self.lti_app())
+        return "{}{}".format(blti_match.group(1), self.lti_app()[:-1])
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

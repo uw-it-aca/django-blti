@@ -23,6 +23,8 @@ setup(
         'PyLTI1p3==2.0.0',
         'oauthlib',
         'cryptography',
+        'pycryptodome',
+        'jwcrypto',
         'mock',
     ],
     license='Apache License, Version 2.0',
