@@ -30,8 +30,10 @@ def get_jwk_from_public_key(key_name):
 
 def get_launch_url(request):
     try:
-        return request.POST.get(
+        target_link_uri = request.POST.get(
             'target_link_uri', request.GET.get('target_link_uri'))
+        logger.debug(f"get_launch_url: target_link_uri = {target_link_uri}")
+        return target_link_uri
     except KeyError:
         raise BLTIException('Missing "target_link_uri" param')
 
@@ -44,8 +46,12 @@ def login(request):
 
         oidc_login = DjangoOIDCLogin(
             request, tool_conf, launch_data_storage=launch_data_storage)
+        logger.debug(f"login: DjangoOidcLogin: {oidc_login}")
         target_link_uri = get_launch_url(request)
-        return oidc_login.enable_check_cookies().redirect(target_link_uri)
+        logger.debug(f"login: target_link_uri = {target_link_uri}")
+        response = oidc_login.enable_check_cookies().redirect(target_link_uri)
+        logger.debug(f"login: oidc_login response = {response}")
+        return response
     except Exception as ex:
         return HttpResponse(str(ex), status=401)
 
@@ -62,6 +68,7 @@ class BLTIView(TemplateView):
 
     def dispatch(self, request, *args, **kwargs):
         try:
+            logger.debug(f"BLTIView dispatch: {request.method}")
             self.validate(request)
         except BLTIException as err:
             self.template_name = 'blti/401.html'
@@ -104,9 +111,11 @@ class BLTILaunchView(BLTIView):
 
     def dispatch(self, request, *args, **kwargs):
         try:
+            logger.debug(f"BLTILaunchView dispatch 1p1: {request.method}")
             self.validate_1p1(request)
         except BLTIException as ex:
             try:
+                logger.debug(f"BLTILaunchView dispatch 1p3: {request.method}")
                 self.validate_1p3(request)
             except OIDCException as ex:
                 logger.error(f"LTI authentication failure: {ex}")
@@ -127,6 +136,7 @@ class BLTILaunchView(BLTIView):
 
         message_launch = DjangoMessageLaunch(
             request, tool_conf, launch_data_storage=launch_data_storage)
+        logger.debug(f"message_launch: {message_launch}")
         message_launch_data = message_launch.get_launch_data()
         self.set_session(**message_launch_data)
 
