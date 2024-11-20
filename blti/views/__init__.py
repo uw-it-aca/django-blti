@@ -50,6 +50,12 @@ def login(request):
         logger.debug(f"login: request.POST = {request.POST}")
         target_link_uri = get_launch_url(request)
         logger.debug(f"login: target_link_uri = {target_link_uri}")
+
+        if target_link_uri.startswith('http:'):
+            target_link_uri = x='https:' + target_link_uri[5:]
+            logger.info(
+                f"login: coerce target_link_uri to https: {target_link_uri}")
+
         response = oidc_login.enable_check_cookies().redirect(target_link_uri)
         logger.debug(f"login: oidc_login response = {response}")
         return response
