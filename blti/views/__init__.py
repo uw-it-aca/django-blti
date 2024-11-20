@@ -145,6 +145,8 @@ class BLTILaunchView(BLTIView):
             request, tool_conf, launch_data_storage=launch_data_storage)
         logger.debug(f"message_launch: {message_launch}")
         message_launch_data = message_launch.get_launch_data()
+        logger.debug(f"message_launch_data: {message_launch_data}")
+
         self.set_session(**message_launch_data)
 
     def validate_1p1(self, request):
