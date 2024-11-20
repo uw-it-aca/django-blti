@@ -47,6 +47,7 @@ def login(request):
         oidc_login = DjangoOIDCLogin(
             request, tool_conf, launch_data_storage=launch_data_storage)
         logger.debug(f"login: DjangoOidcLogin: {oidc_login}")
+        logger.debug(f"login: request.POST = {request.POST}")
         target_link_uri = get_launch_url(request)
         logger.debug(f"login: target_link_uri = {target_link_uri}")
         response = oidc_login.enable_check_cookies().redirect(target_link_uri)
