@@ -1,8 +1,13 @@
 # Copyright 2024 UW-IT, University of Washington
 # SPDX-License-Identifier: Apache-2.0
 
-
 from django.db import models
+
+
+CLAIM_LIS = 'https://purl.imsglobal.org/spec/lti/claim/lis'
+CLAIM_CUSTOM = 'https://purl.imsglobal.org/spec/lti/claim/custom'
+CLAIM_CONTEXT = 'https://purl.imsglobal.org/spec/lti/claim/context'
+CLAIM_LINK = 'https://purl.imsglobal.org/spec/lti/claim/resource_link'
 
 
 class BLTIData(object):
@@ -55,23 +60,19 @@ class BLTIData(object):
         self.canvas_api_domain = kwargs.get('custom_canvas_api_domain')
 
     def _lis(self, key):
-        LIS_KEY = 'https://purl.imsglobal.org/spec/lti/claim/lis'
-        return self._data_section(LIS_KEY, key)
+        return self._data_claim(CLAIM_LIS, key)
 
     def _custom(self, key):
-        CUSTOM_KEY = 'https://purl.imsglobal.org/spec/lti/claim/custom'
-        return self._data_section(CUSTOM_KEY, key)
+        return self._data_claim(CLAIM_CUSTOM, key)
 
     def _context(self, key):
-        CONTEXT_KEY = 'https://purl.imsglobal.org/spec/lti/claim/context'
-        return self._data_section(CONTEXT_KEY, key)
+        return self._data_claim(CLAIM_CONTEXT, key)
 
     def _link(self, key):
-        LINK_KEY = 'https://purl.imsglobal.org/spec/lti/claim/resource_link'
-        return self._data_section(LINK_KEY, key)
+        return self._data_claim(CLAIM_LINK, key)
 
-    def _data_section(self, section, key):
-        return self.data.get(section, {}).get(key)
+    def _data_claim(self, claim, key):
+        return self.data.get(claim, {}).get(key)
 
     def get(self, name):
         return self.data.get(name)

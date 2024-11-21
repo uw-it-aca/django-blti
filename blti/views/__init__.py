@@ -94,15 +94,12 @@ class BLTIView(TemplateView):
         return BLTI().get_session(self.request)
 
     def validate(self, request):
-        # legacy reference to LTI launch data
         self.blti = BLTIData(**self.get_session())
 
         if request.method != 'OPTIONS':
             self.authorize(self.authorized_role)
 
     def authorize(self, role):
-        logger.debug(f"BLTIView authorize: {role}")
-        logger.debug(f"BLTIView authorize in data: {self.blti}")
         Roles().authorize(self.blti, role=role)
 
 
@@ -160,7 +157,7 @@ class BLTILaunchView(BLTIView):
                 request_validator.enforce_ssl is False and
                 uri[:5] == "http:"):
             valid, oauth_req = endpoint.validate_request(
-                "https{}".format(uri[4:]), request.method, body, headers)
+                f"https{uri[4:]}", request.method, request.body, headers)
 
         if not valid:
             raise BLTIException('Invalid OAuth Request')
@@ -174,7 +171,10 @@ class RawBLTIView(BLTILaunchView):
     authorized_role = 'admin'
 
     def get_context_data(self, **kwargs):
-        return {'blti_params': sorted(self.get_session().items())}
+        return {
+            'raw_lti_params': sorted(self.get_session().items()),
+            'digested_lti_params': vars(self.blti)
+        }
 
 
 class RESTDispatch(BLTIView):
