@@ -141,7 +141,6 @@ class BLTILaunchView(BLTIView):
         tool_conf = get_tool_conf()
         launch_data_storage = get_launch_data_storage()
 
-        logger.debug(f"validate_1p3: request_body =  {request.body}")
         for key in request.POST:
             logger.debug(
                 f"validate_1p3: request.POST[{key}] = {request.POST[key]}")
