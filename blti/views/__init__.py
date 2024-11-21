@@ -30,10 +30,8 @@ def get_jwk_from_public_key(key_name):
 
 def get_launch_url(request):
     try:
-        target_link_uri = request.POST.get(
+        return request.POST.get(
             'target_link_uri', request.GET.get('target_link_uri'))
-        logger.debug(f"get_launch_url: target_link_uri = {target_link_uri}")
-        return target_link_uri
     except KeyError:
         raise BLTIException('Missing "target_link_uri" param')
 
@@ -46,14 +44,12 @@ def login(request):
 
         oidc_login = DjangoOIDCLogin(
             request, tool_conf, launch_data_storage=launch_data_storage)
-        logger.debug(f"login: DjangoOidcLogin: {oidc_login}")
-        logger.debug(f"login: request.POST = {request.POST}")
         target_link_uri = get_launch_url(request)
         logger.debug(f"login: target_link_uri = {target_link_uri}")
 
         if target_link_uri.startswith('http:'):
             target_link_uri = x='https:' + target_link_uri[5:]
-            logger.info(
+            logger.debug(
                 f"login: coerce target_link_uri to https: {target_link_uri}")
 
         response = oidc_login.enable_check_cookies().redirect(target_link_uri)
@@ -105,6 +101,8 @@ class BLTIView(TemplateView):
             self.authorize(self.authorized_role)
 
     def authorize(self, role):
+        logger.debug(f"BLTIView authorize: {role}")
+        logger.debug(f"BLTIView authorize in data: {self.blti}")
         Roles().authorize(self.blti, role=role)
 
 
@@ -140,14 +138,8 @@ class BLTILaunchView(BLTIView):
     def validate_1p3(self, request):
         tool_conf = get_tool_conf()
         launch_data_storage = get_launch_data_storage()
-
-        for key in request.POST:
-            logger.debug(
-                f"validate_1p3: request.POST[{key}] = {request.POST[key]}")
-
         message_launch = DjangoMessageLaunch(
             request, tool_conf, launch_data_storage=launch_data_storage)
-        logger.debug(f"message_launch: {message_launch}")
         message_launch_data = message_launch.get_launch_data()
         logger.debug(f"message_launch_data: {message_launch_data}")
 

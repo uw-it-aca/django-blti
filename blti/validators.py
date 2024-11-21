@@ -64,16 +64,18 @@ class Roles(object):
                   'ContentDeveloper'],
     }
 
-    RE_ROLE_NS = re.compile(r'^urn:lti:(?:inst|sys)?role:ims/lis/([A-Za-z]+)$')
+    RE_ROLE_NS = re.compile(
+        r'^urn:lti:(?:inst|sys)?role:ims/lis/([A-Za-z]+)$')
+    RE_ROLE_1P3 = re.compile(
+        r'^http://purl.imsglobal.org/vocab/lis/v2/.*#([A-Za-z]+)$')
 
-    def authorize(self, blti, role='member'):
+    def authorize(self, blti, role='member', consumer='canvas'):
         if blti is None:
             raise BLTIException('Missing LTI parameters')
 
-        lti_consumer = blti.data.get(
-            'tool_consumer_info_product_family_code', '').lower()
+        lti_consumer = self._consumer(blti)
 
-        if lti_consumer == 'canvas':
+        if lti_consumer.lower() == consumer.lower():
             if (not role or role == 'public'):
                 pass
             elif (role in self.CANVAS_ROLES):  # member/admin
@@ -84,14 +86,33 @@ class Roles(object):
             raise BLTIException('authorize() not implemented for "%s"!' % (
                 lti_consumer))
 
-    def _has_role(self, blti, valid_roles):
-        roles = blti.data.get('roles', '').split(',')
-        for role in roles:
-            if role in valid_roles:
-                return
+    def _consumer(self, blti):
+        PLATFORM_CLAIM = ('https://purl.imsglobal.org/spec/lti/'
+                          'claim/tool_platform')
+        try:
+            return blti.data['tool_consumer_info_product_family_code']
+        except KeyError:
+            return blti.data.get(
+                PLATFORM_CLAIM, {}).get('product_family_code', '')
 
-            m = self.RE_ROLE_NS.match(role)
-            if m and m.group(1) in valid_roles:
-                return
+    def _has_role(self, blti, valid_roles):
+        try:
+            # 1.1 roles parameter
+            roles = blti.data['roles'].split(',')
+            for role in roles:
+                if role in valid_roles:
+                    return
+
+                m = self.RE_ROLE_NS.match(role)
+                if m and m.group(1) in valid_roles:
+                    return
+        except KeyError:
+            # 1.3 roles parameter
+            roles = blti.data.get(
+                "https://purl.imsglobal.org/spec/lti/claim/roles", [])
+            for role in roles:
+                m = self.RE_ROLE_1P3.match(role)
+                if m and m.group(1) in valid_roles:
+                    return
 
         raise BLTIException('You are not authorized to view this content')
