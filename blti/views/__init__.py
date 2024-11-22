@@ -112,12 +112,14 @@ class BLTILaunchView(BLTIView):
     http_method_names = ['get', 'post']
 
     def post(self, request, *args, **kwargs):
-        return self.launch(request, *args, **kwargs)
+        logger.debug(f"BLTILaunchView POST")
+        return self._launch(request, *args, **kwargs)
 
     def get(self, request, *args, **kwargs):
-        return self.launch(request, *args, **kwargs)
+        logger.debug(f"BLTILaunchView GET")
+        return self._launch(request, *args, **kwargs)
 
-    def launch(self, request, *args, **kwargs):
+    def _launch(self, request, *args, **kwargs):
         context = self.get_context_data(**kwargs)
         return self.render_to_response(context)
 
@@ -127,7 +129,7 @@ class BLTILaunchView(BLTIView):
             if request.method == 'POST':
                 self.validate_1p1(request)
 
-            raise BLTIException('Invalid OAuth Request')
+            raise BLTIException('Invalid Launch Scheme')
         except BLTIException as ex:
             try:
                 logger.debug(f"BLTILaunchView dispatch 1p3: {request.method}")
@@ -164,11 +166,14 @@ class BLTILaunchView(BLTIView):
         valid, oauth_req = endpoint.validate_request(
             uri, request.method, request.body, headers)
 
+        logger.debug(f"validate_1p1: {request.method} {uri} is {valid}")
+
         # if non-ssl fixup scheme to validate signature generated
         # on the other side of ingress
         if not valid and uri.startswith('http:') and request.is_secure():
             valid, oauth_req = endpoint.validate_request(
                 f"https{uri[4:]}", request.method, request.body, headers)
+            logger.debug(f"validate_1p1: {request.method} {uri} is {valid}")
 
         if not valid:
             raise BLTIException('Invalid OAuth Request')
