@@ -29,6 +29,11 @@ class BLTIRequestValidator(RequestValidator):
         return 20, 50
 
     @property
+    def enforce_ssl(self):
+        return getattr(
+            settings, 'LTI_ENFORCE_SSL', True)
+
+    @property
     def safe_characters(self):
         return set(UNICODE_ASCII_CHARACTER_SET) | set('-_')
 
