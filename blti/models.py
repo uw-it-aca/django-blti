@@ -1,4 +1,4 @@
-# Copyright 2024 UW-IT, University of Washington
+semail# Copyright 2024 UW-IT, University of Washington
 # SPDX-License-Identifier: Apache-2.0
 
 from django.db import models
@@ -13,8 +13,12 @@ CLAIM_LINK = 'https://purl.imsglobal.org/spec/lti/claim/resource_link'
 class BLTIData(object):
     def __init__(self, **data):
         # Canvas internal IDs
-        self.canvas_course_id = data.get('custom_canvas_course_id')
-        self.canvas_user_id = data.get('custom_canvas_user_id')
+        self.canvas_course_id = data.get(
+            'custom_canvas_course_id',
+            self._custom(data, 'canvas_user_id'))
+        self.canvas_user_id = data.get(
+            'custom_canvas_user_id',
+            self._custom(data, 'canvas_user_id'))
         self.canvas_account_id = data.get(
             'custom_canvas_account_id',
             self._custom(data, 'canvas_account_id'))
@@ -47,7 +51,7 @@ class BLTIData(object):
         self.user_last_name = data.get(
             'lis_person_name_family', data.get('family_name'))
         self.user_email = data.get(
-            'lis_person_contact_email_primary')
+            'lis_person_contact_email_primary', data.get('email'))
         self.user_avatar_url = data.get(
             'user_image', data.get('picture'))
 
@@ -57,7 +61,9 @@ class BLTIData(object):
         self.return_url = data.get('launch_presentation_return_url')
 
         # Canvas hostname
-        self.canvas_api_domain = data.get('custom_canvas_api_domain')
+        self.canvas_api_domain = data.get(
+            'custom_canvas_api_domain',
+            self._custom(data, 'canvas_api_domain'))
 
     def _lis(self, data, key):
         return self._data_claim(CLAIM_LIS, data, key)
