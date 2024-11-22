@@ -11,7 +11,7 @@ from django.views.decorators.csrf import csrf_exempt
 from pylti1p3.exception import LtiException, OIDCException
 from pylti1p3.contrib.django import DjangoOIDCLogin, DjangoMessageLaunch
 from blti import BLTI
-from blti.models import BLTIData
+from blti.models import CanvasData
 from blti.config import get_tool_conf, get_launch_data_storage
 from blti.exceptions import BLTIException
 from blti.validators import BLTIRequestValidator, Roles
@@ -87,13 +87,16 @@ class BLTIView(TemplateView):
         return BLTI().get_session(self.request)
 
     def validate(self, request):
-        self.blti = BLTIData(**self.get_session())
+        self.blti = self.launch_data_model()
 
         if request.method != 'OPTIONS':
             self.authorize(self.authorized_role)
 
     def authorize(self, role):
         Roles().authorize(self.get_session(), role=role)
+
+    def launch_data_model(self):
+        return CanvasData(**self.get_session())
 
 
 @method_decorator(csrf_exempt, name='dispatch')

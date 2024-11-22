@@ -4,18 +4,49 @@
 from django.db import models
 
 
+CLAIM_PLATFORM = 'https://purl.imsglobal.org/spec/lti/claim/tool_platform'
 CLAIM_LIS = 'https://purl.imsglobal.org/spec/lti/claim/lis'
 CLAIM_CUSTOM = 'https://purl.imsglobal.org/spec/lti/claim/custom'
 CLAIM_CONTEXT = 'https://purl.imsglobal.org/spec/lti/claim/context'
 CLAIM_LINK = 'https://purl.imsglobal.org/spec/lti/claim/resource_link'
 
 
-class BLTIData(object):
+class LTILaunchData(object):
     def __init__(self, **data):
+        self.platform_name = data.get(
+            'tool_consumer_info_product_family_code',
+            self._platform(data, 'product_family_code'))
+
+    def _platform(self, data, key, default=None):
+        return self._data_claim(CLAIM_PLATFORM, data, key, default)
+
+    def _lis(self, data, key, default=None):
+        return self._data_claim(CLAIM_LIS, data, key, default)
+
+    def _custom(self, data, key, default=None):
+        return self._data_claim(CLAIM_CUSTOM, data, key, default)
+
+    def _context(self, data, key, default=None):
+        return self._data_claim(CLAIM_CONTEXT, data, key, default)
+
+    def _link(self, data, key, default=None):
+        return self._data_claim(CLAIM_LINK, data, key, default)
+
+    def _data_claim(self, claim, data, key, default=None):
+        return data.get(claim, {}).get(key, default)
+
+
+class CanvasData(LTILaunchData):
+    def __init__(self, **data):
+        super(CanvasData, self).__init__(**data)
+
+        if self.platform_name != 'canvas':
+            raise ValueError('This is not a Canvas LTI launch')
+
         # Canvas internal IDs
         self.canvas_course_id = data.get(
             'custom_canvas_course_id',
-            self._custom(data, 'canvas_user_id'))
+            self._custom(data, 'canvas_course_id'))
         self.canvas_user_id = data.get(
             'custom_canvas_user_id',
             self._custom(data, 'canvas_user_id'))
@@ -64,18 +95,3 @@ class BLTIData(object):
         self.canvas_api_domain = data.get(
             'custom_canvas_api_domain',
             self._custom(data, 'canvas_api_domain'))
-
-    def _lis(self, data, key):
-        return self._data_claim(CLAIM_LIS, data, key)
-
-    def _custom(self, data, key):
-        return self._data_claim(CLAIM_CUSTOM, data, key)
-
-    def _context(self, data, key):
-        return self._data_claim(CLAIM_CONTEXT, data, key)
-
-    def _link(self, data, key):
-        return self._data_claim(CLAIM_LINK, data, key)
-
-    def _data_claim(self, claim, data, key):
-        return data.get(claim, {}).get(key)
