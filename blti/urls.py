@@ -10,7 +10,7 @@ from blti.views import login, get_jwks, RawBLTIView
 urlpatterns = [
     re_path(r'^login/?$', login, name='login'),
     re_path(r'^jwks/?$', get_jwks, name='jwks'),
-    re_path(r'^$', RawBLTIView.as_view(), name='launch_view'),
+    re_path(r'^$', RawBLTIView.as_view(), name='launch-data-view'),
 ]
 
 if (getattr(settings, 'LTI_DEVELOP_APP', None)

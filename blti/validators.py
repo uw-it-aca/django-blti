@@ -69,36 +69,36 @@ class Roles(object):
     RE_ROLE_1P3 = re.compile(
         r'^http://purl.imsglobal.org/vocab/lis/v2/.*#([A-Za-z]+)$')
 
-    def authorize(self, blti, role='member', consumer='canvas'):
-        if blti is None:
+    def authorize(self, launch_data, role='member', consumer='canvas'):
+        if launch_data is None:
             raise BLTIException('Missing LTI parameters')
 
-        lti_consumer = self._consumer(blti)
+        lti_consumer = self._consumer(launch_data)
 
         if lti_consumer.lower() == consumer.lower():
             if (not role or role == 'public'):
                 pass
             elif (role in self.CANVAS_ROLES):  # member/admin
-                self._has_role(blti, self.CANVAS_ROLES[role])
+                self._has_role(launch_data, self.CANVAS_ROLES[role])
             else:  # specific role?
-                self._has_role(blti, [role])
+                self._has_role(launch_data, [role])
         else:
             raise BLTIException('authorize() not implemented for "%s"!' % (
                 lti_consumer))
 
-    def _consumer(self, blti):
+    def _consumer(self, launch_data):
         PLATFORM_CLAIM = ('https://purl.imsglobal.org/spec/lti/'
                           'claim/tool_platform')
         try:
-            return blti.data['tool_consumer_info_product_family_code']
+            return launch_data['tool_consumer_info_product_family_code']
         except KeyError:
-            return blti.data.get(
+            return launch_data.get(
                 PLATFORM_CLAIM, {}).get('product_family_code', '')
 
-    def _has_role(self, blti, valid_roles):
+    def _has_role(self, launch_data, valid_roles):
         try:
             # 1.1 roles parameter
-            roles = blti.data['roles'].split(',')
+            roles = launch_data['roles'].split(',')
             for role in roles:
                 if role in valid_roles:
                     return
@@ -108,7 +108,7 @@ class Roles(object):
                     return
         except KeyError:
             # 1.3 roles parameter
-            roles = blti.data.get(
+            roles = launch_data.get(
                 "https://purl.imsglobal.org/spec/lti/claim/roles", [])
             for role in roles:
                 m = self.RE_ROLE_1P3.match(role)

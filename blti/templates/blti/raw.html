@@ -9,7 +9,8 @@
 <h2>BLTI Launch Parameters</h3>
 
 <div>
-  <h3>View Model</h3>
+  <h3>Launch View Model</h3>
+  <p>Parameters passed to this tool by the platform after being digested by the LTI library:</p>
   <table>
   {% for key, value in digested_lti_params %}
     <tr>
@@ -20,7 +21,7 @@
 </div>
 
 <div>
-  <h3>Raw Parameters</h3>
+  <h3>Raw Launch Data</h3>
   <p>Here are the parameters that were passed to this tool by the platform:</p>
   <pre>
 {{ raw_lti_params }}

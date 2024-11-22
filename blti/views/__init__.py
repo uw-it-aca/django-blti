@@ -41,24 +41,14 @@ def login(request):
     try:
         tool_conf = get_tool_conf()
         launch_data_storage = get_launch_data_storage()
-
-        for k, v in request.POST.items():
-            logger.debug(
-                f"login 1p3: request.POST[{k}] = {request.POST[k]}")
-
         oidc_login = DjangoOIDCLogin(
             request, tool_conf, launch_data_storage=launch_data_storage)
         target_link_uri = get_launch_url(request)
-        logger.debug(f"login: target_link_uri = {target_link_uri}")
 
-        if target_link_uri.startswith('http:'):
-            target_link_uri = x='https:' + target_link_uri[5:]
-            logger.debug(
-                f"login: coerce target_link_uri to https: {target_link_uri}")
+        if target_link_uri.startswith('http:') and request.is_secure():
+            target_link_uri = f"https:{target_link_uri[5:]}"
 
-        response = oidc_login.enable_check_cookies().redirect(target_link_uri)
-        logger.debug(f"login: oidc_login response = {response}")
-        return response
+        return oidc_login.enable_check_cookies().redirect(target_link_uri)
     except Exception as ex:
         return HttpResponse(str(ex), status=401)
 
@@ -75,7 +65,6 @@ class BLTIView(TemplateView):
 
     def dispatch(self, request, *args, **kwargs):
         try:
-            logger.debug(f"BLTIView dispatch: {request.method}")
             self.validate(request)
         except BLTIException as err:
             self.template_name = 'blti/401.html'
@@ -104,7 +93,7 @@ class BLTIView(TemplateView):
             self.authorize(self.authorized_role)
 
     def authorize(self, role):
-        Roles().authorize(self.blti, role=role)
+        Roles().authorize(self.get_session(), role=role)
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -112,11 +101,9 @@ class BLTILaunchView(BLTIView):
     http_method_names = ['get', 'post']
 
     def post(self, request, *args, **kwargs):
-        logger.debug(f"BLTILaunchView POST")
         return self._launch(request, *args, **kwargs)
 
     def get(self, request, *args, **kwargs):
-        logger.debug(f"BLTILaunchView GET")
         return self._launch(request, *args, **kwargs)
 
     def _launch(self, request, *args, **kwargs):
@@ -147,19 +134,9 @@ class BLTILaunchView(BLTIView):
     def validate_1p3(self, request):
         tool_conf = get_tool_conf()
         launch_data_storage = get_launch_data_storage()
-
-        logger.debug(f"validate_1p3: {request.method}")
-        logger.debug(f"validate_1p3: params:")
-        for k, v in request.GET.items() if (
-                request.method == 'GET') else request.POST.items():
-            logger.debug(
-                f"message_launch_data: request.{request.method}[{k}] = {v}")
-
         message_launch = DjangoMessageLaunch(
             request, tool_conf, launch_data_storage=launch_data_storage)
         message_launch_data = message_launch.get_launch_data()
-        logger.debug(f"message_launch_data: {message_launch_data}")
-
         self.set_session(**message_launch_data)
 
     def validate_1p1(self, request):
@@ -171,14 +148,11 @@ class BLTILaunchView(BLTIView):
         valid, oauth_req = endpoint.validate_request(
             uri, request.method, request.body, headers)
 
-        logger.debug(f"validate_1p1: {request.method} {uri} is {valid}")
-
         # if non-ssl fixup scheme to validate signature generated
         # on the other side of ingress
         if not valid and uri.startswith('http:') and request.is_secure():
             valid, oauth_req = endpoint.validate_request(
                 f"https{uri[4:]}", request.method, request.body, headers)
-            logger.debug(f"validate_1p1: {request.method} {uri} is {valid}")
 
         if not valid:
             raise BLTIException('Invalid OAuth Request')
@@ -193,8 +167,9 @@ class RawBLTIView(BLTILaunchView):
 
     def get_context_data(self, **kwargs):
         return {
-            'raw_lti_params': json.dumps(self.get_session(), indent=4),
-            'digested_lti_params': sorted(self.blti.data.items())
+            'digested_lti_params': [(k, getattr(
+                self.blti, k)) for k in sorted(vars(self.blti))],
+            'raw_lti_params': json.dumps(self.get_session(), indent=4)
         }
 
 

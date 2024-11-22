@@ -11,69 +11,65 @@ CLAIM_LINK = 'https://purl.imsglobal.org/spec/lti/claim/resource_link'
 
 
 class BLTIData(object):
-    def __init__(self, **kwargs):
-        self.data = kwargs
-
+    def __init__(self, **data):
         # Canvas internal IDs
-        self.canvas_course_id = kwargs.get('custom_canvas_course_id')
-        self.canvas_user_id = kwargs.get('custom_canvas_user_id')
-        self.canvas_account_id = kwargs.get(
+        self.canvas_course_id = data.get('custom_canvas_course_id')
+        self.canvas_user_id = data.get('custom_canvas_user_id')
+        self.canvas_account_id = data.get(
             'custom_canvas_account_id',
-            self._custom('canvas_account_id'))
+            self._custom(data, 'canvas_account_id'))
 
         # SIS IDs
-        self.course_sis_id = kwargs.get(
+        self.course_sis_id = data.get(
             'lis_course_offering_sourcedid',
-            self._lis('course_offering_sourcedid'))
-        self.user_sis_id = kwargs.get(
+            self._lis(data, 'course_offering_sourcedid'))
+        self.user_sis_id = data.get(
             'lis_person_sourcedid',
-            self._lis('person_sourcedid'))
-        self.account_sis_id = kwargs.get(
+            self._lis(data, 'person_sourcedid'))
+        self.account_sis_id = data.get(
             'custom_canvas_account_sis_id',
-            self._custom('canvas_account_sis_id'))
+            self._custom(data, 'canvas_account_sis_id'))
 
         # Course attributes
-        self.course_short_name = kwargs.get(
-            'context_label', self._context('label'))
-        self.course_long_name = kwargs.get(
-            'context_title', self._context('title'))
+        self.course_short_name = data.get(
+            'context_label', self._context(data, 'label'))
+        self.course_long_name = data.get(
+            'context_title', self._context(data, 'title'))
 
         # User attributes
-        self.user_login_id = kwargs.get(
-            'custom_canvas_user_login_id', self._custom('canvas_login_id'))
-        self.user_full_name = kwargs.get(
-            'lis_person_name_full', self.data.get('name'))
-        self.user_first_name = kwargs.get(
-            'lis_person_name_given', self.data.get('given_name'))
-        self.user_last_name = kwargs.get(
-            'lis_person_name_family', self.data.get('family_name'))
-        self.user_email = kwargs.get(
+        self.user_login_id = data.get(
+            'custom_canvas_user_login_id',
+            self._custom(data, 'canvas_login_id'))
+        self.user_full_name = data.get(
+            'lis_person_name_full', data.get('name'))
+        self.user_first_name = data.get(
+            'lis_person_name_given', data.get('given_name'))
+        self.user_last_name = data.get(
+            'lis_person_name_family', data.get('family_name'))
+        self.user_email = data.get(
             'lis_person_contact_email_primary')
-        self.user_avatar_url = kwargs.get(
-            'user_image', self.data.get('picture'))
+        self.user_avatar_url = data.get(
+            'user_image', data.get('picture'))
 
         # LTI app attributes
-        self.link_title = kwargs.get(
-            'resource_link_title', self._link('title'))
-        self.return_url = kwargs.get('launch_presentation_return_url')
+        self.link_title = data.get(
+            'resource_link_title', self._link(data, 'title'))
+        self.return_url = data.get('launch_presentation_return_url')
 
         # Canvas hostname
-        self.canvas_api_domain = kwargs.get('custom_canvas_api_domain')
+        self.canvas_api_domain = data.get('custom_canvas_api_domain')
 
-    def _lis(self, key):
-        return self._data_claim(CLAIM_LIS, key)
+    def _lis(self, data, key):
+        return self._data_claim(CLAIM_LIS, data, key)
 
-    def _custom(self, key):
-        return self._data_claim(CLAIM_CUSTOM, key)
+    def _custom(self, data, key):
+        return self._data_claim(CLAIM_CUSTOM, data, key)
 
-    def _context(self, key):
-        return self._data_claim(CLAIM_CONTEXT, key)
+    def _context(self, data, key):
+        return self._data_claim(CLAIM_CONTEXT, data, key)
 
-    def _link(self, key):
-        return self._data_claim(CLAIM_LINK, key)
+    def _link(self, data, key):
+        return self._data_claim(CLAIM_LINK, data, key)
 
-    def _data_claim(self, claim, key):
-        return self.data.get(claim, {}).get(key)
-
-    def get(self, name):
-        return self.data.get(name)
+    def _data_claim(self, claim, data, key):
+        return data.get(claim, {}).get(key)
