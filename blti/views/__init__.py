@@ -135,6 +135,11 @@ class BLTILaunchView(BLTIView):
     def validate_1p3(self, request):
         tool_conf = get_tool_conf()
         launch_data_storage = get_launch_data_storage()
+
+        for k, v in request.POST.items():
+            logger.debug(
+                f"validate 1p3: request.POST[{k}] = {request.POST[k]}")
+
         message_launch = DjangoMessageLaunch(
             request, tool_conf, launch_data_storage=launch_data_storage)
         message_launch_data = message_launch.get_launch_data()
@@ -153,9 +158,7 @@ class BLTILaunchView(BLTIView):
 
         # if non-ssl fixup scheme to validate signature generated
         # on the other side of ingress
-        if (not valid and
-                request_validator.enforce_ssl is False and
-                uri[:5] == "http:"):
+        if not valid and uri.startswith('http:') and request.is_secure():
             valid, oauth_req = endpoint.validate_request(
                 f"https{uri[4:]}", request.method, request.body, headers)
 
@@ -172,8 +175,8 @@ class RawBLTIView(BLTILaunchView):
 
     def get_context_data(self, **kwargs):
         return {
-            'raw_lti_params': sorted(self.get_session().items()),
-            'digested_lti_params': vars(self.blti)
+            'raw_lti_params': json.dumps(self.get_session(), indent=4),
+            'digested_lti_params': sorted(self.blti.data.items())
         }
 
 

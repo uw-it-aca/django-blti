@@ -9,10 +9,9 @@
 <h2>BLTI Launch Parameters</h3>
 
 <div>
-  <h3>Raw Parameters</h3>
-  <p>Here are the parameters that were passed to this tool by the platform:</p>
+  <h3>View Model</h3>
   <table>
-  {% for key, value in raw_lti_params %}
+  {% for key, value in digested_lti_params %}
     <tr>
       <td>{{ key }}</td><td>{{ value }}</td>
     </tr>
@@ -21,15 +20,11 @@
 </div>
 
 <div>
-  <h3>Normalized Parameters</h3>
-  <p>Here are the parameters normalized for tool views:</p>
-  <table>
-  {% for key, value in digested_lti_params %}
-    <tr>
-      <td>{{ key }}</td><td>{{ value }}</td>
-    </tr>
-  {% endfor %}
-  </table>
+  <h3>Raw Parameters</h3>
+  <p>Here are the parameters that were passed to this tool by the platform:</p>
+  <pre>
+{{ raw_lti_params }}
+  </pre>
 </div>
 
 </div>
