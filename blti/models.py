@@ -39,7 +39,8 @@ class BLTIData(object):
             'context_title', self._context('title'))
 
         # User attributes
-        self.user_login_id = kwargs.get('custom_canvas_user_login_id')
+        self.user_login_id = kwargs.get(
+            'custom_canvas_user_login_id', self._custom('canvas_login_id'))
         self.user_full_name = kwargs.get(
             'lis_person_name_full', self.data.get('name'))
         self.user_first_name = kwargs.get(
