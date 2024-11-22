@@ -126,10 +126,7 @@ class BLTILaunchView(BLTIView):
     def dispatch(self, request, *args, **kwargs):
         try:
             logger.debug(f"BLTILaunchView dispatch 1p1: {request.method}")
-            if request.method == 'POST':
-                self.validate_1p1(request)
-
-            raise BLTIException('Invalid Launch Scheme')
+            self.validate_1p1(request)
         except BLTIException as ex:
             try:
                 logger.debug(f"BLTILaunchView dispatch 1p3: {request.method}")
@@ -150,6 +147,14 @@ class BLTILaunchView(BLTIView):
     def validate_1p3(self, request):
         tool_conf = get_tool_conf()
         launch_data_storage = get_launch_data_storage()
+
+        logger.debug(f"validate_1p3: {request.method}")
+        logger.debug(f"validate_1p3: params:")
+        for k, v in request.GET.items() if (
+                request.method == 'GET') else request.POST.items():
+            logger.debug(
+                f"message_launch_data: request.{request.method}[{k}] = {v}")
+
         message_launch = DjangoMessageLaunch(
             request, tool_conf, launch_data_storage=launch_data_storage)
         message_launch_data = message_launch.get_launch_data()
