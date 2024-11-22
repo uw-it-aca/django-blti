@@ -109,16 +109,25 @@ class BLTIView(TemplateView):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class BLTILaunchView(BLTIView):
-    http_method_names = ['post']
+    http_method_names = ['get', 'post']
 
     def post(self, request, *args, **kwargs):
+        return self.launch(request, *args, **kwargs)
+
+    def get(self, request, *args, **kwargs):
+        return self.launch(request, *args, **kwargs)
+
+    def launch(self, request, *args, **kwargs):
         context = self.get_context_data(**kwargs)
         return self.render_to_response(context)
 
     def dispatch(self, request, *args, **kwargs):
         try:
             logger.debug(f"BLTILaunchView dispatch 1p1: {request.method}")
-            self.validate_1p1(request)
+            if request.method == 'POST':
+                self.validate_1p1(request)
+
+            raise BLTIException('Invalid OAuth Request')
         except BLTIException as ex:
             try:
                 logger.debug(f"BLTILaunchView dispatch 1p3: {request.method}")
@@ -139,15 +148,6 @@ class BLTILaunchView(BLTIView):
     def validate_1p3(self, request):
         tool_conf = get_tool_conf()
         launch_data_storage = get_launch_data_storage()
-
-        for k, v in request.GET.items():
-            logger.debug(
-                f"validate 1p3: request.GET[{k}] = {request.GET[k]}")
-
-        for k, v in request.POST.items():
-            logger.debug(
-                f"validate 1p3: request.POST[{k}] = {request.POST[k]}")
-
         message_launch = DjangoMessageLaunch(
             request, tool_conf, launch_data_storage=launch_data_storage)
         message_launch_data = message_launch.get_launch_data()
