@@ -171,7 +171,8 @@ class RawBLTIView(BLTILaunchView):
     def get_context_data(self, **kwargs):
         return {
             'digested_lti_params': [(k, getattr(
-                self.blti, k)) for k in sorted(vars(self.blti))],
+                self.blti, k)) for k in sorted(vars(self.blti)) if (
+                    not k.startswith("_"))],
             'raw_lti_params': json.dumps(self.get_session(), indent=4)
         }
 
