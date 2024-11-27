@@ -22,12 +22,9 @@
             <div id="main">
                <div class="inner">
                  <form action="{% url 'lti-launch' %}" method="POST" id="form1">
-                   {% for k, v in lti_parameters %}
-                   <input type="hidden" name="{{ k }}" value="{{ v }}">
-                   {% endfor %}
                  </form>
 
-                 <button class="btn btn-primary" type="submit" form="form1" value="Launch">Launch {% url 'lti-launch' %} LTI as {{ role_name|title }} in {{ campus|title }}</button>
+                 <button class="btn btn-primary" type="submit" form="form1" value="Launch">Launch {% url 'lti-launch' %} LTI as {{ role }} in {{ campus|title }}</button>
                </div>
             </div><!--end #main-->
         </div>

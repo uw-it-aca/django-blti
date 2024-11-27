@@ -8,7 +8,10 @@ from oauthlib.oauth1.rfc5849.request_validator import RequestValidator
 from oauthlib.oauth1.rfc5849.utils import UNICODE_ASCII_CHARACTER_SET
 from blti.exceptions import BLTIException
 import time
-import re
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 
 class BLTIRequestValidator(RequestValidator):
@@ -56,63 +59,29 @@ class BLTIRequestValidator(RequestValidator):
 
 
 class Roles(object):
-    # https://www.imsglobal.org/specs/ltiv1p1/implementation-guide#toc-30
-    CANVAS_ROLES = {
-        'member': ['Administrator', 'Instructor', 'TeachingAssistant',
-                   'ContentDeveloper', 'Learner', 'Observer'],
-        'admin': ['Administrator', 'Instructor', 'TeachingAssistant',
-                  'ContentDeveloper'],
-    }
+    def __init__(self, *args, **kwargs):
+        self.blti = kwargs.get('blti')
 
-    RE_ROLE_NS = re.compile(
-        r'^urn:lti:(?:inst|sys)?role:ims/lis/([A-Za-z]+)$')
-    RE_ROLE_1P3 = re.compile(
-        r'^http://purl.imsglobal.org/vocab/lis/v2/.*#([A-Za-z]+)$')
+    def authorize(self, role='member', consumer='canvas'):
+        if not hasattr(self, 'blti') or self.blti is None:
+            raise ImproperlyConfigured(
+                'Roles class requires a BLTI object')
 
-    def authorize(self, launch_data, role='member', consumer='canvas'):
-        if launch_data is None:
-            raise BLTIException('Missing LTI parameters')
-
-        lti_consumer = self._consumer(launch_data)
-
-        if lti_consumer.lower() == consumer.lower():
-            if (not role or role == 'public'):
-                pass
-            elif (role in self.CANVAS_ROLES):  # member/admin
-                self._has_role(launch_data, self.CANVAS_ROLES[role])
-            else:  # specific role?
-                self._has_role(launch_data, [role])
-        else:
-            raise BLTIException('authorize() not implemented for "%s"!' % (
-                lti_consumer))
-
-    def _consumer(self, launch_data):
-        PLATFORM_CLAIM = ('https://purl.imsglobal.org/spec/lti/'
-                          'claim/tool_platform')
-        try:
-            return launch_data['tool_consumer_info_product_family_code']
-        except KeyError:
-            return launch_data.get(
-                PLATFORM_CLAIM, {}).get('product_family_code', '')
-
-    def _has_role(self, launch_data, valid_roles):
-        try:
-            # 1.1 roles parameter
-            roles = launch_data['roles'].split(',')
-            for role in roles:
-                if role in valid_roles:
-                    return
-
-                m = self.RE_ROLE_NS.match(role)
-                if m and m.group(1) in valid_roles:
-                    return
-        except KeyError:
-            # 1.3 roles parameter
-            roles = launch_data.get(
-                "https://purl.imsglobal.org/spec/lti/claim/roles", [])
-            for role in roles:
-                m = self.RE_ROLE_1P3.match(role)
-                if m and m.group(1) in valid_roles:
-                    return
+        if not role or role == 'public' or (
+                role == 'member' and
+                self.blti.is_member) or (
+                    role == 'admin' and
+                    self.blti.is_administrator) or (
+                        role in ['Administrator', 'SysAdmin'] and
+                        self.blti.is_staff) or (
+                            role == 'Instructor'
+                            and self.blti.is_instructor) or (
+                                role == 'TeachingAssistant' and
+                                self.blti.is_teaching_assistant) or (
+                                    role in ['Student', 'Learner'] and
+                                    self.blti.is_student) or (
+                                        role == 'ContentDeveloper' and
+                                        self.blti.is_designer):
+            return
 
         raise BLTIException('You are not authorized to view this content')

@@ -34,12 +34,10 @@ class BLTILaunchView(BLTIView):
 
     def dispatch(self, request, *args, **kwargs):
         try:
-            self.validate_1p1(request)
-            logger.info(f"BTILaunchView 1p1: {request.method}")
+            launch_data = self.validate_1p1(request)
         except BLTIException as ex:
             try:
-                self.validate_1p3(request)
-                logger.info(f"BTILaunchView 1p3: {request.method}")
+                launch_data = self.validate_1p3(request)
             except OIDCException as ex:
                 logger.error(f"LTI authentication failure: {ex}")
                 self.template_name = 'blti/401.html'
@@ -51,6 +49,7 @@ class BLTILaunchView(BLTIView):
                 return self.render_to_response(
                     {'LTI launch failure': str(ex)}, status=401)
 
+        self.set_session(**launch_data)
         return super(BLTILaunchView, self).dispatch(request, *args, **kwargs)
 
     def validate_1p3(self, request):
@@ -59,7 +58,7 @@ class BLTILaunchView(BLTIView):
         message_launch = DjangoMessageLaunch(
             request, tool_conf, launch_data_storage=launch_data_storage)
         message_launch_data = message_launch.get_launch_data()
-        self.set_session(**message_launch_data)
+        return message_launch_data
 
     def validate_1p1(self, request):
         request_validator = BLTIRequestValidator()
@@ -80,4 +79,4 @@ class BLTILaunchView(BLTIView):
             raise BLTIException('Invalid OAuth Request')
 
         blti_params = dict(oauth_req.params)
-        self.set_session(**blti_params)
+        return blti_params

@@ -3,15 +3,12 @@
 
 
 from django.views.generic.base import TemplateView
-from django.utils.decorators import method_decorator
-from django.views.decorators.csrf import csrf_exempt
 from blti import BLTI
 from blti.models import CanvasData
 from blti.exceptions import BLTIException
 from blti.validators import Roles
 
 
-@method_decorator(csrf_exempt, name='dispatch')
 class BLTIView(TemplateView):
     authorized_role = 'member'
 
@@ -45,7 +42,7 @@ class BLTIView(TemplateView):
             self.authorize(self.authorized_role)
 
     def authorize(self, role):
-        Roles().authorize(self.get_session(), role=role)
+        Roles(blti=self.blti).authorize(role=role)
 
     def launch_data_model(self):
         return CanvasData(**self.get_session())

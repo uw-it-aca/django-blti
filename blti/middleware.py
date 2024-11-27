@@ -32,16 +32,23 @@ class SessionHeaderMiddleware(MiddlewareMixin):
             request.COOKIES[session_key] = session_id
 
 
-class LTISessionAuthenticationMiddleware(MiddlewareMixin):
-    def process_request(self, request):
+class LTISessionAuthenticationMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
         try:
             lti_launch_parameters = BLTI().get_session(request)
-            user = authenticate(
-                request, remote_user=lti_launch_parameters.get(
-                    'custom_canvas_user_login_id'))
-            login(request, user)
+            lti_user = lti_launch_parameters.get(
+                "https://purl.imsglobal.org/spec/lti/claim/custom").get(
+                    "canvas_user_login_id")
+            if lti_user:
+                user = authenticate(request, remote_user=lti_user)
+                login(request, user)
         except BLTIException:
             pass
+
+        return self.get_response(request)
 
 
 class SameSiteMiddleware(MiddlewareMixin):

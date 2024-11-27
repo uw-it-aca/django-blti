@@ -2,6 +2,10 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from django.db import models
+from pylti1p3.roles import (
+    StaffRole, StudentRole, TeacherRole, TeachingAssistantRole, DesignerRole,
+    ObserverRole, TransientRole)
+import re
 
 
 LTI_DATA_CLAIM_BASE =  'https://purl.imsglobal.org/spec/lti/claim/'
@@ -10,9 +14,82 @@ LTI_DATA_CLAIM_BASE =  'https://purl.imsglobal.org/spec/lti/claim/'
 class LTILaunchData(object):
     def __init__(self, **data):
         self._data = data
-        self.platform_name = data.get(
+
+    @property
+    def platform_name(self):
+        return self._data.get(
             'tool_consumer_info_product_family_code',
             self.claim_tool_platform('product_family_code'))
+
+    @property
+    def is_member(self):
+        return self._1p1_roles(['member']) or (
+            StaffRole(self._data).check() or
+            TeacherRole(self._data).check() or
+            TeachingAssistantRole(self._data).check() or
+            StudentRole(self._data).check() or
+            ObserverRole(self._data).check())
+
+    @property
+    def is_administrator(self):
+        return self._1p1_roles(['admin']) or (
+            TeacherRole(self._data).check() or
+            TeachingAssistantRole(self._data).check() or
+            DesignerRole(self._data).check())
+
+    @property
+    def is_staff(self):
+        return self._1p1_roles(['Administrator']) or (
+            StaffRole(self._data).check())
+
+    @property
+    def is_instructor(self):
+        return self._1p1_roles(['Instructor']) or (
+            TeacherRole(self._data).check())
+
+    @property
+    def is_teaching_assistant(self):
+        return self._1p1_roles(['TeachingAssistant']) or (
+            TeachingAssistantRole(self._data).check())
+
+    @property
+    def is_student(self):
+        return self._1p1_roles(['Learner']) or (
+            StudentRole(self._data).check())
+
+    @property
+    def is_designer(self):
+        return self._1p1_roles(['ContentDeveloper']) or (
+            DesignerRole(self._data).check())
+
+    def _1p1_roles(self, valid_roles):
+        RE_ROLE_NS = re.compile(
+            r'^urn:lti:(?:inst|sys)?role:ims/lis/([A-Za-z]+)$')
+        AGGREGATE_ROLES = {
+            'member': ['Administrator', 'Instructor', 'TeachingAssistant',
+                       'ContentDeveloper', 'Learner', 'Observer'],
+            'admin': ['Administrator', 'Instructor', 'TeachingAssistant',
+                      'ContentDeveloper'],
+        }
+
+        try:
+            roles = self._data['roles'].split(',')
+        except KeyError:
+            return False
+
+        for valid_role in valid_roles:
+            if valid_role in AGGREGATE_ROLES:
+                return self._1p1_roles(AGGREGATE_ROLES[valid_role])
+
+            for role in roles:
+                if role == valid_role:
+                    return True
+
+                m = RE_ROLE_NS.match(role)
+                if m and m.group(1) and m.group(1) == valid_role:
+                    return True
+
+        return False
 
     def claim_tool_platform(self, key, default=None):
         return self._claim_data('tool_platform', key, default)
