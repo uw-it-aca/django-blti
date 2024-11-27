@@ -40,7 +40,7 @@ class LTISessionAuthenticationMiddleware:
         try:
             lti_launch_parameters = BLTI().get_session(request)
             lti_user = lti_launch_parameters.get(
-                "https://purl.imsglobal.org/spec/lti/claim/custom").get(
+                "https://purl.imsglobal.org/spec/lti/claim/custom", {}).get(
                     "canvas_user_login_id")
             if lti_user:
                 user = authenticate(request, remote_user=lti_user)
