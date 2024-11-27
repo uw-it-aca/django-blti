@@ -11,9 +11,15 @@ class BLTIRawView(BLTILaunchView):
     authorized_role = 'admin'
 
     def get_context_data(self, **kwargs):
+        params = [(k, getattr(self.blti, k)) for k in sorted(
+            vars(self.blti)) if not k.startswith("_")]
+
+        for role in ['is_member', 'is_administrator', 'is_staff',
+                     'is_instructor', 'is_teaching_assistant',
+                     'is_student', 'is_designer']:
+            params.append((role, getattr(self.blti, role)))
+
         return {
-            'digested_lti_params': [(k, getattr(
-                self.blti, k)) for k in sorted(vars(self.blti)) if (
-                    not k.startswith("_"))],
+            'digested_lti_params': params,
             'raw_lti_params': json.dumps(self.get_session(), indent=4)
         }
