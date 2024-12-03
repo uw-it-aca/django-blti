@@ -59,13 +59,13 @@ class BLTIRequestValidator(RequestValidator):
 
 
 class Roles(object):
-    def __init__(self, *args, **kwargs):
-        self.blti = kwargs.get('blti')
+    def __init__(self, launch_data):
+        self.blti = launch_data
 
-    def authorize(self, role='member', consumer='canvas'):
+    def authorize(self, role='member'):
         if not hasattr(self, 'blti') or self.blti is None:
             raise ImproperlyConfigured(
-                'Roles class requires a BLTI object')
+                'Roles class requires a blti model')
 
         if not role or role == 'public' or (
                 role == 'member' and

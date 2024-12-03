@@ -21,15 +21,10 @@ def get_launch_data_storage():
     return DjangoCacheDataStorage()
 
 
-def get_mock_config_directory():
-    return os.path.join(resources.files('blti'), 'resources', 'lti_config')
-
-
 def get_lti_config_directory():
-    directory = os.environ.get(
+    return os.environ.get(
         'LTI_CONFIG_DIRECTORY',
         os.path.join(settings.BASE_DIR, LTI1P3_CONFIG_DIRECTORY_NAME))
-    return get_mock_config_directory() if directory == 'MOCK' else directory
 
 
 def get_lti_config_path():

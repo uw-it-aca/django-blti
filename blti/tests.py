@@ -4,20 +4,24 @@
 
 from django.conf import settings
 from django.urls import reverse
+from django.urls.exceptions import NoReverseMatch
 from django.test import RequestFactory, TestCase, override_settings
 from django.contrib.sessions.middleware import SessionMiddleware
+from django.core.exceptions import ImproperlyConfigured
 from blti.validators import BLTIRequestValidator, Roles
-from blti.models import BLTIData
+from blti.models import CanvasData
 from blti.performance import log_response_time
 from blti import BLTI, LTI_DATA_KEY
+from blti.mock import Mock1p3Data
 from blti.exceptions import BLTIException
+from oauthlib.common import generate_timestamp, generate_nonce
 from urllib.parse import urlencode
 import time
 import mock
 import os
 
 
-class RequestValidatorTest(TestCase):
+class RequestValidator1p1Test(TestCase):
     def setUp(self):
         self.request = RequestFactory().post(
             '/test', data=getattr(settings, 'CANVAS_LTI_V1_LAUNCH_PARAMS', {}),
@@ -79,117 +83,174 @@ class RequestValidatorTest(TestCase):
                 'X', '1234567890', '', self.request))
 
 
-class BLTIDataTest(TestCase):
-    def test_attributes(self):
-        params = getattr(settings, 'CANVAS_LTI_V1_LAUNCH_PARAMS', {})
-        blti = BLTIData(**params)
+class BLTICanvasDataTest(TestCase):
+    def test_known_product_code(self):
+        # unimplemented product code
+        data = Mock1p3Data().launch_data()
+        data["https://purl.imsglobal.org/spec/lti/claim/tool_platform"][
+            "product_family_code"] = "my_lms"
+        self.assertRaises(ValueError, CanvasData, **data)
 
-        self.assertEquals(blti.link_title, 'Example App')
+    def test_attributes(self):
+        data = Mock1p3Data().launch_data()
+        blti = CanvasData(**data)
+
+        self.assertEquals(blti.link_title,
+                          'PSYCH 101 A Au 19, Introduction To Psychology')
         self.assertEquals(blti.return_url,
-                          'https://example.instructure.com/courses/123456')
-        self.assertEquals(blti.canvas_course_id, '123456')
-        self.assertEquals(blti.course_sis_id, '2018-spring-ABC-101-A')
-        self.assertEquals(blti.course_short_name, 'ABC 101 A')
-        self.assertEquals(blti.course_long_name, 'ABC 101 A: Example Course')
-        self.assertEquals(blti.canvas_user_id, '123456')
+                          ("https://uw.test.instructure.com/courses/"
+                           "9752574/external_content/success/"
+                           "external_tool_redirect"))
+        self.assertEquals(blti.canvas_course_id, '9752574')
+        self.assertEquals(blti.course_sis_id, '2019-autumn-PSYCH-101-A')
+        self.assertEquals(blti.course_short_name, 'PSYCH 101 A')
+        self.assertEquals(blti.course_long_name,
+                          'PSYCH 101 A Au 19, Introduction To Psychology')
+        self.assertEquals(blti.canvas_user_id, '700007')
         self.assertEquals(blti.user_login_id, 'javerage')
-        self.assertEquals(blti.user_sis_id, 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')
+        self.assertEquals(blti.user_sis_id, '0C8F043FA5CBE23F2B1E1A63B1BD80B8')
         self.assertEquals(blti.user_full_name, 'James Average')
         self.assertEquals(blti.user_first_name, 'James')
         self.assertEquals(blti.user_last_name, 'Average')
-        self.assertEquals(blti.user_email, 'javerage@example.edu')
+        self.assertEquals(blti.user_email, 'javerage@u.washington.edu')
         self.assertEquals(
             blti.user_avatar_url, (
-                'https://example.instructure.com/images/thumbnails/123456/'
-                'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'))
-        self.assertEquals(blti.canvas_account_id, '12345')
-        self.assertEquals(blti.account_sis_id, 'example:account')
-        self.assertEquals(blti.canvas_api_domain, 'example.instructure.com')
-
-    def test_get(self):
-        params = getattr(settings, 'CANVAS_LTI_V1_LAUNCH_PARAMS', {})
-        blti = BLTIData(**params)
-
-        self.assertEquals(blti.get('custom_canvas_course_id'), '123456')
-        self.assertEquals(blti.get('lis_person_contact_email_primary'),
-                          'javerage@example.edu')
-        self.assertEquals(blti.get('invalid_param_name'), None)
+                "/images/thumbnails/8140331/"
+                "ynu8th19hg8afjfy1y1bnzvi4nfewe7l6tsqf7kp"))
+        self.assertEquals(blti.canvas_account_id, '5171292')
+        self.assertEquals(blti.account_sis_id,
+                          "uwcourse:seattle:a-and-s:pych:psych")
+        self.assertEquals(blti.canvas_api_domain,
+                          "uw.test.instructure.com")
 
 
-class CanvasRolesTest(TestCase):
+class Canvas1p1RolesTest(TestCase):
     def setUp(self):
-        params = {
-            'tool_consumer_info_product_family_code': 'canvas',
-            'roles': '',
-            'ext_roles': ''
+        self.params = {
+            "roles": 'Learner,',
+            "ext_roles": ('urn:lti:instrole:ims/lis/Instructor,'
+                           'urn:lti:instrole:ims/lis/Student,'
+                           'urn:lti:role:ims/lis/Instructor,'
+                           'urn:lti:sysrole:ims/lis/User'),
+            "custom_canvas_account_sis_id":
+            'uwcourse:seattle:arts-&-sciences:psych:psych',
+            "oauth_timestamp": generate_timestamp(),
+            "oauth_nonce": generate_nonce(),
+            "resource_link_title":
+            "UW LTI Development (test)",
+            "oauth_consumer_key": "0000-0000-0000",
+            "oauth_signature_method": "HMAC-SHA1",
+            "oauth_version": "1.0",
+            "context_id": "3F2DcDcF6aCBef17a2eccCDdA498e9e5Cc333A96",
+            "context_label": "PSYCH 101 A",
+            "context_title": "PSYCH 101 A Au 19: Introduction To Psychology",
+            "custom_application_type": "UWBLTIDevelopment",
+            "custom_canvas_account_id": "8675309",
+            "custom_canvas_api_domain": "uw.test.instructure.com",
+            "custom_canvas_course_id": "88675309",
+            "custom_canvas_enrollment_state": "active",
+            "custom_canvas_user_id": "700007",
+            "custom_canvas_user_login_id": "javerage",
+            "custom_canvas_workflow_state": "available",
+            "launch_presentation_document_target": "iframe",
+            "launch_presentation_height": "400",
+            "launch_presentation_locale": "en",
+            "launch_presentation_width": "800",
+            "lis_course_offering_sourcedid": "2019-autumn-PSYCH-101-A",
+            "lis_person_contact_email_primary": "javerage@u.washington.edu",
+            "lis_person_name_family": "Average",
+            "lis_person_name_full": "James Average",
+            "lis_person_name_given": "James",
+            "lis_person_sourcedid": "0C8F043FA5CBE23F2B1E1A63B1BD80B8",
+            "lti_message_type": "basic-lti-launch-request",
+            "lti_version": "LTI-1p0",
+            "oauth_callback": "about:blank",
+            "resource_link_id": "E9a206DC909a330e9F8eF183b7BB4B9718aBB62d",
+            "tool_consumer_info_product_family_code": "canvas",
+            "tool_consumer_instance_name": "University of Washington",
+            "user_id": "e1ec31bd10a32f61dd65975ce4eb98e9f106bd7d",
+            "user_image": ('/images/thumbnails/1499380/'
+                           '24ZSCuR73P2mrG98Yq6gicMHjcd0p8NMhM2iGhgz'),
         }
-        self.blti = BLTIData(**params)
+
+        self.launch_data = CanvasData(**self.params)
+
+    def _authorize(self, role):
+        return Roles(self.launch_data).authorize(role=role)
 
     def test_authorize_nodata(self):
         # no blti object
         self.assertRaises(
-            BLTIException, Roles().authorize, None, role='member')
-
-        # unimplemented product code
-        self.blti.data['tool_consumer_info_product_family_code'] = 'my_lms'
-        self.assertRaises(
-            BLTIException, Roles().authorize, self.blti, role='member')
+            ImproperlyConfigured, Roles(None).authorize, role='member')
 
     def test_authorize_public(self):
-        self.assertEquals(None, Roles().authorize(self.blti, role='public'))
-        self.assertEquals(None, Roles().authorize(self.blti, role=None))
+        self.assertEquals(None, self._authorize('public'))
+        self.assertEquals(None, self._authorize(None))
 
     def test_authorize_member(self):
+        self.params['roles'] = 'User'
         self.assertRaises(
-            BLTIException, Roles().authorize, self.blti, role='member')
+            BLTIException, Roles(
+                CanvasData(**self.params)).authorize, role='member')
 
-        self.blti.data['roles'] = 'Administrator'
-        self.assertEquals(None, Roles().authorize(self.blti, role='member'))
+        self.params['roles'] = 'Administrator'
+        self.launch_data = CanvasData(**self.params)
+        self.assertEquals(None, self._authorize('member'))
 
-        self.blti.data['roles'] = 'urn:lti:instrole:ims/lis/Observer'
-        self.assertEquals(None, Roles().authorize(self.blti, role='member'))
+        self.params['roles'] = 'urn:lti:instrole:ims/lis/Observer'
+        self.launch_data = CanvasData(**self.params)
+        self.assertEquals(None, self._authorize('member'))
 
     def test_authorize_admin(self):
         self.assertRaises(
-            BLTIException, Roles().authorize, self.blti, role='admin')
+            BLTIException, Roles(self.launch_data).authorize, role='admin')
 
-        self.blti.data['roles'] = 'Learner'
+        self.params['roles'] = 'Learner'
         self.assertRaises(
-            BLTIException, Roles().authorize, self.blti, role='admin')
+            BLTIException, Roles(
+                CanvasData(**self.params)).authorize, role='admin')
 
-        self.blti.data['roles'] = 'urn:lti:instrole:ims/lis/Administrator'
-        self.assertEquals(None, Roles().authorize(self.blti, role='admin'))
+        self.params['roles'] = 'urn:lti:instrole:ims/lis/Administrator'
+        self.launch_data = CanvasData(**self.params)
+        self.assertEquals(None, self._authorize('admin'))
 
-        self.blti.data['roles'] = 'urn:lti:role:ims/lis/TeachingAssistant'
-        self.assertEquals(None, Roles().authorize(self.blti, role='admin'))
+        self.params['roles'] = 'urn:lti:role:ims/lis/TeachingAssistant'
+        self.launch_data = CanvasData(**self.params)
+        self.assertEquals(None, self._authorize('admin'))
 
-        self.blti.data['roles'] = 'Learner,ContentDeveloper'
-        self.assertEquals(None, Roles().authorize(self.blti, role='admin'))
+        self.params['roles'] = 'Learner,ContentDeveloper'
+        self.launch_data = CanvasData(**self.params)
+        self.assertEquals(None, self._authorize('admin'))
 
         # ignores ext_roles
-        self.blti.data['roles'] = 'Learner'
-        self.blti.data['ext_roles'] = 'urn:lti:role:ims/lis/Instructor'
+        self.params['roles'] = 'Learner'
+        self.params['ext_roles'] = 'urn:lti:role:ims/lis/Instructor'
         self.assertRaises(
-            BLTIException, Roles().authorize, self.blti, role='admin')
+            BLTIException, Roles(
+                CanvasData(**self.params)).authorize, role='admin')
 
     def test_authorize_specific(self):
-        self.blti.data['roles'] = 'Learner'
-        self.assertEquals(None, Roles().authorize(self.blti, role='Learner'))
+        self.params['roles'] = 'Learner'
+        self.launch_data = CanvasData(**self.params)
+        self.assertEquals(None, self._authorize('Learner'))
 
-        self.blti.data['roles'] = 'urn:lti:role:ims/lis/Learner'
-        self.assertEquals(None, Roles().authorize(self.blti, role='Learner'))
+        self.params['roles'] = 'urn:lti:role:ims/lis/Learner'
+        self.launch_data = CanvasData(**self.params)
+        self.assertEquals(None, self._authorize('Learner'))
 
-        self.blti.data['roles'] = 'Learner,ContentDeveloper'
+        self.params['roles'] = 'Learner,ContentDeveloper'
         self.assertRaises(
-            BLTIException, Roles().authorize, self.blti, role='Instructor')
+            BLTIException, Roles(
+                CanvasData(**self.params)).authorize, role='Instructor')
 
         # unknown role
-        self.blti.data['roles'] = 'Learner'
+        self.params['roles'] = 'Learner'
         self.assertRaises(
-            BLTIException, Roles().authorize, self.blti, role='Manager')
+            BLTIException, Roles(
+                CanvasData(**self.params)).authorize, role='Manager')
 
 
-class BLTISessionTest(TestCase):
+class BLTI1p1SessionTest(TestCase):
     def setUp(self):
         self.request = RequestFactory().post(
             '/test', data=getattr(settings, 'CANVAS_LTI_V1_LAUNCH_PARAMS', {}),
@@ -223,11 +284,9 @@ class BLTISessionTest(TestCase):
         self.assertRaises(KeyError, lambda: blti_data['oauth_consumer_key'])
 
 
-@mock.patch.dict(os.environ, {'LTI_CONFIG_DIRECTORY': 'MOCK'})
 class BLTILaunchViewTest(TestCase):
     def test_launch_view(self):
-        response = self.client.post(reverse('launch_view'))
-        self.assertEquals(response.status_code, 401)
+        self.assertRaises(NoReverseMatch, reverse, 'lti-launch')
 
 
 class BLTIDecoratorTest(TestCase):

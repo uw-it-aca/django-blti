@@ -35,9 +35,11 @@ class BLTILaunchView(BLTIView):
     def dispatch(self, request, *args, **kwargs):
         try:
             launch_data = self.validate_1p1(request)
+            logger.debug(f"LTI 1.1 launch")
         except BLTIException as ex:
             try:
                 launch_data = self.validate_1p3(request)
+                logger.debug(f"LTI 1.3 launch")
             except OIDCException as ex:
                 logger.error(f"LTI authentication failure: {ex}")
                 self.template_name = 'blti/401.html'
