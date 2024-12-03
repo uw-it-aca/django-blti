@@ -8,7 +8,7 @@ from pylti1p3.roles import (
 import re
 
 
-LTI_DATA_CLAIM_BASE =  'https://purl.imsglobal.org/spec/lti/claim/'
+LTI_DATA_CLAIM_BASE = 'https://purl.imsglobal.org/spec/lti/claim/'
 
 
 class LTILaunchData(object):

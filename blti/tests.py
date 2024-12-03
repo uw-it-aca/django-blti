@@ -129,9 +129,9 @@ class Canvas1p1RolesTest(TestCase):
         self.params = {
             "roles": 'Learner,',
             "ext_roles": ('urn:lti:instrole:ims/lis/Instructor,'
-                           'urn:lti:instrole:ims/lis/Student,'
-                           'urn:lti:role:ims/lis/Instructor,'
-                           'urn:lti:sysrole:ims/lis/User'),
+                          'urn:lti:instrole:ims/lis/Student,'
+                          'urn:lti:role:ims/lis/Instructor,'
+                          'urn:lti:sysrole:ims/lis/User'),
             "custom_canvas_account_sis_id":
             'uwcourse:seattle:arts-&-sciences:psych:psych',
             "oauth_timestamp": generate_timestamp(),

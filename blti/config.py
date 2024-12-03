@@ -33,5 +33,3 @@ def get_lti_config_path():
 
 def get_lti_public_key_path(key_name):
     return os.path.join(get_lti_config_directory(), key_name)
-
-

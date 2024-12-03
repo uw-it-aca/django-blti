@@ -32,4 +32,3 @@ class Mock1p3Data:
         logger.debug(f"Using mock jwt: {mock_jwt_path}")
         with open(mock_jwt_path, 'r') as f:
             return json.load(f)
-

@@ -36,12 +36,12 @@ class BLTIDevLaunch(TemplateView):
                       f"{role_base}/membership#Instructor"]
         elif role == "TeachingAssistant":
             roles += [f"{role_base}/membership#TeachingAssistant"]
-        elif role ==  "Student":
+        elif role == "Student":
             roles += [f"{role_base}/institution/person#Student",
                       f"{role_base}/membership#Learner"]
-        elif role ==  "Administrator":
+        elif role == "Administrator":
             roles += [f"{role_base}/system/person#Administrator"]
-        elif role ==  "ContentDeveloper":
+        elif role == "ContentDeveloper":
             roles += [f"{role_base}/membership#ContentDeveloper"]
 
         mock_jwt["https://purl.imsglobal.org/spec/lti/claim/roles"] = roles
