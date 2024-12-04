@@ -14,53 +14,43 @@ LTI_DATA_CLAIM_BASE = 'https://purl.imsglobal.org/spec/lti/claim/'
 class LTILaunchData(object):
     def __init__(self, **data):
         self._data = data
-
-    @property
-    def platform_name(self):
-        return self._data.get(
+        self.platform_name = self._data.get(
             'tool_consumer_info_product_family_code',
             self.claim_tool_platform('product_family_code'))
 
-    @property
-    def is_member(self):
-        return self._1p1_roles(['member']) or (
-            StaffRole(self._data).check() or
-            TeacherRole(self._data).check() or
-            TeachingAssistantRole(self._data).check() or
-            StudentRole(self._data).check() or
-            ObserverRole(self._data).check())
+        self.is_member = self._1p1_roles(
+            ['member']) or (
+                StaffRole(self._data).check() or
+                TeacherRole(self._data).check() or
+                TeachingAssistantRole(self._data).check() or
+                StudentRole(self._data).check() or
+                ObserverRole(self._data).check())
 
-    @property
-    def is_administrator(self):
-        return self._1p1_roles(['admin']) or (
-            TeacherRole(self._data).check() or
-            TeachingAssistantRole(self._data).check() or
-            DesignerRole(self._data).check())
+        self.is_administrator = self._1p1_roles(
+            ['admin']) or (
+                TeacherRole(self._data).check() or
+                TeachingAssistantRole(self._data).check() or
+                DesignerRole(self._data).check())
 
-    @property
-    def is_staff(self):
-        return self._1p1_roles(['Administrator']) or (
-            StaffRole(self._data).check())
+        self.is_staff = self._1p1_roles(
+            ['Administrator']) or (
+                StaffRole(self._data).check())
 
-    @property
-    def is_instructor(self):
-        return self._1p1_roles(['Instructor']) or (
-            TeacherRole(self._data).check())
+        self.is_instructor = self._1p1_roles(
+            ['Instructor']) or (
+                TeacherRole(self._data).check())
 
-    @property
-    def is_teaching_assistant(self):
-        return self._1p1_roles(['TeachingAssistant']) or (
-            TeachingAssistantRole(self._data).check())
+        self.is_teaching_assistant = self._1p1_roles(
+            ['TeachingAssistant']) or (
+                TeachingAssistantRole(self._data).check())
 
-    @property
-    def is_student(self):
-        return self._1p1_roles(['Learner']) or (
-            StudentRole(self._data).check())
+        self.is_student = self._1p1_roles(
+            ['Learner']) or (
+                StudentRole(self._data).check())
 
-    @property
-    def is_designer(self):
-        return self._1p1_roles(['ContentDeveloper']) or (
-            DesignerRole(self._data).check())
+        self.is_designer = self._1p1_roles(
+            ['ContentDeveloper']) or (
+                DesignerRole(self._data).check())
 
     def _1p1_roles(self, valid_roles):
         RE_ROLE_NS = re.compile(

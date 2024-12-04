@@ -19,11 +19,64 @@ import mock
 import os
 
 
+LTI_LAUNCH_PARAMS = {
+    'oauth_consumer_key': 'XXXXXXXXXXXXXX',
+    'oauth_signature_method': 'HMAC-SHA1',
+    'oauth_timestamp': '1234567890',
+    'oauth_nonce': 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+    'oauth_signature': 'XXXXXXXXXXXXXXXXXXXXXXXXXXX=',
+    'oauth_callback': 'about:blank',
+    'oauth_version': '1.0',
+    'launch_presentation_height': '400',
+    'user_image': ('https://example.instructure.com/images/thumbnails/'
+                   '123456/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'),
+    'context_id': 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+    'tool_consumer_info_version': 'cloud',
+    'ext_roles': ('urn:lti:instrole:ims/lis/Administrator,'
+                  'urn:lti:instrole:ims/lis/Instructor,'
+                  'urn:lti:instrole:ims/lis/Student,'
+                  'urn:lti:role:ims/lis/Instructor,'
+                  'urn:lti:role:ims/lis/Learner/NonCreditLearner,'
+                  'urn:lti:role:ims/lis/Mentor,urn:lti:sysrole:ims/lis/User'),
+    'tool_consumer_instance_guid': 'xxxxxxxx.example.instructure.com',
+    'context_label': 'ABC 101 A',
+    'lti_message_type': 'basic-lti-launch-request',
+    'custom_canvas_workflow_state': 'claimed',
+    'lis_person_name_full': 'James Average',
+    'context_title': 'ABC 101 A: Example Course',
+    'user_id': 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+    'custom_canvas_user_id': '123456',
+    'launch_presentation_locale': 'en',
+    'custom_canvas_api_domain': 'example.instructure.com',
+    'custom_canvas_enrollment_state': 'active',
+    'tool_consumer_instance_contact_email': 'example@example.instructure.com',
+    'tool_consumer_info_product_family_code': 'canvas',
+    'custom_application_type': 'ExampleApp',
+    'lis_person_name_family': 'Average',
+    'lis_course_offering_sourcedid': '2018-spring-ABC-101-A',
+    'launch_presentation_width': '800',
+    'resource_link_title': 'Example App',
+    'custom_canvas_account_sis_id': 'example:account',
+    'lis_person_sourcedid': 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
+    'tool_consumer_instance_name': 'Example University',
+    'resource_link_id': 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+    'lis_person_contact_email_primary': 'javerage@example.edu',
+    'roles': 'Learner',
+    'custom_canvas_course_id': '123456',
+    'lti_version': 'LTI-1p0',
+    'lis_person_name_given': 'James',
+    'launch_presentation_return_url': ('https://example.instructure.com/'
+                                       'courses/123456'),
+    'launch_presentation_document_target': 'iframe',
+    'custom_canvas_account_id': '12345',
+    'custom_canvas_user_login_id': 'javerage'
+}
+
+
 class RequestValidator1p1Test(TestCase):
     def setUp(self):
         self.request = RequestFactory().post(
-            '/test', data=getattr(settings, 'CANVAS_LTI_V1_LAUNCH_PARAMS', {}),
-            secure=True)
+            '/test', data=LTI_LAUNCH_PARAMS, secure=True)
 
     def test_check_client_key(self):
         self.assertTrue(BLTIRequestValidator().check_client_key('x' * 12))
@@ -83,7 +136,7 @@ class RequestValidator1p1Test(TestCase):
 
 class CanvasRolesTest(TestCase):
     def setUp(self):
-        self.params = getattr(settings, 'CANVAS_LTI_V1_LAUNCH_PARAMS', {})
+        self.params = LTI_LAUNCH_PARAMS
         self.launch_data = CanvasData(**self.params)
 
     def _authorize(self, role):
@@ -164,8 +217,7 @@ class CanvasRolesTest(TestCase):
 class BLTI1p1SessionTest(TestCase):
     def setUp(self):
         self.request = RequestFactory().post(
-            '/test', data=getattr(settings, 'CANVAS_LTI_V1_LAUNCH_PARAMS', {}),
-            secure=True)
+            '/test', data=LTI_LAUNCH_PARAMS, secure=True)
         SessionMiddleware(get_response=mock.MagicMock()).process_request(
             self.request)
 
@@ -183,7 +235,7 @@ class BLTI1p1SessionTest(TestCase):
         self.assertEqual(blti.get_session(self.request), {})
 
     def test_filter_oauth_params(self):
-        data = getattr(settings, 'CANVAS_LTI_V1_LAUNCH_PARAMS', {})
+        data = LTI_LAUNCH_PARAMS
 
         self.assertEquals(len(data), 43)
         self.assertEquals(data['oauth_consumer_key'], 'XXXXXXXXXXXXXX')
@@ -198,8 +250,7 @@ class BLTI1p1SessionTest(TestCase):
 class BLTIDecoratorTest(TestCase):
     def setUp(self):
         self.request = RequestFactory().post(
-            '/test', data=getattr(settings, 'CANVAS_LTI_V1_LAUNCH_PARAMS', {}),
-            secure=True)
+            '/test', data=LTI_LAUNCH_PARAMS, secure=True)
         SessionMiddleware(get_response=mock.MagicMock()).process_request(
             self.request)
 

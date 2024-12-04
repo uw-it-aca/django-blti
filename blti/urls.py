@@ -13,9 +13,9 @@ urlpatterns = [
     re_path(r'^$', BLTIRawView.as_view(), name='lti-launch-data'),
 ]
 
-if (getattr(settings, 'LTI_DEVELOP_APP', None)
-        and getattr(settings, "DEBUG", False)):
+if getattr(settings, 'LTI_DEVELOP_APP', False):
     from blti.views.develop import BLTIDevPrepare, BLTIDevLaunch
+
     urlpatterns += [
         re_path(r'^dev/?$', BLTIDevPrepare.as_view(), name='dev-prepare'),
         re_path(r'^dev/launch/$', BLTIDevLaunch.as_view(), name='dev-launch'),

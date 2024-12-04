@@ -68,9 +68,11 @@ Deployed tool configuration is defined in the JSON file named
 The configuration file content is documented in the
 [pylti1p3 README](https://github.com/dmitry-viskov/pylti1.3?tab=readme-ov-file#configuration).
 
-Legacy LTI 1.1 launch authentication and payload normalization is
-also supported at this time, but is no longer documented here.
-
+In addition, a management command is available to simplify key
+pair generation during configuration.
+```
+    # python manage.py generate_credentials private.key public.key jwt.json
+```
 ## Tool Development
 This app also provides an optional development environment activated by
 defining the environment variable:
@@ -83,6 +85,8 @@ and launch url named:
         re_path(r'^$', MyToolLaunchView.as_view(), name="lti-launch"),
     ]
 ```
+And finally, to initiate the launch sequence, point your browser at ``/blti/dev``
+
 A mocked JWT payload for Canvas is provided, but can be overridden by
 creating the file ``resources/lti1p3/file/jwt.json`` in your tool's
 app directory. django-blti will walk the list of ``INSTALLED_APPS``,
@@ -92,3 +96,6 @@ Visit [uw-id-aca/info-hub-lti](https://github.com/uw-it-aca/info-hub-lti) or
 [uw-id-aca/library-guides-lti](https://github.com/uw-it-aca/library-guides-lti) or
 to see LTI Tool  examples based on launch views and mocked local development
 environment.
+## Legacy Support
+LTI 1.1 launch authentication, authorization, and payload normalization is
+also supported for the time being, but is no longer documented here.

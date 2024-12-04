@@ -92,6 +92,7 @@ class CanvasRolesTest(TestCase):
         self.assertEquals(None, self._authorize('member'))
 
     def test_authorize_admin(self):
+        self._set_role('User')
         self.assertRaises(
             BLTIException, Roles(self.launch_data).authorize, role='admin')
 
