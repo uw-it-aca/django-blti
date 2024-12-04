@@ -1,7 +1,7 @@
 <!doctype html>
 <html class="no-js">
 <head>
-    <title>Prepare Development Launch for {{ lti_app }}</title>
+    <title>Prepare Development Launch for {% url 'lti-launch' %}</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="HandheldFriendly" content="true">
@@ -21,8 +21,8 @@
         <div id="main-wrapper">
             <div id="main">
                <div class="inner">
-                 <h2>LTI Context Settings for {{ lti_app }} Launch</h3>
-                 <form action="/blti/dev/launch/" method="get" id="form1">
+                 <h2>LTI Context Settings for {% url 'lti-launch' %} Launch</h3>
+                 <form action="{% url 'dev-launch' %}" method="get" id="form1">
                    <div class="form-row">
                    <div class="form-group col-md-6">
                      <label for="campus">Campus:</label>
@@ -35,14 +35,15 @@
                    <div class="form-group col-md-6">
                      <label for="role">Role:</label>
                      <select id="role" name="role" class="form-control">
-                       <option value="instructor">Instructor</option>
-                       <option value="ta">TA</option>
-                       <option value="student">Student</option>
-                       <option value="administrator">Administrator</option>
+                       <option value="Instructor">Instructor</option>
+                       <option value="TeachingAssistant">TeachingAssistant</option>
+                       <option value="Student">Student</option>
+                       <option value="Administrator">Administrator</option>
+                       <option value="ContentDeveloper">ContentDeveloper</option>
                    </select>
                    </div>
                    </div>
-                 <button class="btn btn-primary" type="submit" form="form1" value="Launch">Prepare to Launch {{ lti_app }}</button>
+                 <button class="btn btn-primary" type="submit" form="form1" value="Launch">Prepare to Launch {% url 'lti-launch' %}</button>
                </div>
             </div><!--end #main-->
         </div>

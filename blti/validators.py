@@ -6,9 +6,12 @@ from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from oauthlib.oauth1.rfc5849.request_validator import RequestValidator
 from oauthlib.oauth1.rfc5849.utils import UNICODE_ASCII_CHARACTER_SET
-from blti import BLTIException
+from blti.exceptions import BLTIException
 import time
-import re
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 
 class BLTIRequestValidator(RequestValidator):
@@ -56,42 +59,31 @@ class BLTIRequestValidator(RequestValidator):
 
 
 class Roles(object):
-    # https://www.imsglobal.org/specs/ltiv1p1/implementation-guide#toc-30
-    CANVAS_ROLES = {
-        'member': ['Administrator', 'Instructor', 'TeachingAssistant',
-                   'ContentDeveloper', 'Learner', 'Observer'],
-        'admin': ['Administrator', 'Instructor', 'TeachingAssistant',
-                  'ContentDeveloper'],
-    }
+    def __init__(self, launch_data):
+        self.blti = launch_data
 
-    RE_ROLE_NS = re.compile(r'^urn:lti:(?:inst|sys)?role:ims/lis/([A-Za-z]+)$')
+    def authorize(self, role='member'):
+        if not hasattr(self, 'blti') or self.blti is None:
+            raise ImproperlyConfigured(
+                'Roles class requires a blti model')
 
-    def authorize(self, blti, role='member'):
-        if blti is None:
-            raise BLTIException('Missing LTI parameters')
-
-        lti_consumer = blti.data.get(
-            'tool_consumer_info_product_family_code', '').lower()
-
-        if lti_consumer == 'canvas':
-            if (not role or role == 'public'):
-                pass
-            elif (role in self.CANVAS_ROLES):  # member/admin
-                self._has_role(blti, self.CANVAS_ROLES[role])
-            else:  # specific role?
-                self._has_role(blti, [role])
-        else:
-            raise BLTIException('authorize() not implemented for "%s"!' % (
-                lti_consumer))
-
-    def _has_role(self, blti, valid_roles):
-        roles = blti.data.get('roles', '').split(',')
-        for role in roles:
-            if role in valid_roles:
-                return
-
-            m = self.RE_ROLE_NS.match(role)
-            if m and m.group(1) in valid_roles:
-                return
+        role = role.lower() if role else None
+        if not role or role == 'public' or (
+                role == 'member' and
+                self.blti.is_member) or (
+                    role == 'admin' and
+                    self.blti.is_administrator) or (
+                        role in ['administrator', 'sysadmin'] and
+                        self.blti.is_staff) or (
+                            role in ['instructor', 'teacher']
+                            and self.blti.is_instructor) or (
+                                role in ['teachingassistant', 'ta'] and
+                                self.blti.is_teaching_assistant) or (
+                                    role in ['student', 'learner'] and
+                                    self.blti.is_student) or (
+                                        role in [
+                                            'contentdeveloper', 'designer'] and
+                                        self.blti.is_designer):
+            return
 
         raise BLTIException('You are not authorized to view this content')

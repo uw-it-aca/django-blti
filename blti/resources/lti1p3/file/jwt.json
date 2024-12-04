@@ -1,0 +1,103 @@
+{
+    "https://purl.imsglobal.org/spec/lti/claim/message_type": "LtiResourceLinkRequest",
+    "https://purl.imsglobal.org/spec/lti/claim/version": "1.3.0",
+    "https://purl.imsglobal.org/spec/lti/claim/resource_link": {
+        "id": "mlc8eg759gejre6lwj6swl46ori1lw587lf55qmf",
+        "description": null,
+        "title": "PSYCH 101 A Au 19, Introduction To Psychology",
+        "validation_context": null,
+        "errors": {
+            "errors": {}
+        }
+    },
+    "aud": "100000000000838",
+    "azp": "100000000000838",
+    "https://purl.imsglobal.org/spec/lti/claim/deployment_id": "202033:8msdby5dbxxpq2e8ynmgh62bu314c5wrvpbnpkgd",
+    "exp": 1732581263,
+    "iat": 1732577663,
+    "iss": "https://canvas.test.instructure.com",
+    "nonce": "62vc1m6iz8ue3kfv6cnfgp0iq44g72636d3qls8v5hljze5wzuj4nt9wqmkrs4r7",
+    "sub": "82be0848-e310-65a9-60c6-95e047f4ad54",
+    "https://purl.imsglobal.org/spec/lti/claim/target_link_uri": "https://test.coda.uw.edu/lti/",
+    "picture": "/images/thumbnails/8140331/ynu8th19hg8afjfy1y1bnzvi4nfewe7l6tsqf7kp",
+    "email": "javerage@u.washington.edu",
+    "name": "James Average",
+    "given_name": "James",
+    "family_name": "Average",
+    "https://purl.imsglobal.org/spec/lti/claim/lis": {
+        "person_sourcedid": "0C8F043FA5CBE23F2B1E1A63B1BD80B8",
+        "course_offering_sourcedid": "2019-autumn-PSYCH-101-A",
+        "validation_context": null,
+        "errors": {
+            "errors": {}
+        }
+    },
+    "https://purl.imsglobal.org/spec/lti/claim/context": {
+        "id": "03cb0d42727656eab47895b75471668961056696",
+        "label": "PSYCH 101 A",
+        "title": "PSYCH 101 A Au 19, Introduction To Psychology",
+        "type": [
+            "http://purl.imsglobal.org/vocab/lis/v2/course#CourseOffering"
+        ],
+        "validation_context": null,
+        "errors": {
+            "errors": {}
+        }
+    },
+    "https://purl.imsglobal.org/spec/lti/claim/tool_platform": {
+        "guid": "51ecb48cc8cac02d3de0da598976b9673c99dbf7.canvas.instructure.com",
+        "name": "University of Washington",
+        "version": "cloud",
+        "product_family_code": "canvas",
+        "validation_context": null,
+        "errors": {
+            "errors": {}
+        }
+    },
+    "https://purl.imsglobal.org/spec/lti/claim/launch_presentation": {
+        "document_target": "iframe",
+        "return_url": "https://uw.test.instructure.com/courses/9752574/external_content/success/external_tool_redirect",
+        "locale": "en",
+        "height": 400,
+        "width": 800,
+        "validation_context": null,
+        "errors": {
+            "errors": {}
+        }
+    },
+    "locale": "en",
+    "https://purl.imsglobal.org/spec/lti/claim/roles": [],
+    "https://purl.imsglobal.org/spec/lti/claim/custom": {
+        "application_type": "ViewStudentProfile",
+        "userid_parameter": "lis_person_sourcedid",
+        "courseid_parameter": "lis_course_offering_sourcedid",
+        "canvas_user_id": "700007",
+        "canvas_course_id": "9752574",
+        "canvas_account_id": "5171292",
+        "canvas_api_domain": "uw.test.instructure.com",
+        "canvas_user_login_id": "javerage",
+        "canvas_account_sis_id": "uwcourse:seattle:a-and-s:pych:psych"
+    },
+    "https://purl.imsglobal.org/spec/lti-nrps/claim/namesroleservice": {
+        "context_memberships_url": "https://uw.test.instructure.com/api/lti/courses/9752574/names_and_roles",
+        "service_versions": [
+            "2.0"
+        ],
+        "validation_context": null,
+        "errors": {
+            "errors": {}
+        }
+    },
+    "https://purl.imsglobal.org/spec/lti/claim/lti11_legacy_user_id": "0C8F043FA5CBE23F2B1E1A63B1BD80B8",
+    "https://purl.imsglobal.org/spec/lti/claim/lti1p1": {
+        "user_id": "4z7r44zt4zslip50w6hga4u6g37kym68hrkqgl0g",
+        "validation_context": null,
+        "errors": {
+            "errors": {}
+        }
+    },
+    "errors": {
+        "errors": {}
+    },
+    "https://www.instructure.com/placement": "course_navigation"
+}

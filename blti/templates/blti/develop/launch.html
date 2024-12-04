@@ -1,7 +1,7 @@
 <!doctype html>
 <html class="no-js">
 <head>
-    <title>Launch Development Page for {{ lti_app }}</title>
+    <title>Launch Development Page for {% url 'lti-launch' %}</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="HandheldFriendly" content="true">
@@ -21,13 +21,10 @@
 
             <div id="main">
                <div class="inner">
-                 <form action="/{{ lti_app }}/" method="POST" id="form1">
-                   {% for k, v in lti_parameters %}
-                   <input type="hidden" name="{{ k }}" value="{{ v }}">
-                   {% endfor %}
+                 <form action="{% url 'lti-launch' %}" method="POST" id="form1">
                  </form>
 
-                 <button class="btn btn-primary" type="submit" form="form1" value="Launch">Launch {{ lti_app }} LTI as {{ role_name|title }} in {{ campus|title }}</button>
+                 <button class="btn btn-primary" type="submit" form="form1" value="Launch">Launch {% url 'lti-launch' %} LTI as {{ role }} in {{ campus|title }}</button>
                </div>
             </div><!--end #main-->
         </div>
