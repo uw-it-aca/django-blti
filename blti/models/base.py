@@ -3,8 +3,8 @@
 
 from django.db import models
 from pylti1p3.roles import (
-    StaffRole, StudentRole, TeacherRole, TeachingAssistantRole, DesignerRole,
-    ObserverRole, TransientRole)
+    AbstractRole, StaffRole, TeacherRole, TeachingAssistantRole,
+    DesignerRole, ObserverRole, TransientRole)
 import re
 
 
@@ -117,3 +117,9 @@ class LTILaunchData(object):
     def _claim(self, claim):
         # specific claim key
         return f"{LTI_DATA_CLAIM_BASE}{claim}"
+
+
+class StudentRole(AbstractRole):
+    _common_roles = ("Learner", "Member")
+    _institution_roles = ("Student", "Learner", "Member")
+    _context_roles = ("Learner", "Member")

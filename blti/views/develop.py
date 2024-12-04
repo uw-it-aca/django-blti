@@ -1,7 +1,7 @@
 # Copyright 2024 UW-IT, University of Washington
 # SPDX-License-Identifier: Apache-2.0
 
-from blti.mock import Mock1p3Data
+from blti.mock_data import Mock1p3Data
 from django.views.generic import TemplateView
 from django.urls import reverse, resolve
 from django.urls.exceptions import NoReverseMatch

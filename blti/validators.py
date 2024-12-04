@@ -67,20 +67,22 @@ class Roles(object):
             raise ImproperlyConfigured(
                 'Roles class requires a blti model')
 
+        role = role.lower() if role else None
         if not role or role == 'public' or (
                 role == 'member' and
                 self.blti.is_member) or (
                     role == 'admin' and
                     self.blti.is_administrator) or (
-                        role in ['Administrator', 'SysAdmin'] and
+                        role in ['administrator', 'sysadmin'] and
                         self.blti.is_staff) or (
-                            role == 'Instructor'
+                            role in ['instructor', 'teacher']
                             and self.blti.is_instructor) or (
-                                role == 'TeachingAssistant' and
+                                role in ['teachingassistant', 'ta'] and
                                 self.blti.is_teaching_assistant) or (
-                                    role in ['Student', 'Learner'] and
+                                    role in ['student', 'learner'] and
                                     self.blti.is_student) or (
-                                        role == 'ContentDeveloper' and
+                                        role in [
+                                            'contentdeveloper', 'designer'] and
                                         self.blti.is_designer):
             return
 
