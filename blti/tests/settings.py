@@ -1,17 +1,17 @@
-SECRET_KEY='fake_key'
-DEBUG=True
-DATABASES={
+SECRET_KEY = 'fake_key'
+DEBUG = True
+DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': ':memory:',
     }
 }
-INSTALLED_APPS=(
+INSTALLED_APPS = (
     'django.contrib.sessions',
-    'blti',
+    'blti'
 )
-ROOT_URLCONF='tests.urls'
-MIDDLEWARE_CLASSES=(
+ROOT_URLCONF = 'tests.urls'
+MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
 )
 CANVAS_LTI_V1_LAUNCH_PARAMS = {
@@ -23,11 +23,17 @@ CANVAS_LTI_V1_LAUNCH_PARAMS = {
     'oauth_callback': 'about:blank',
     'oauth_version': '1.0',
     'launch_presentation_height': '400',
-    'user_image': 'https://example.instructure.com/images/thumbnails/123456/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+    'user_image': ('https://example.instructure.com/images/thumbnails/'
+                   '123456/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'),
     'context_id': 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
     'tool_consumer_info_version': 'cloud',
-    'ext_roles': 'urn:lti:instrole:ims/lis/Administrator,urn:lti:instrole:ims/lis/Instructor,urn:lti:instrole:ims/lis/Student,urn:lti:role:ims/lis/Instructor,urn:lti:role:ims/lis/Learner/NonCreditLearner,urn:lti:role:ims/lis/Mentor,urn:lti:sysrole:ims/lis/User',
-    'tool_consumer_instance_guid': 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.example.instructure.com',
+    'ext_roles': ('urn:lti:instrole:ims/lis/Administrator,'
+                  'urn:lti:instrole:ims/lis/Instructor,'
+                  'urn:lti:instrole:ims/lis/Student,'
+                  'urn:lti:role:ims/lis/Instructor,'
+                  'urn:lti:role:ims/lis/Learner/NonCreditLearner,'
+                  'urn:lti:role:ims/lis/Mentor,urn:lti:sysrole:ims/lis/User'),
+    'tool_consumer_instance_guid': 'xxxxxxxx.example.instructure.com',
     'context_label': 'ABC 101 A',
     'lti_message_type': 'basic-lti-launch-request',
     'custom_canvas_workflow_state': 'claimed',
@@ -54,7 +60,8 @@ CANVAS_LTI_V1_LAUNCH_PARAMS = {
     'custom_canvas_course_id': '123456',
     'lti_version': 'LTI-1p0',
     'lis_person_name_given': 'James',
-    'launch_presentation_return_url': 'https://example.instructure.com/courses/123456',
+    'launch_presentation_return_url': ('https://example.instructure.com/'
+                                       'courses/123456'),
     'launch_presentation_document_target': 'iframe',
     'custom_canvas_account_id': '12345',
     'custom_canvas_user_login_id': 'javerage'}
