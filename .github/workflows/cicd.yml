@@ -48,7 +48,6 @@ jobs:
     strategy:
       matrix:
         python-version:
-          - '3.8'
           - '3.10'
         django-version:
           - '3.2'
@@ -72,25 +71,16 @@ jobs:
       - name: Upgrade Django ${{ matrix.django-version }}
         run: pip install "Django~=${{ matrix.django-version }}.0"
 
-      - name: Setup Django
-        run: |
-          django-admin startproject project .
-          test -f ${CONF_PATH}/urls.py && cp ${CONF_PATH}/urls.py project/
-          test -f ${CONF_PATH}/settings.py && cat ${CONF_PATH}/settings.py >> project/settings.py
-
       - name: Run Python Linters
         uses: uw-it-aca/actions/python-linters@main
         with:
           app_name: ${APP_NAME}
           exclude_paths: 'migrations'
 
-      - name: Run Migrations
-        run: python manage.py migrate
-
       - name: Run Tests
         run: |
           python -m compileall ${APP_NAME}/
-          coverage run --source=${APP_NAME}/ manage.py test ${APP_NAME}
+          coverage run --source=${APP_NAME}/ ${APP_NAME}/runtests.py
 
       - name: Report Test Coverage
         if: |

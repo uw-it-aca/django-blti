@@ -20,8 +20,11 @@ setup(
     include_package_data=True,
     install_requires=[
         'Django>=3.2,<5',
+        'PyLTI1p3==2.0.0',
         'oauthlib',
         'cryptography',
+        'pycryptodome',
+        'jwcrypto',
         'mock',
     ],
     license='Apache License, Version 2.0',

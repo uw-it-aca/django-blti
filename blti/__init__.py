@@ -2,50 +2,27 @@
 # SPDX-License-Identifier: Apache-2.0
 
 
+from blti.exceptions import BLTIException
 import json
-from base64 import b64decode, b64encode
-from django.conf import settings
-from django.core.exceptions import ImproperlyConfigured
-from blti.crypto import aes128cbc
 
 
-class BLTIException(Exception):
-    pass
+LTI_DATA_KEY = 'lti_launch_data'
 
 
 class BLTI(object):
-    def __init__(self):
-        if not hasattr(settings, 'BLTI_AES_KEY'):
-            raise ImproperlyConfigured('Missing setting BLTI_AES_KEY')
-        if not hasattr(settings, 'BLTI_AES_IV'):
-            raise ImproperlyConfigured('Missing setting BLTI_AES_IV')
-
     def set_session(self, request, **kwargs):
         if not request.session.exists(request.session.session_key):
             request.session.create()
 
-        kwargs['_blti_session_id'] = request.session.session_key
-        request.session['blti'] = self._encrypt_session(
-            self.filter_oauth_params(kwargs))
+        # filter oauth_* parameters
+        for key in list(filter(
+                lambda key: key.startswith('oauth_'), kwargs.keys())):
+            kwargs.pop(key)
+
+        request.session[LTI_DATA_KEY] = json.dumps(kwargs)
 
     def get_session(self, request):
-        if 'blti' not in request.session:
+        try:
+            return json.loads(request.session[LTI_DATA_KEY])
+        except KeyError:
             raise BLTIException('Invalid Session')
-
-        blti_data = self._decrypt_session(request.session['blti'])
-        if blti_data['_blti_session_id'] != request.session.session_key:
-            raise BLTIException('Invalid BLTI session data')
-
-        blti_data.pop('_blti_session_id', None)
-        return blti_data
-
-    def filter_oauth_params(self, params):
-        return {k: v for k, v in params.items() if not k.startswith('oauth_')}
-
-    def _encrypt_session(self, data):
-        aes = aes128cbc(settings.BLTI_AES_KEY, settings.BLTI_AES_IV)
-        return b64encode(aes.encrypt(json.dumps(data))).decode('utf8')
-
-    def _decrypt_session(self, string):
-        aes = aes128cbc(settings.BLTI_AES_KEY, settings.BLTI_AES_IV)
-        return json.loads(aes.decrypt(b64decode(string)))
