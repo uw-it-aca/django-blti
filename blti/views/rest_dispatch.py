@@ -6,6 +6,7 @@ from django.http import HttpResponse
 from .base import BLTIView
 from blti.exceptions import BLTIException
 from blti.performance import log_response_time
+import json
 
 
 class RESTDispatch(BLTIView):
