@@ -8,6 +8,7 @@ from django.contrib.sessions.middleware import SessionMiddleware
 from django.core.exceptions import ImproperlyConfigured
 from blti.validators import BLTIRequestValidator, Roles
 from blti.models import CanvasData
+from blti.roles import roles_from_role_name
 from blti.performance import log_response_time
 from blti import BLTI, LTI_DATA_KEY
 from blti.mock_data import Mock1p3Data
@@ -135,39 +136,8 @@ class CanvasRolesTest(TestCase):
                 CanvasData(**self.params)).authorize, role='Manager')
 
     def _set_role(self, role):
-        self.params[
-            "https://purl.imsglobal.org/spec/lti/claim/roles"] = []
-        roles = []
-        if role == 'User':
-            roles = ["system/person#User"]
-        elif role in ['Observer', 'Mentor']:
-            roles = ["institution/person#Observer",
-                     "institution/person#Mentor",
-                     "membership#Mentor"]
-        elif role in ['Student', 'Learner']:
-            roles = [
-                "institution/person#Learner",
-                "institution/person#Student",
-                "membeship#Learner"]
-        elif role == 'Instructor':
-            roles = [
-                "institution/person#Instructor",
-                "institution/person#Faculty",
-                "membeship#Instructor"]
-        elif role == 'Administrator':
-            roles = [
-                "system/person#User",
-                "institution/person#Administrator",
-                "membeship#Administrator"]
-        elif role == 'TeachingAssistant':
-            roles = ["membership/Instructor#TeachingAssistant"]
-        elif role == 'ContentDeveloper':
-            roles = ["membership#ContentDeveloper"]
-
-        for r in roles:
-            self.params[
-                "https://purl.imsglobal.org/spec/lti/claim/roles"].append(
-                    f"http://purl.imsglobal.org/vocab/lis/v2/{r}")
+        claim, roles = roles_from_role_name([role])
+        self.params[claim] = roles
 
 
 class BLTI1p3SessionTest(TestCase):
