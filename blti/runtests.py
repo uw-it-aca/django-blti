@@ -1,8 +1,6 @@
 # Copyright 2025 UW-IT, University of Washington
 # SPDX-License-Identifier: Apache-2.0
 
-#!/usr/bin/env python
-
 import django
 from django.test.utils import get_runner
 from django.conf import settings
