@@ -1,4 +1,4 @@
-# Copyright 2024 UW-IT, University of Washington
+# Copyright 2025 UW-IT, University of Washington
 # SPDX-License-Identifier: Apache-2.0
 
 from django.db import models
@@ -110,6 +110,6 @@ class LTILaunchData(object):
 
 
 class StudentRole(AbstractRole):
-    _common_roles = ("Learner", "Member")
-    _institution_roles = ("Student", "Learner", "Member")
-    _context_roles = ("Learner", "Member")
+    _common_roles = ("Learner")
+    _institution_roles = ("Student", "Learner")
+    _context_roles = ("Learner")
