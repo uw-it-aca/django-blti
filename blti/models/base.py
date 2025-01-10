@@ -10,9 +10,8 @@ import re
 
 LTI_DATA_CLAIM_BASE = 'https://purl.imsglobal.org/spec/lti/claim/'
 
-#
+
 # Instructor and student roles are specific to the given context (course)
-#
 class TeacherRole(AbstractRole):
     _common_roles = ("Instructor", "Administrator")
     _context_roles = ("Instructor", "Administrator")
@@ -21,7 +20,6 @@ class TeacherRole(AbstractRole):
 class StudentRole(AbstractRole):
     _common_roles = ("Learner")
     _context_roles = ("Learner")
-
 
 
 class LTILaunchData(object):
