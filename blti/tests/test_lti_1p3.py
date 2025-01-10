@@ -88,6 +88,10 @@ class CanvasRolesTest(TestCase):
         self.launch_data = CanvasData(**self.params)
         self.assertEquals(None, self._authorize('member'))
 
+        self._set_role('Learner')
+        self.launch_data = CanvasData(**self.params)
+        self.assertEquals(None, self._authorize('member'))
+
         self._set_role('Observer')
         self.launch_data = CanvasData(**self.params)
         self.assertEquals(None, self._authorize('member'))

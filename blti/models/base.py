@@ -3,12 +3,25 @@
 
 from django.db import models
 from pylti1p3.roles import (
-    AbstractRole, StaffRole, TeacherRole, TeachingAssistantRole,
+    AbstractRole, StaffRole, TeachingAssistantRole,
     DesignerRole, ObserverRole, TransientRole)
 import re
 
 
 LTI_DATA_CLAIM_BASE = 'https://purl.imsglobal.org/spec/lti/claim/'
+
+#
+# Instructor and student roles are specific to the given context (course)
+#
+class TeacherRole(AbstractRole):
+    _common_roles = ("Instructor", "Administrator")
+    _context_roles = ("Instructor", "Administrator")
+
+
+class StudentRole(AbstractRole):
+    _common_roles = ("Learner")
+    _context_roles = ("Learner")
+
 
 
 class LTILaunchData(object):
@@ -107,9 +120,3 @@ class LTILaunchData(object):
     def _claim(self, claim):
         # specific claim key
         return f"{LTI_DATA_CLAIM_BASE}{claim}"
-
-
-class StudentRole(AbstractRole):
-    _common_roles = ("Learner")
-    _institution_roles = ("Student", "Learner")
-    _context_roles = ("Learner")

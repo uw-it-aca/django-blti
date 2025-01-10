@@ -21,17 +21,17 @@ def roles_from_role_name(role_names):
             roles += [
                 "institution/person#Learner",
                 "institution/person#Student",
-                "membeship#Learner"]
+                "membership#Learner"]
         elif role_name in ['Instructor', 'Faculty', 'Teacher']:
             roles += [
                 "institution/person#Instructor",
                 "institution/person#Faculty",
-                "membeship#Instructor"]
+                "membership#Instructor"]
         elif role_name == 'Administrator':
             roles += [
                 "system/person#User",
                 "institution/person#Administrator",
-                "membeship#Administrator"]
+                "membership#Administrator"]
         elif role_name == 'TeachingAssistant':
             roles += ["membership/Instructor#TeachingAssistant"]
         elif role_name == 'ContentDeveloper':
