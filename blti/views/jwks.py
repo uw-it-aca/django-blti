@@ -3,6 +3,7 @@
 
 from django.views.decorators.csrf import csrf_exempt
 from blti.config import get_tool_conf
+from django.http import JsonResponse
 
 
 @csrf_exempt
