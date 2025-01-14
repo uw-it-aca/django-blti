@@ -11,6 +11,12 @@ import re
 LTI_DATA_CLAIM_BASE = 'https://purl.imsglobal.org/spec/lti/claim/'
 
 
+# System Admin role is across all contexts (courses)
+class SystemAdministratorRole(AbstractRole):
+    _institution_roles = ("Administrator")
+    _common_roles = ("Administrator")
+
+
 # Instructor and student roles are specific to the given context (course)
 class TeacherRole(AbstractRole):
     _common_roles = ("Instructor", "Administrator")
@@ -39,6 +45,7 @@ class LTILaunchData(object):
 
         self.is_administrator = self._1p1_roles(
             ['admin']) or (
+                SystemAdministratorRole(self._data).check() or
                 TeacherRole(self._data).check() or
                 TeachingAssistantRole(self._data).check() or
                 DesignerRole(self._data).check())
