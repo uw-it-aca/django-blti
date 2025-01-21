@@ -2,14 +2,19 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from django.views.decorators.csrf import csrf_exempt
+from django.http import HttpResponse
 from blti.config import get_tool_conf, get_launch_data_storage
 from pylti1p3.contrib.django import DjangoOIDCLogin
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 
 def get_launch_url(request):
     try:
         return request.POST.get(
-            'target_link_uri', request.GET.get('target_link_uri'))
+            'target_link_uri', request.GET['target_link_uri'])
     except KeyError:
         raise BLTIException('Missing "target_link_uri" param')
 
@@ -28,4 +33,5 @@ def login(request):
 
         return oidc_login.enable_check_cookies().redirect(target_link_uri)
     except Exception as ex:
+        logger.error(f"LTI 1.3 login exception: {ex}")
         return HttpResponse(str(ex), status=401)
