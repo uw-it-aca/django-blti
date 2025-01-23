@@ -7,7 +7,7 @@ from django.views.generic import TemplateView
 from django.urls import reverse, resolve
 from django.urls.exceptions import NoReverseMatch
 from importlib import import_module
-from blti import BLTIException
+from blti.exceptions import BLTIException
 
 
 class BLTIDevPrepare(TemplateView):

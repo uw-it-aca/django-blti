@@ -4,6 +4,7 @@
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse
 from blti.config import get_tool_conf, get_launch_data_storage
+from blti.exceptions import BLTIException
 from pylti1p3.contrib.django import DjangoOIDCLogin
 import logging
 
