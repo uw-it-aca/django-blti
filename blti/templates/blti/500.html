@@ -1,0 +1,22 @@
+{% extends 'blti/base.html' %}
+
+{% load static %}
+
+{% block mobile_css %}
+    <link rel="stylesheet" type="text/css" href="{% static "blti/css/mobile.css" %}"/>
+{% endblock mobile_css %}
+
+
+{% block content %}
+<div id="unauthorized_holder">
+  <div id="unauthorized_message">
+    <h2 class="ui-state-error">
+        <i class="fa fa-warning"></i> <span>Page Error</span>
+    </h2>
+    <p><strong>{{ error }}</strong></p>
+    <p>
+      An error has occured while producing this page.  If this page does not load properly after a few minutes, please use the "Help" link to notify support of the problem.
+    </p>
+  </div>
+</div>
+{% endblock content %}
