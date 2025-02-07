@@ -10,26 +10,35 @@ against request forgeries from other sites.
 """
 
 from django.conf import settings
-from django.utils.deprecation import MiddlewareMixin
 from django.contrib.auth import authenticate, login
 from blti import BLTI
 from blti.exceptions import BLTIException
 
 
-class CSRFHeaderMiddleware(MiddlewareMixin):
-    def process_request(self, request):
+class CSRFHeaderMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
         csrf_token = request.META.get('HTTP_X_CSRFTOKEN', None)
         if csrf_token is not None:
             csrf_token_name = settings.CSRF_COOKIE_NAME
             request.COOKIES[csrf_token_name] = csrf_token
 
+        return self.get_response(request)
 
-class SessionHeaderMiddleware(MiddlewareMixin):
-    def process_request(self, request):
+
+class SessionHeaderMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
         session_id = request.META.get('HTTP_X_SESSIONID', None)
         if session_id is not None:
             session_key = settings.SESSION_COOKIE_NAME
             request.COOKIES[session_key] = session_id
+
+        return self.get_response(request)
 
 
 class LTISessionAuthenticationMiddleware:
@@ -51,10 +60,35 @@ class LTISessionAuthenticationMiddleware:
         return self.get_response(request)
 
 
-class SameSiteMiddleware(MiddlewareMixin):
-    def process_response(self, request, response):
+class PartitionedCookieMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        import logging; logger = logging.getLogger(__name__)
+        logger.info(f"REQUEST path {request.path}")
+        if k, v response.cookies.items():
+            logger.info(f"REQUEST Cookie {k}={v}")
+
+        response = self.get_response(request)
+
+        logger.info(f"RESPONSE path {request.path}")
+        for k, v in response.cookies.items():
+            logger.info(f"RESPONSE Cookie {k}={v}")
+
+        #response.cookies[k]['Partitioned'] = True
+
+        return response
+
+
+class SameSiteMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
         if 'sessionid' in response.cookies:
             response.cookies['sessionid']['samesite'] = 'None'
         if 'csrftoken' in response.cookies:
             response.cookies['csrftoken']['samesite'] = 'None'
-        return response
+
+        return self.get_response(request)
