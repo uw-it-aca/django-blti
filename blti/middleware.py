@@ -67,7 +67,7 @@ class PartitionedCookieMiddleware:
     def __call__(self, request):
         import logging; logger = logging.getLogger(__name__)
         logger.info(f"REQUEST path {request.path}")
-        for k, v in response.cookies.items():
+        for k, v in request.COOKIES.items():
             logger.info(f"REQUEST Cookie {k}={v}")
 
         response = self.get_response(request)
