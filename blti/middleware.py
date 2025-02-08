@@ -86,9 +86,11 @@ class SameSiteMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
+        response = self.get_response(request)
+
         if 'sessionid' in response.cookies:
             response.cookies['sessionid']['samesite'] = 'None'
         if 'csrftoken' in response.cookies:
             response.cookies['csrftoken']['samesite'] = 'None'
 
-        return self.get_response(request)
+        return response
