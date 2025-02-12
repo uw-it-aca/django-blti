@@ -13,6 +13,10 @@ from django.conf import settings
 from django.contrib.auth import authenticate, login
 from blti import BLTI
 from blti.exceptions import BLTIException
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 
 class CSRFHeaderMiddleware:
@@ -65,18 +69,15 @@ class PartitionedCookieMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
-        import logging; logger = logging.getLogger(__name__)
         logger.info(f"REQUEST path {request.path}")
         for k, v in request.COOKIES.items():
             logger.info(f"REQUEST Cookie {k}={v}")
 
         response = self.get_response(request)
 
-        logger.info(f"RESPONSE path {request.path}")
         for k, v in response.cookies.items():
-            logger.info(f"RESPONSE Cookie {k}={v}")
-
-        #response.cookies[k]['Partitioned'] = True
+            logger.info(f"RESPONSE Partitioned Cookie {k}")
+            response.cookies[k]['Partitioned'] = True
 
         return response
 
@@ -88,9 +89,9 @@ class SameSiteMiddleware:
     def __call__(self, request):
         response = self.get_response(request)
 
-        if 'sessionid' in response.cookies:
-            response.cookies['sessionid']['samesite'] = 'None'
-        if 'csrftoken' in response.cookies:
-            response.cookies['csrftoken']['samesite'] = 'None'
+        for cookie in ['sessionid', 'csrftoken']:
+            if cookie in response.cookies:
+                logger.info(f"Setting SameSite=None for {cookie}")
+                response.cookies[cookie]['samesite'] = 'None'
 
         return response
