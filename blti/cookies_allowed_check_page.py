@@ -2,6 +2,8 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from pylti1p3.cookies_allowed_check import CookiesAllowedCheckPage
+from html import escape
+import json
 
 
 class BLTICookiesAllowedCheckPage(CookiesAllowedCheckPage):
