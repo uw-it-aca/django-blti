@@ -1,7 +1,7 @@
 # Copyright 2025 UW-IT, University of Washington
 # SPDX-License-Identifier: Apache-2.0
 
-from pylti1.3.pylti1p3.cookies_allowed_check import CookiesAllowedCheckPage
+from pylti1p3.cookies_allowed_check import CookiesAllowedCheckPage
 
 
 class BLTICookiesAllowedCheckPage(CookiesAllowedCheckPage):
