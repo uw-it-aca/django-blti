@@ -17,7 +17,8 @@ class BLTICookiesAllowedCheckPage(CookiesAllowedCheckPage):
             "&amp;": "&",
             "&quot;": '"',
             "&#x27;": "'"
-        };
+        },
+        cookies_required = true;
 
         function unescapeHtmlEntities(str) {
             for (var htmlCode in htmlEntities) {
@@ -59,6 +60,16 @@ class BLTICookiesAllowedCheckPage(CookiesAllowedCheckPage):
         }
 
         function checkCookiesAllowed() {
+            let target_window = window.parent || window.opener;
+
+            if (target_window) {
+                target_window.postMessage({subject: 'lti.capabilities'}, '*')
+            }
+
+            if (!cookies_required) {
+                return;
+            }
+
             var cookie = "lti1p3_test_cookie=1; path=/";
             if (siteProtocol === 'https') {
                 cookie = cookie + '; SameSite=None; secure; Partitioned;';
@@ -67,6 +78,7 @@ class BLTICookiesAllowedCheckPage(CookiesAllowedCheckPage):
             var res = document.cookie.indexOf("lti1p3_test_cookie") !== -1;
             if (res) {
                 // remove test cookie and reload page
+                debugger
                 document.cookie = "lti1p3_test_cookie=1; expires=Thu, 01-Jan-1970 00:00:01 GMT";
                 displayLoadingBlock();
                 window.location.href = getUpdatedUrl();
@@ -75,6 +87,11 @@ class BLTICookiesAllowedCheckPage(CookiesAllowedCheckPage):
             }
         }
 
+        function ltiClientStoreResponse() {
+            debugger
+        }
+
+        document.addEventListener("message", ltiClientStoreResponse);
         document.addEventListener("DOMContentLoaded", checkCookiesAllowed);
         """
         # pylint: disable=deprecated-method
