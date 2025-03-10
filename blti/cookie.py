@@ -15,7 +15,7 @@ if "partitioned" not in Cookie.Morsel._reserved:
     Cookie.Morsel._reserved.setdefault("partitioned", "Partitioned")
 
 
-class LTICookieService(DjangoCookieService):
+class BLTICookieService(DjangoCookieService):
     def get_cookie(self, name):
         logger.info(f"get_cookie: {name} ==> {self._request.get_cookie(self._get_key(name))}")
         return self._request.get_cookie(self._get_key(name))
