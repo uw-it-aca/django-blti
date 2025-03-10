@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import http.cookies as Cookie
-from pylti1p3.contrib.django import DjangoCookieService
+from pylti1p3.contrib.django.cookie import DjangoCookieService
 import logging
 
 
