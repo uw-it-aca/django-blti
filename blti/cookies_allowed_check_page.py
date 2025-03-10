@@ -61,10 +61,12 @@ class BLTICookiesAllowedCheckPage(CookiesAllowedCheckPage):
 
         function checkCookiesAllowed() {
             let target_window = window.parent || window.opener;
+             debugger
 
             if (target_window) {
                 target_window.postMessage({subject: 'lti.capabilities'}, '*')
             }
+
 
             if (!cookies_required) {
                 return;
@@ -74,11 +76,13 @@ class BLTICookiesAllowedCheckPage(CookiesAllowedCheckPage):
             if (siteProtocol === 'https') {
                 cookie = cookie + '; SameSite=None; secure; Partitioned;';
             }
+
+            document.requestStorageAccess();
+
             document.cookie = cookie;
             var res = document.cookie.indexOf("lti1p3_test_cookie") !== -1;
             if (res) {
                 // remove test cookie and reload page
-                debugger
                 document.cookie = "lti1p3_test_cookie=1; expires=Thu, 01-Jan-1970 00:00:01 GMT";
                 displayLoadingBlock();
                 window.location.href = getUpdatedUrl();
