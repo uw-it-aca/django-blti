@@ -54,6 +54,7 @@ class BLTICookieService(DjangoCookieService):
                     response.set_cookie(key, **kwargs)
                     response.cookies[key]["samesite"] = "None"
 
+                logger.info(f"update_response: cookies[{key}] Partitioned=True")
                 response.cookies[key]["Partitioned"] = True
             else:
                 response.set_cookie(key, **kwargs)
