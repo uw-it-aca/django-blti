@@ -106,13 +106,18 @@ class BLTICookiesAllowedCheckPage(CookiesAllowedCheckPage):
 
         function ltiClientStoreResponse(event) {
             debugger
-        }
-        function ltiClientStoreResponse2(event) {
-            debugger
+            try {
+              var message = JSON.parse(event.data);
+              switch (message.subject) {
+                case 'lti.capabilities.response':
+                  break;
+              }
+            } catch(err) {
+              (console.error || console.log).call(console, 'invalid message received from');
+            }
         }
 
-        window.parent.addEventListener("message", ltiClientStoreResponse);
-        target_window.addEventListener("message", ltiClientStoreResponse2);
+        window.addEventListener("message", ltiClientStoreResponse);
         document.addEventListener("DOMContentLoaded", checkCookiesAllowed);
         """
         # pylint: disable=deprecated-method
