@@ -3,6 +3,7 @@
 
 import http.cookies as Cookie
 from pylti1p3.contrib.django.cookie import DjangoCookieService
+import django  # type: ignore
 import logging
 
 
