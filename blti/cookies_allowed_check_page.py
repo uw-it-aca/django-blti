@@ -61,10 +61,11 @@ class BLTICookiesAllowedCheckPage(CookiesAllowedCheckPage):
 
         function checkCookiesAllowed() {
             let target_window = window.parent || window.opener;
-             debugger
+            debugger
 
             if (target_window) {
                 target_window.postMessage({subject: 'lti.capabilities'}, '*')
+                window.parent.postMessage({subject: 'lti.capabilities'}, '*')
             }
 
 
@@ -77,9 +78,21 @@ class BLTICookiesAllowedCheckPage(CookiesAllowedCheckPage):
                 cookie = cookie + '; SameSite=None; secure; Partitioned;';
             }
 
-            document.requestStorageAccess();
-
             document.cookie = cookie;
+
+            var access = document.requestStorageAccess();
+
+            access.then(
+                function() {
+                    var res = document.cookie.indexOf("lti1p3_test_cookie") !== -1;
+                    displayLoadingBlock();
+                    window.location.href = getUpdatedUrl();
+                },
+                function() {
+                    displayWarningBlock();
+                }
+            );
+
             var res = document.cookie.indexOf("lti1p3_test_cookie") !== -1;
             if (res) {
                 // remove test cookie and reload page
