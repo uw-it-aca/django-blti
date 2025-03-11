@@ -4,7 +4,6 @@
 from django.views.decorators.csrf import csrf_exempt
 from django.template.response import TemplateResponse
 from blti.config import get_tool_conf, get_launch_data_storage
-from blti.cookie import BLTICookieService
 from blti.oidc_login import BLTIOIDCLogin
 import logging
 
@@ -18,8 +17,7 @@ def login(request):
         tool_conf = get_tool_conf()
         launch_data_storage = get_launch_data_storage()
         oidc_login = BLTIOIDCLogin(
-            request, tool_conf, cookie_service=BLTICookieService,
-            launch_data_storage=launch_data_storage)
+            request, tool_conf, launch_data_storage=launch_data_storage)
 
         target_link_uri = getattr(request, request.method)['target_link_uri']
 

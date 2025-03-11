@@ -1,11 +1,31 @@
 # Copyright 2025 UW-IT, University of Washington
 # SPDX-License-Identifier: Apache-2.0
 
+from blti.cookie import BLTICookieService
 from blti.cookies_allowed_check_page import BLTICookiesAllowedCheckPage
 from pylti1p3.contrib.django import DjangoOIDCLogin
 
 
 class BLTIOIDCLogin(DjangoOIDCLogin):
+    def __init__(
+        self,
+        request,
+        tool_config,
+        session_service=None,
+        cookie_service=None,
+        launch_data_storage=None,
+    ):
+        cookie_service = (
+            cookie_service if cookie_service else BLTICookieService(django_request)
+        )
+        super().__init__(
+            django_request,
+            tool_config,
+            session_service,
+            cookie_service,
+            launch_data_storage,
+        )
+
     def get_cookies_allowed_js_check(self) -> str:
         protocol = "https" if self._request.is_secure() else "http"
         params_lst = [
