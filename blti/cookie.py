@@ -16,20 +16,6 @@ if "partitioned" not in Cookie.Morsel._reserved:
 
 
 class BLTICookieService(DjangoCookieService):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-    def get_cookie(self, name):
-        logger.info(f"get_cookie: {name}")
-        return self._request.get_cookie(self._get_key(name))
-
-    def set_cookie(self, name, value, exp=3600):
-        logger.info(f"set_cookie: {name}: {value}")
-        self._cookie_data_to_set[self._get_key(name)] = {
-            "value": value,
-            "exp": exp,
-        }
-
     def update_response(self, response):
         logger.info(f"update_response: {self._cookie_data_to_set}")
         for key, cookie_data in self._cookie_data_to_set.items():
