@@ -60,15 +60,6 @@ class BLTICookiesAllowedCheckPage(CookiesAllowedCheckPage):
         }
 
         function checkCookiesAllowed() {
-            let target_window = window.parent || window.opener;
-            debugger
-
-            if (target_window) {
-                target_window.postMessage({subject: 'lti.capabilities'}, '*')
-                window.parent.postMessage({subject: 'lti.capabilities'}, '*')
-            }
-
-
             if (!cookies_required) {
                 return;
             }
@@ -78,10 +69,9 @@ class BLTICookiesAllowedCheckPage(CookiesAllowedCheckPage):
                 cookie = cookie + '; SameSite=None; secure; Partitioned;';
             }
 
+            debugger
             document.cookie = cookie;
-
             var access = document.requestStorageAccess();
-
             access.then(
                 function() {
                     var res = document.cookie.indexOf("lti1p3_test_cookie") !== -1;
@@ -89,11 +79,11 @@ class BLTICookiesAllowedCheckPage(CookiesAllowedCheckPage):
                     window.location.href = getUpdatedUrl();
                 },
                 function() {
-                    displayWarningBlock();
+                    window.parent.postMessage({subject: 'lti.capabilities'}, '*')
                 }
             );
 
-            var res = document.cookie.indexOf("lti1p3_test_cookie") !== -1;
+/*            var res = document.cookie.indexOf("lti1p3_test_cookie") !== -1;
             if (res) {
                 // remove test cookie and reload page
                 document.cookie = "lti1p3_test_cookie=1; expires=Thu, 01-Jan-1970 00:00:01 GMT";
@@ -102,19 +92,32 @@ class BLTICookiesAllowedCheckPage(CookiesAllowedCheckPage):
             } else {
                 displayWarningBlock();
             }
+*/
+
+            setTimeout(displayWarningBlock, 10000);
         }
 
         function ltiClientStoreResponse(event) {
-            debugger
-            try {
-              var message = JSON.parse(event.data);
-              switch (message.subject) {
+            var message = event.data,
+            put_data_frame = null,
+            get_data_frame = null;
+            switch (message.subject) {
                 case 'lti.capabilities.response':
-                  break;
-              }
-            } catch(err) {
-              (console.error || console.log).call(console, 'invalid message received from');
+                    var supported = message.supported_messages;
+                    for (var i = 0; i < supported.length; i++) {
+                        if (supported[i].subject == "lti.get_data") {
+                            get_data_frame = supported[i].frame;
+                        }
+                        if (supported[i].subject == "lti.put_data") {
+                            put_data_frame = supported[i].frame;
+                            displayLoadingBlock();
+                            window.location.href = getUpdatedUrl();
+                        }
+                    }
+                break;
             }
+
+            displayWarningBlock();
         }
 
         window.addEventListener("message", ltiClientStoreResponse);
