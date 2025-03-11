@@ -17,12 +17,11 @@ if "partitioned" not in Cookie.Morsel._reserved:
 
 class BLTICookieService(DjangoCookieService):
     def get_cookie(self, name):
-        cookie = self._request.get_cookie(self._get_key(name))
-        logger.info(f"get_cookie: {name} ==> {cookie}")
-        return cookie
+        logger.info(f"get_cookie: {name}")
+        return self._request.get_cookie(self._get_key(name))
 
     def set_cookie(self, name, value, exp=3600):
-        logger.info(f"set_cookie: {name} ({self._get_key(name)}) ==> {value}")
+        logger.info(f"set_cookie: {name}: {value}")
         self._cookie_data_to_set[self._get_key(name)] = {
             "value": value,
             "exp": exp,
@@ -57,6 +56,7 @@ class BLTICookieService(DjangoCookieService):
                 logger.info(f"update_response: cookies[{key}] Partitioned=True")
                 response.cookies[key]["Partitioned"] = True
             else:
+                logger.info(f"update_response: non secure cooke {key}")
                 response.set_cookie(key, **kwargs)
 
 

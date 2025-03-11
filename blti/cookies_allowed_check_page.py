@@ -83,17 +83,6 @@ class BLTICookiesAllowedCheckPage(CookiesAllowedCheckPage):
                 }
             );
 
-/*            var res = document.cookie.indexOf("lti1p3_test_cookie") !== -1;
-            if (res) {
-                // remove test cookie and reload page
-                document.cookie = "lti1p3_test_cookie=1; expires=Thu, 01-Jan-1970 00:00:01 GMT";
-                displayLoadingBlock();
-                window.location.href = getUpdatedUrl();
-            } else {
-                displayWarningBlock();
-            }
-*/
-
             setTimeout(displayWarningBlock, 10000);
         }
 
@@ -101,6 +90,7 @@ class BLTICookiesAllowedCheckPage(CookiesAllowedCheckPage):
             var message = event.data,
             put_data_frame = null,
             get_data_frame = null;
+
             switch (message.subject) {
                 case 'lti.capabilities.response':
                     var supported = message.supported_messages;
