@@ -69,17 +69,22 @@ class BLTICookiesAllowedCheckPage(CookiesAllowedCheckPage):
                 cookie = cookie + '; SameSite=None; secure; Partitioned;';
             }
 
-            debugger
             document.cookie = cookie;
-            var access = document.requestStorageAccess();
+            var access = document.requestStorageAccess({ cookies: true });
             access.then(
                 function() {
+                    console.log('cookie access GRANTED');
                     var res = document.cookie.indexOf("lti1p3_test_cookie") !== -1;
+                    console.log('cookie access test: ' + (res ? 'VERIFIED' : 'FAILED'));
+                    document.cookie = "lti1p3_test_cookie=1; expires=Thu, 01-Jan-1970 00:00:01 GMT";
                     displayLoadingBlock();
+                    console.log("loading href: " + getUpdatedUrl());
                     window.location.href = getUpdatedUrl();
                 },
                 function() {
-                    window.parent.postMessage({subject: 'lti.capabilities'}, '*')
+                    console.log('cookie access DENIED');
+                    console.log('postMessage for lti.capabilities');
+                    window.parent.postMessage({subject: 'lti.capabilities'}, '*');
                 }
             );
 
@@ -91,22 +96,29 @@ class BLTICookiesAllowedCheckPage(CookiesAllowedCheckPage):
             put_data_frame = null,
             get_data_frame = null;
 
+            console.log('lti client storage response message: ' + message.subject);
             switch (message.subject) {
                 case 'lti.capabilities.response':
                     var supported = message.supported_messages;
                     for (var i = 0; i < supported.length; i++) {
-                        if (supported[i].subject == "lti.get_data") {
+                        var subject = supported[i].subject;
+                        console.log("got subject: " + subject);
+                        if (subject == "lti.get_data") {
+                            console.log("get_data frame: " + supported[i].frame);
                             get_data_frame = supported[i].frame;
                         }
-                        if (supported[i].subject == "lti.put_data") {
+                        if (subject == "lti.put_data") {
+                            console.log("put_data frame: " + supported[i].frame);
                             put_data_frame = supported[i].frame;
                             displayLoadingBlock();
+                            console.log("loading href: " + getUpdatedUrl());
                             window.location.href = getUpdatedUrl();
                         }
                     }
                 break;
             }
 
+            console.log("displaying warning block");
             displayWarningBlock();
         }
 
