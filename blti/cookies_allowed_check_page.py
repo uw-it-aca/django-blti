@@ -60,13 +60,15 @@ class BLTICookiesAllowedCheckPage(CookiesAllowedCheckPage):
         }
 
         function checkCookiesAllowed() {
+            console.log("login url: " + window.location.href));
+
             if (!cookies_required) {
                 return;
             }
 
             var cookie = "lti1p3_test_cookie=1; path=/";
             if (siteProtocol === 'https') {
-                cookie = cookie + '; SameSite=None; secure; Partitioned;';
+                cookie = cookie + '; Partitioned; SameSite=None; Secure';
             }
 
             document.cookie = cookie;
