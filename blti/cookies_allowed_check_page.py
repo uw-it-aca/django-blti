@@ -60,7 +60,7 @@ class BLTICookiesAllowedCheckPage(CookiesAllowedCheckPage):
         }
 
         function checkCookiesAllowed() {
-            console.log("login url: " + window.location.href));
+            console.log("login url: " + window.location.href);
 
             if (!cookies_required) {
                 return;
