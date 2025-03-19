@@ -26,12 +26,15 @@ class BLTICookiesAllowedCheckPage(CookiesAllowedCheckPage):
             return str;
         }
 
-        function getUpdatedUrl() {
+        function getUpdatedUrl(lti_storage_frame) {
             var newSearchParams = [];
             for (var key in urlParams) {
                 if (window.location.search.indexOf(key + '=') === -1) {
                     newSearchParams.push(key + '=' + encodeURIComponent(unescapeHtmlEntities(urlParams[key])));
                 }
+            }
+            if (lti_storage_frame) {
+                newSearchParams.push('lti_storage_frame=' + encodeURIComponent(lti_storage_frame));
             }
             var searchParamsStr = newSearchParams.join('&');
             if (window.location.search !== '') {
@@ -64,8 +67,6 @@ class BLTICookiesAllowedCheckPage(CookiesAllowedCheckPage):
                 cookie = cookie + '; Partitioned; SameSite=None; Secure';
             }
 
-            console.log("login url: " + window.location.href);
-
             document.cookie = cookie;
             var res = document.cookie.indexOf("lti1p3_test_cookie") !== -1;
             if (res) {
@@ -77,6 +78,7 @@ class BLTICookiesAllowedCheckPage(CookiesAllowedCheckPage):
                 console.log('cookie access DENIED');
                 console.log('postMessage: subject=lti.capabilities');
                 window.parent.postMessage({subject: 'lti.capabilities'}, '*');
+                setTimeout(displayWarningBlock, 2500);
             }
         }
 
@@ -96,21 +98,15 @@ class BLTICookiesAllowedCheckPage(CookiesAllowedCheckPage):
                             get_data_frame = supported[i].frame;
                         }
                         if (subject == "lti.put_data") {
-                            if (warning_block_timeout) {
-                                clearTimeout(warning_block_timeout);
-                            }
-
                             console.log("put_data frame: " + supported[i].frame);
                             put_data_frame = supported[i].frame;
                             displayLoadingBlock();
-                            console.log("loading href: " + getUpdatedUrl());
-                            window.location.href = getUpdatedUrl();
+                            console.log("loading href: " + getUpdatedUrl(supported[i].frame));
+                            window.location.href = getUpdatedUrl(supported[i].frame);
                         }
                     }
                 break;
             }
-
-            displayWarningBlock();
         }
 
         window.addEventListener("message", ltiClientStoreResponse);
