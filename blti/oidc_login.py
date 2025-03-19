@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from blti.cookie import BLTICookieService
+from blti.redirect import BLTIRedirect
 from blti.cookies_allowed_check_page import BLTICookiesAllowedCheckPage
 from pylti1p3.request import Request
 from pylti1p3.contrib.django import DjangoOIDCLogin
@@ -59,3 +60,6 @@ class BLTIOIDCLogin(DjangoOIDCLogin):
         )
 
         return page.get_html()
+
+    def get_redirect(self, url):
+        return BLTIRedirect(url, self._cookie_service)
