@@ -1,6 +1,7 @@
 # Copyright 2025 UW-IT, University of Washington
 # SPDX-License-Identifier: Apache-2.0
 
+from django.http import HttpResponse  # type: ignore
 from pylti1p3.contrib.django.redirect import DjangoRedirect
 
 
