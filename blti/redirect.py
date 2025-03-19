@@ -4,7 +4,7 @@
 from pylti1p3.contrib.django.redirect import DjangoRedirect
 
 
-class DjangoRedirect(DjangoRedirect):
+class BLTIRedirect(DjangoRedirect):
     def __init__(self, location, cookie_service=None):
         super().__init__(location, cookie_service)
 
