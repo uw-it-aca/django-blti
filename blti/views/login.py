@@ -18,13 +18,20 @@ def login(request):
         launch_data_storage = get_launch_data_storage()
         oidc_login = BLTIOIDCLogin(
             request, tool_conf, launch_data_storage=launch_data_storage)
-
         target_link_uri = getattr(request, request.method)['target_link_uri']
+        js_redirect = request.GET.get('lti_storage_frame', None) != None
+
+
+
+        logger.info(f"js_redirect: {js_redirect}")
+
+
 
         if target_link_uri.startswith('http:') and request.is_secure():
             target_link_uri = f"https:{target_link_uri[5:]}"
 
-        return oidc_login.enable_check_cookies().redirect(target_link_uri)
+        return oidc_login.enable_check_cookies().redirect(
+            target_link_uri, js_redirect)
     except KeyError:
         logger.error(f"Missing 'target_link_uri' in {request.method} params: "
                      "{request.body.decode('utf-8')}")

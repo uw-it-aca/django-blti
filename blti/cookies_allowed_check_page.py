@@ -75,8 +75,15 @@ class BLTICookiesAllowedCheckPage(CookiesAllowedCheckPage):
                 displayLoadingBlock();
                 window.location.href = getUpdatedUrl();
             } else {
+
+
+
                 console.log('cookie access DENIED');
                 console.log('postMessage: subject=lti.capabilities');
+
+
+
+
                 window.parent.postMessage({subject: 'lti.capabilities'}, '*');
                 setTimeout(displayWarningBlock, 2500);
             }
@@ -87,21 +94,47 @@ class BLTICookiesAllowedCheckPage(CookiesAllowedCheckPage):
             put_data_frame = null,
             get_data_frame = null;
 
+
+
+
             console.log('lti client storage response message: ' + message.subject);
+
+
+
             switch (message.subject) {
                 case 'lti.capabilities.response':
                     var supported = message.supported_messages;
                     for (var i = 0; i < supported.length; i++) {
                         var subject = supported[i].subject;
                         if (subject == "lti.get_data") {
+
+
+
                             console.log("get_data frame: " + supported[i].frame);
+
+
+
                             get_data_frame = supported[i].frame;
                         }
                         if (subject == "lti.put_data") {
+
+
+
                             console.log("put_data frame: " + supported[i].frame);
+
+
+
+
                             put_data_frame = supported[i].frame;
                             displayLoadingBlock();
+
+
+
+
                             console.log("loading href: " + getUpdatedUrl(supported[i].frame));
+
+
+
                             window.location.href = getUpdatedUrl(supported[i].frame);
                         }
                     }
