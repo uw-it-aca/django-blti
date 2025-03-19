@@ -17,8 +17,7 @@ class BLTICookiesAllowedCheckPage(CookiesAllowedCheckPage):
             "&amp;": "&",
             "&quot;": '"',
             "&#x27;": "'"
-        },
-        cookies_required = true;
+        };
 
         function unescapeHtmlEntities(str) {
             for (var htmlCode in htmlEntities) {
@@ -60,37 +59,25 @@ class BLTICookiesAllowedCheckPage(CookiesAllowedCheckPage):
         }
 
         function checkCookiesAllowed() {
-            console.log("login url: " + window.location.href);
-
-            if (!cookies_required) {
-                return;
-            }
-
             var cookie = "lti1p3_test_cookie=1; path=/";
             if (siteProtocol === 'https') {
                 cookie = cookie + '; Partitioned; SameSite=None; Secure';
             }
 
-            document.cookie = cookie;
-            var access = document.requestStorageAccess({ cookies: true });
-            access.then(
-                function() {
-                    console.log('cookie access GRANTED');
-                    var res = document.cookie.indexOf("lti1p3_test_cookie") !== -1;
-                    console.log('cookie access test: ' + (res ? 'VERIFIED' : 'FAILED'));
-                    document.cookie = "lti1p3_test_cookie=1; expires=Thu, 01-Jan-1970 00:00:01 GMT";
-                    displayLoadingBlock();
-                    console.log("loading href: " + getUpdatedUrl());
-                    window.location.href = getUpdatedUrl();
-                },
-                function() {
-                    console.log('cookie access DENIED');
-                    console.log('postMessage for lti.capabilities');
-                    window.parent.postMessage({subject: 'lti.capabilities'}, '*');
-                }
-            );
+            console.log("login url: " + window.location.href);
 
-            setTimeout(displayWarningBlock, 10000);
+            document.cookie = cookie;
+            var res = document.cookie.indexOf("lti1p3_test_cookie") !== -1;
+            if (res) {
+                // remove test cookie and reload page
+                document.cookie = "lti1p3_test_cookie=1; expires=Thu, 01-Jan-1970 00:00:01 GMT";
+                displayLoadingBlock();
+                window.location.href = getUpdatedUrl();
+            } else {
+                console.log('cookie access DENIED');
+                console.log('postMessage: subject=lti.capabilities');
+                window.parent.postMessage({subject: 'lti.capabilities'}, '*');
+            }
         }
 
         function ltiClientStoreResponse(event) {
@@ -104,12 +91,15 @@ class BLTICookiesAllowedCheckPage(CookiesAllowedCheckPage):
                     var supported = message.supported_messages;
                     for (var i = 0; i < supported.length; i++) {
                         var subject = supported[i].subject;
-                        console.log("got subject: " + subject);
                         if (subject == "lti.get_data") {
                             console.log("get_data frame: " + supported[i].frame);
                             get_data_frame = supported[i].frame;
                         }
                         if (subject == "lti.put_data") {
+                            if (warning_block_timeout) {
+                                clearTimeout(warning_block_timeout);
+                            }
+
                             console.log("put_data frame: " + supported[i].frame);
                             put_data_frame = supported[i].frame;
                             displayLoadingBlock();
@@ -120,7 +110,6 @@ class BLTICookiesAllowedCheckPage(CookiesAllowedCheckPage):
                 break;
             }
 
-            console.log("displaying warning block");
             displayWarningBlock();
         }
 
