@@ -22,23 +22,17 @@ class BLTIRedirect(DjangoRedirect):
                       state = redirect_url.searchParams.get('state'),
                       redirect_origin = redirect_url.origin;
 
-
-
-                console.log("param nonce:", nonce);
-                console.log("param state:", state);
-
-
                 function putData(frame, key, value) {
                     var data = {
                         subject: 'lti.put_data',
-                        key: key,
-                        value: value,
-                        message_id: crypto.randomUUID()
+                        message_id: crypto.randomUUID(),
+                        key: key + "_" + value,
+                        value: value
                     };
 
 
                     debugger
-                    console.log("postMessage origin " + redirect_origin + ", key: " + key + ", value: " + value);
+                    console.log("putData key: " + key + ", value: " + value + ", frame: " + frame + ", origin: " + redirect_origin);
 
 
                     window.parent.frames[frame].postMessage(data, redirect_origin);
@@ -52,21 +46,27 @@ class BLTIRedirect(DjangoRedirect):
                             for (var i = 0; i < supported.length; i++) {
                                 if (supported[i].subject == "lti.put_data") {
                                     var put_data_frame = supported[i].frame;
-                                    putData(put_data_frame, 'nonce', nonce, redirect_origin);
-                                    putData(put_data_frame, 'state', nonce, redirect_origin);
+                                    putData(put_data_frame, 'nonce', nonce);
+                                    putData(put_data_frame, 'state', state);
                                 }
                             }
                         break;
+                        case 'lti.put_data.response':
+                            console.log("put_data response: " + message.data);
+                        break;
+                    }
+
+                    if (message.data.error) {
+                        console.log("event " + message.subject + " error: " + message.data.error);
+                    } else {
+                        console.log("event " + message.subject + " success: " + message.data.success);
                     }
                 }
 
                 function clientStoreAndRedirect() {
 
 
-
-
                     debugger
-
 
 
                     if (nonce && state && redirect_origin) {
