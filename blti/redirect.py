@@ -14,6 +14,7 @@ class BLTIRedirect(DjangoRedirect):
             HttpResponse(
                 f"""\
                 <script type="text/javascript">
+                debugger
                 const redirect_location="{self._location}",
                 """
                 """
