@@ -12,34 +12,36 @@ class BLTIRedirect(DjangoRedirect):
     def do_js_redirect(self):
         return self._process_response(
             HttpResponse(
-                """\
+                f"""\
                 <script type="text/javascript">
-                const urlParams = new URLSearchParams(window.location.search),
-                      nonce = urlParams.get('nonce'),
-                      state = urlParams.get('state');
+                const redirect_location="{self._location}",
+                """
+                """
+
+                      redirect_url = URL.parse(redirect_location),
+                      redirect_domain = redirect_url.hostname,
+                      nonce = redirect_url.searchParams.get('nonce'),
+                      state = redirect_url.searchParams.get('state');
 
 
 
                 console.log("param nonce:", nonce);
                 console.log("param state:", state);
-                debugger
 
 
-                function uuidv4() {
-                  return "10000000-1000-4000-8000-100000000000".replace(/[018]/g, c =>
-                    (+c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> +c / 4).toString(16)
-                  );
-                }
-
-                function putData(frame, key, value, origin) {
+                function putData(frame, key, value) {
                     var data = {
                         subject: 'lti.put_data',
                         key: key,
                         value: value,
-                        message_id: uuidv4()
+                        message_id: crypto.randomUUID()
                     };
 
-                    window.parent.frames[frame].postMessage(data, origin);
+
+                    console.log("postMessage origin " + redirect_domain + " data: " + data);
+
+
+                    window.parent.frames[frame].postMessage(data, redirect_domain);
                 }
 
                 function ltiClientStoreResponse(event) {
@@ -48,28 +50,29 @@ class BLTIRedirect(DjangoRedirect):
                         case 'lti.capabilities.response':
                             var supported = message.supported_messages;
                             for (var i = 0; i < supported.length; i++) {
-                                var subject = supported[i].subject;
-                                if (subject == "lti.put_data") {
-                                    console.log("put_data frame: " + supported[i].frame);
+                                if (supported[i].subject == "lti.put_data") {
                                     var put_data_frame = supported[i].frame;
-                                    debugger
-
+                                    putData(put_data_frame, 'nonce', nonce, redirect_domain);
+                                    putData(put_data_frame, 'state', nonce, redirect_domain);
                                 }
                             }
                         break;
                     }
                 }
 
-                if (nonce && state) {
-                    window.addEventListener("message", ltiClientStoreResponse);
-                    window.parent.postMessage({subject: 'lti.capabilities'}, '*');
-                """
-                f"""
-                    setTimeout(function () {{
-                        window.location="{self._location}";}}, 5000);
-                }} else {{
-                    window.location="{self._location}";
-                }}
+                function clientStoreAndRedirect() {
+                    if (nonce && state && redirect_domain) {
+                        window.parent.postMessage({subject: 'lti.capabilities'}, redirect_domain);
+                        setTimeout(function () {
+                            window.location=redirect_location;
+                        }, 10000);
+                    } else {
+                        window.location=redirect_location;
+                    }
+                }
+
+                window.addEventListener("message", ltiClientStoreResponse);
+                document.addEventListener("DOMContentLoaded", clientStoreAndRedirect);
                 </script>
                 """
             )
