@@ -14,7 +14,9 @@ class BLTIRedirect(DjangoRedirect):
             HttpResponse(
                 f"""\
                 <script type="text/javascript">
-                const redirect_location="{self._location}",
+                const redirect_location = "{self._location}",
+                      session_cookie_name = "lti1p3-session-id",
+                      session_cookie = "{self._cookie_service.get_cookie("lti1p3-session-id")}",
                 """
                 """
                       redirect_url = URL.parse(redirect_location),
@@ -22,6 +24,7 @@ class BLTIRedirect(DjangoRedirect):
                       state = redirect_url.searchParams.get('state'),
                       redirect_origin = redirect_url.origin;
 
+                debugger
                 function putData(frame, key, value) {
                     var data = {
                         subject: 'lti.put_data',
@@ -31,7 +34,6 @@ class BLTIRedirect(DjangoRedirect):
                     };
 
 
-                    debugger
                     console.log("putData key: " + key + ", value: " + value + ", frame: " + frame + ", origin: " + redirect_origin);
 
 
