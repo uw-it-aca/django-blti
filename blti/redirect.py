@@ -19,7 +19,7 @@ class BLTIRedirect(DjangoRedirect):
                 """
 
                       redirect_url = URL.parse(redirect_location),
-                      redirect_domain = redirect_url.hostname,
+                      redirect_origin = redirect_url.origin,
                       nonce = redirect_url.searchParams.get('nonce'),
                       state = redirect_url.searchParams.get('state');
 
@@ -42,7 +42,7 @@ class BLTIRedirect(DjangoRedirect):
                     console.log("postMessage origin " + redirect_domain + ", key: " + key + ", value: " + value);
 
 
-                    window.parent.frames[frame].postMessage(data, redirect_domain);
+                    window.parent.frames[frame].postMessage(data, redirect_origin);
                 }
 
                 function ltiClientStoreResponse(event) {
