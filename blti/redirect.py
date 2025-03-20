@@ -14,7 +14,6 @@ class BLTIRedirect(DjangoRedirect):
             HttpResponse(
                 f"""\
                 <script type="text/javascript">
-                debugger
                 const redirect_location="{self._location}",
                 """
                 """
@@ -39,6 +38,7 @@ class BLTIRedirect(DjangoRedirect):
                     };
 
 
+                    debugger
                     console.log("postMessage origin " + redirect_domain + " data: " + data);
 
 
@@ -62,8 +62,9 @@ class BLTIRedirect(DjangoRedirect):
                 }
 
                 function clientStoreAndRedirect() {
+                    debugger
                     if (nonce && state && redirect_domain) {
-                        window.parent.postMessage({subject: 'lti.capabilities'}, redirect_domain);
+                        window.parent.postMessage({subject: 'lti.capabilities'}, '*');
                         setTimeout(function () {
                             window.location=redirect_location;
                         }, 10000);
