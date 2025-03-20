@@ -52,14 +52,14 @@ class BLTIRedirect(DjangoRedirect):
                             }
                         break;
                         case 'lti.put_data.response':
-                            console.log("put_data response: " + message.data);
+                            debugger
+                            console.log("put_data response: " + message);
                         break;
                     }
 
-                    if (message.data.error) {
-                        console.log("event " + message.subject + " error: " + message.data.error);
-                    } else {
-                        console.log("event " + message.subject + " success: " + message.data.success);
+                    if (message.error) {
+                        console.log("event " + message.subject + " error code: " + message.error.code);
+                        console.log("event " + message.subject + " error message: " + message.error.message);
                     }
                 }
 
