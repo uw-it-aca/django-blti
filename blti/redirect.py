@@ -17,11 +17,10 @@ class BLTIRedirect(DjangoRedirect):
                 const redirect_location="{self._location}",
                 """
                 """
-
                       redirect_url = URL.parse(redirect_location),
-                      redirect_origin = redirect_url.origin,
                       nonce = redirect_url.searchParams.get('nonce'),
-                      state = redirect_url.searchParams.get('state');
+                      state = redirect_url.searchParams.get('state'),
+                      redirect_origin = redirect_url.origin;
 
 
 
@@ -39,7 +38,7 @@ class BLTIRedirect(DjangoRedirect):
 
 
                     debugger
-                    console.log("postMessage origin " + redirect_domain + ", key: " + key + ", value: " + value);
+                    console.log("postMessage origin " + redirect_origin + ", key: " + key + ", value: " + value);
 
 
                     window.parent.frames[frame].postMessage(data, redirect_origin);
@@ -53,8 +52,8 @@ class BLTIRedirect(DjangoRedirect):
                             for (var i = 0; i < supported.length; i++) {
                                 if (supported[i].subject == "lti.put_data") {
                                     var put_data_frame = supported[i].frame;
-                                    putData(put_data_frame, 'nonce', nonce, redirect_domain);
-                                    putData(put_data_frame, 'state', nonce, redirect_domain);
+                                    putData(put_data_frame, 'nonce', nonce, redirect_origin);
+                                    putData(put_data_frame, 'state', nonce, redirect_origin);
                                 }
                             }
                         break;
@@ -70,7 +69,7 @@ class BLTIRedirect(DjangoRedirect):
 
 
 
-                    if (nonce && state && redirect_domain) {
+                    if (nonce && state && redirect_origin) {
                         window.parent.postMessage({subject: 'lti.capabilities'}, '*');
                         setTimeout(function () {
                             window.location=redirect_location;
