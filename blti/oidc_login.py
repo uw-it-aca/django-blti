@@ -63,7 +63,7 @@ class BLTIOIDCLogin(DjangoOIDCLogin):
         return page.get_html()
 
     def get_redirect(self, url):
+        cookie_name = self._launch_data_storage.get_session_cookie_name()
         return BLTIRedirect(
-            url, self._cookie_service,
-            self._launch_data_storage.get_session_cookie_name(),
-            self._cookie_service.get_cookie(session_cookie_name))
+            url, self._cookie_service, cookie_name,
+            self._cookie_service.get_cookie(cookie_name))
