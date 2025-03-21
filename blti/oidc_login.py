@@ -41,6 +41,7 @@ class BLTIOIDCLogin(DjangoOIDCLogin):
             "lti_message_hint",
             "lti_deployment_id",
             "client_id",
+            "lti_storage_target"
         ]
         additional_login_params = self.get_additional_login_params()
         params_lst.extend(additional_login_params)

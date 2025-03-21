@@ -8,7 +8,11 @@ import json
 
 class BLTICookiesAllowedCheckPage(CookiesAllowedCheckPage):
     def get_js_block(self) -> str:
-        js_block = """\
+        js_block = f"""
+        var sessionCookieName = "{self._launch_data_storage.get_session_cookie_name() if self._launch_data_storage else ''}";
+        var sessionCookieValue = "{self._launch_data_storage.get_session_id() if self._launch_data_storage else ''}";
+        """
+        """
         var siteProtocol = '%s';
         var urlParams = %s;
         var htmlEntities = {
@@ -88,70 +92,22 @@ class BLTICookiesAllowedCheckPage(CookiesAllowedCheckPage):
 
 
                 console.log('cookie access DENIED');
-                console.log('postMessage: subject=lti.capabilities');
+
+
+                if ('lti_storage_target' in urlParams) {
+                    var frame = urlParams['lti_storage_target'];
 
 
 
+                    console.log("lti client store supported: " + frame);
 
-                window.parent.postMessage({subject: 'lti.capabilities'}, '*');
-                setTimeout(displayWarningBlock, 2500);
+
+                    displayLoadingBlock();
+                    window.location.href = getUpdatedUrl(frame);
+                }
             }
         }
 
-        function ltiClientStoreResponse(event) {
-            var message = event.data,
-            put_data_frame = null,
-            get_data_frame = null;
-
-
-
-
-            console.log('lti client storage response message: ' + message.subject);
-
-
-
-            switch (message.subject) {
-                case 'lti.capabilities.response':
-                    var supported = message.supported_messages;
-                    for (var i = 0; i < supported.length; i++) {
-                        var subject = supported[i].subject;
-                        if (subject == "lti.get_data") {
-
-
-
-                            console.log("get_data frame: " + supported[i].frame);
-
-
-
-                            get_data_frame = supported[i].frame;
-                        }
-                        if (subject == "lti.put_data") {
-
-
-
-                            console.log("put_data frame: " + supported[i].frame);
-
-
-
-
-                            put_data_frame = supported[i].frame;
-                            displayLoadingBlock();
-
-
-
-
-                            console.log("loading href: " + getUpdatedUrl(supported[i].frame));
-
-
-
-                            window.location.href = getUpdatedUrl(supported[i].frame);
-                        }
-                    }
-                break;
-            }
-        }
-
-        window.addEventListener("message", ltiClientStoreResponse);
         document.addEventListener("DOMContentLoaded", checkCookiesAllowed);
         """
         # pylint: disable=deprecated-method
