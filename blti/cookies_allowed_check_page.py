@@ -62,6 +62,8 @@ class BLTICookiesAllowedCheckPage(CookiesAllowedCheckPage):
         }
 
         function checkCookiesAllowed() {
+            debugger
+
             var cookie = "lti1p3_test_cookie=1; path=/";
             if (siteProtocol === 'https') {
                 cookie = cookie + '; Partitioned; SameSite=None; Secure';
