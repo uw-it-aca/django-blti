@@ -58,10 +58,12 @@ class BLTIOIDCLogin(DjangoOIDCLogin):
             self._cookies_unavailable_msg_main_text,
             self._cookies_unavailable_msg_click_text,
             self._cookies_check_loading_text,
-            launch_data_storage=self._launch_data_storage
         )
 
         return page.get_html()
 
     def get_redirect(self, url):
-        return BLTIRedirect(url, self._cookie_service)
+        return BLTIRedirect(
+            url, self._cookie_service,
+            self._launch_data_storage.get_session_cookie_name(),
+            self._cookie_service.get_cookie(session_cookie_name))

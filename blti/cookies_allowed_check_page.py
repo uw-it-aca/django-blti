@@ -7,17 +7,8 @@ import json
 
 
 class BLTICookiesAllowedCheckPage(CookiesAllowedCheckPage):
-    def __init__(self, params, protocol, main_text, click_text,
-                 loading_text, *args, **kwargs):
-        self._launch_data_storage = kwargs.get('launch_data_storage', None)
-        super().__init__(params, protocol, main_text, click_text, loading_text)
-
     def get_js_block(self) -> str:
-        js_block = f"""
-        var sessionCookieName = "{self._launch_data_storage.get_session_cookie_name() if self._launch_data_storage else ''}";
-        var sessionCookieValue = "{self._launch_data_storage.get_session_id() if self._launch_data_storage else ''}";
-        """
-        """
+        js_block = """\
         var siteProtocol = '%s';
         var urlParams = %s;
         var htmlEntities = {
