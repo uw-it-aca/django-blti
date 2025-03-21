@@ -58,6 +58,7 @@ class BLTIOIDCLogin(DjangoOIDCLogin):
             self._cookies_unavailable_msg_main_text,
             self._cookies_unavailable_msg_click_text,
             self._cookies_check_loading_text,
+            launch_data_storage=self._launch_data_storage
         )
 
         return page.get_html()
