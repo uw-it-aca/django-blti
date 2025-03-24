@@ -6,10 +6,12 @@ from pylti1p3.contrib.django.redirect import DjangoRedirect
 
 
 class BLTIRedirect(DjangoRedirect):
-    def __init__(self, location, cookie_service=None, data_storage=None):
-        self._session_cookie_name = (data_storage._prefix
-                                     data_storage.get_session_cookie_name())
-        self._session_cookie_value = data_storage.get_session_id()
+    def __init__(self, location, cookie_service=None, session_service=None):
+        self._session_cookie_name = (
+            f"{session_service.data_storage._prefix}"
+            f"{session_service.data_storage.get_session_cookie_name()}")
+        self._session_cookie_value = (
+            f"{session_service.data_storage.get_session_id()}")
         super().__init__(location, cookie_service)
 
     def do_js_redirect(self):
