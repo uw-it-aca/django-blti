@@ -68,7 +68,7 @@ debugger
                         var data = {
                             subject: 'lti.put_data',
                             message_id: prop + '_' + session_cookie_value,
-                            key: prop + '_' + clientStore[prop].value
+                            key: prop + '_' + clientStore[prop].value,
                             value:  clientStore[prop].value
                         };
 
