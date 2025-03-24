@@ -65,7 +65,7 @@ debugger
 
                 function storeClientData(frame) {
                     for (const prop in client_data) {
-                        ltiClientStore(frame, redirect_origin, {
+                        ltiClientStore(frame, {
                             subject: 'lti.put_data',
                             message_id: prop + '_' + session_cookie_value,
                             key: prop + '_' + client_data[prop].value,
@@ -84,7 +84,10 @@ debugger
                 }
 
                 function ltiClientStore(frame, data) {
-                    console.log("lti.put_data : redirect_origin: " + origin + "data: ", data);
+
+debugger
+
+                    console.log("lti.put_data : redirect_origin: " + redirect_origin + ", data: ", data);
                     window.parent.frames[frame].postMessage(data, redirect_origin);
                 }
 
