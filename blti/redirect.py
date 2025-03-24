@@ -28,7 +28,7 @@ class BLTIRedirect(DjangoRedirect):
                       session_cookie_value = "{self._session_cookie_value}",
                 """
                 """
-                      clientStore = {
+                      client_data = {
                           nonce: {
                               value: nonce,
                               stored: false
@@ -53,8 +53,8 @@ debugger
                 }
 
                 function validClientData() {
-                    for (const prop in clientStore) {
-                        if (!clientStore[prop].value) {
+                    for (const prop in client_data) {
+                        if (!client_data[prop].value) {
                             console.log("incomplete client data: " + prop + " is missing")
                             return false;
                         }
@@ -64,27 +64,28 @@ debugger
                 }
 
                 function storeClientData(frame) {
-                    for (const prop in clientStore) {
-                        var data = {
+                    for (const prop in client_data) {
+                        ltiClientStore(frame, redirect_origin, {
                             subject: 'lti.put_data',
                             message_id: prop + '_' + session_cookie_value,
-                            key: prop + '_' + clientStore[prop].value,
-                            value:  clientStore[prop].value
-                        };
-
-                        console.log("lti.put_data : origin: " + redirect_origin + "data: ", data);
-
-                        window.parent.frames[frame].postMessage(data, redirect_origin);
+                            key: prop + '_' + client_data[prop].value,
+                            value:  client_data[prop].value
+                        });
                     }
                 }
 
                 function dataStored(frame) {
-                    for (const prop in clientStore) {
-                        if (!clientStore[prop].stored) {
+                    for (const prop in client_data) {
+                        if (!client_data[prop].stored) {
                             return false;
                         }
                     }
                     return true;
+                }
+
+                function ltiClientStore(frame, data) {
+                    console.log("lti.put_data : redirect_origin: " + origin + "data: ", data);
+                    window.parent.frames[frame].postMessage(data, redirect_origin);
                 }
 
                 function ltiClientStoreResponse(event) {
@@ -99,15 +100,13 @@ debugger
                             }
                         break;
                         case 'lti.put_data.response':
+debugger
                             const prop = message.key.split('_')[0];
 
                             console.log("lti.put_data response: ", message);
 
-
-
-                            clientStore[prop].stored = true;
+                            client_data[prop].stored = true;
                             if (dataStored()) {
-debugger
                                 doRedirection();
                             }
                         break;
