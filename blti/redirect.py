@@ -20,27 +20,67 @@ class BLTIRedirect(DjangoRedirect):
                 f"""\
                 <script type="text/javascript">
                 const redirect_location = "{self._location}",
+                      parsed_redirect = URL.parse(redirect_location),
+                      redirect_origin = parsed_redirect.origin;
+                      nonce = parsed_redirect.searchParams.get('nonce'),
+                      state = parsed_redirect.searchParams.get('state'),
                       session_cookie_name = "{self._session_cookie_name}",
-                      session_cookie = "{self._session_cookie_value}";
+                      session_cookie_value = "{self._session_cookie_value}",
                 """
                 """
-                      redirect_url = URL.parse(redirect_location),
-                      nonce = redirect_url.searchParams.get('nonce'),
-                      state = redirect_url.searchParams.get('state'),
-                      redirect_origin = redirect_url.origin;
+                      clientStore = {
+                          'nonce_' + nonce: {
+                              value: nonce,
+                              stored: false
+                          },
+                          'state_' + state: {
+                              value: state,
+                              stored: false
+                          },
+                          session_cookie_name: {
+                              value: "{self._session_cookie_name}"
+                              stored: false
+                          },
+                          session_cookie: {
+                              value: "{self._session_cookie_value}"
+                              stored: false
+                           }
+                     };
 
-                debugger
+                function doRedirection() {
+debugger
+                    window.location=redirect_location;
+                }
+
+                function storeData(frame) {
+                    for (const key in clientStore) {
+                        putData(put_data_frame, key, clientStore[key].value);
+                        clientStore[key].stored = true;
+                    }
+                }
+
+                function dataStored(frame) {
+                    for (const key in clientStore) {
+                        if (!clientStore[key].stored) {
+                            return false;
+                        }
+                    }
+                    return true;
+                }
+
                 function putData(frame, key, value) {
                     var data = {
                         subject: 'lti.put_data',
-                        message_id: crypto.randomUUID(),
-                        key: key + "_" + value,
+                        message_id: key + '_' + session_cookie_value,
+                        key: key,
                         value: value
                     };
 
-
-                    console.log("putData key: " + key + ", value: " + value + ", frame: " + frame + ", origin: " + redirect_origin);
-
+                    console.log("putData: " + data.key + 
+                                " = " + data.value + 
+                                ", msg_id: " + data.message_id + 
+                                ", frame: " + frame + 
+                                ", origin: " + redirect_origin);
 
                     window.parent.frames[frame].postMessage(data, redirect_origin);
                 }
@@ -52,37 +92,32 @@ class BLTIRedirect(DjangoRedirect):
                             var supported = message.supported_messages;
                             for (var i = 0; i < supported.length; i++) {
                                 if (supported[i].subject == "lti.put_data") {
-                                    var put_data_frame = supported[i].frame;
-                                    putData(put_data_frame, 'nonce', nonce);
-                                    putData(put_data_frame, 'state', state);
+                                    storeData(supported[i].frame);
                                 }
                             }
                         break;
                         case 'lti.put_data.response':
-                            debugger
-                            console.log("put_data response: " + message);
+                            clientStore[messsage.key].stored = true;
+                            if (dataStored()) {
+debugger
+                                doRedirection();
+                            }
                         break;
                     }
 
                     if (message.error) {
-                        console.log("event " + message.subject + " error code: " + message.error.code);
-                        console.log("event " + message.subject + " error message: " + message.error.message);
+                        console.error("event " + message.subject + 
+                                      " code: " + message.error.code +
+                                      " message: " + message.error.message);
                     }
                 }
 
                 function clientStoreAndRedirect() {
-
-
-                    debugger
-
-
-                    if (nonce && state && redirect_origin) {
+                    if (nonce && state && redirect_origin && session_cookie_value) {
                         window.parent.postMessage({subject: 'lti.capabilities'}, '*');
-                        setTimeout(function () {
-                            window.location=redirect_location;
-                        }, 10000);
+                        setTimeout(doRedirection, 10000);
                     } else {
-                        window.location=redirect_location;
+                        doRedirection();
                     }
                 }
 

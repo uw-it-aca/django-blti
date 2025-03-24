@@ -62,8 +62,6 @@ class BLTICookiesAllowedCheckPage(CookiesAllowedCheckPage):
         }
 
         function checkCookiesAllowed() {
-            debugger
-
             var cookie = "lti1p3_test_cookie=1; path=/";
             if (siteProtocol === 'https') {
                 cookie = cookie + '; Partitioned; SameSite=None; Secure';
@@ -73,9 +71,8 @@ class BLTICookiesAllowedCheckPage(CookiesAllowedCheckPage):
             var res = document.cookie.indexOf("lti1p3_test_cookie") !== -1;
 
 
-
+// REMOVE "false && " BEFORE FLIGHT
             if (false && res) {
-
 
 
 
@@ -84,19 +81,8 @@ class BLTICookiesAllowedCheckPage(CookiesAllowedCheckPage):
                 displayLoadingBlock();
                 window.location.href = getUpdatedUrl();
             } else {
-
-
-
-                console.log('cookie access DENIED');
-
-
                 if ('lti_storage_target' in urlParams) {
                     var frame = urlParams['lti_storage_target'];
-
-
-
-                    console.log("lti client store supported: " + frame);
-
 
                     displayLoadingBlock();
                     window.location.href = getUpdatedUrl(frame);
