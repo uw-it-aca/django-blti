@@ -84,9 +84,6 @@ debugger
                 }
 
                 function ltiClientStore(frame, data) {
-
-debugger
-
                     console.log("lti.put_data : redirect_origin: " + redirect_origin + ", data: ", data);
                     window.parent.frames[frame].postMessage(data, redirect_origin);
                 }
@@ -103,12 +100,14 @@ debugger
                             }
                         break;
                         case 'lti.put_data.response':
-debugger
-                            const prop = message.key.split('_')[0];
+                            const prop = message.key.slice(0, message.key.lastIndexOf('_'));
 
                             console.log("lti.put_data response: ", message);
 
                             client_data[prop].stored = true;
+
+                            console.log("lti.put_data stored of " + prop +  " = " + client_data[prop].stored);
+
                             if (dataStored()) {
                                 doRedirection();
                             }
