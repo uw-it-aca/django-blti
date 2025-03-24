@@ -38,11 +38,11 @@ class BLTIRedirect(DjangoRedirect):
                               stored: false
                           },
                           session_cookie_name: {
-                              value: "{self._session_cookie_name}"
+                              value: "{self._session_cookie_name}",
                               stored: false
                           },
                           session_cookie: {
-                              value: "{self._session_cookie_value}"
+                              value: "{self._session_cookie_value}",
                               stored: false
                            }
                      };
