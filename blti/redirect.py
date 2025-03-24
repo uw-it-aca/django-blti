@@ -29,22 +29,22 @@ class BLTIRedirect(DjangoRedirect):
                 """
                 """
                       clientStore = {
-                          'nonce_' + nonce: {
+                          nonce: {
                               value: nonce,
                               stored: false
                           },
-                          'state_' + state: {
+                          state: {
                               value: state,
                               stored: false
                           },
                           session_cookie_name: {
-                              value: "{self._session_cookie_name}",
+                              value: session_cookie_name,
                               stored: false
                           },
-                          session_cookie: {
-                              value: "{self._session_cookie_value}",
+                          session_cookie_value: {
+                              value: session_cookie_value,
                               stored: false
-                           }
+                          }
                      };
 
                 function doRedirection() {
@@ -52,37 +52,39 @@ debugger
                     window.location=redirect_location;
                 }
 
-                function storeData(frame) {
-                    for (const key in clientStore) {
-                        putData(put_data_frame, key, clientStore[key].value);
-                        clientStore[key].stored = true;
+                function validClientData() {
+                    for (const prop in clientStore) {
+                        if (!clientStore[prop].value) {
+                            console.log("incomplete client data: " + prop + " is missing")
+                            return false;
+                        }
+                    }
+
+                    return true;
+                }
+
+                function storeClientData(frame) {
+                    for (const prop in clientStore) {
+                        const data = {
+                            subject: 'lti.put_data',
+                            message_id: prop '_' + session_cookie_value,
+                            key: prop + '_' + clientStore[prop].value
+                            value:  clientStore[prop].value
+                        };
+
+                        console.log("lti.put_data : origin: " + redirect_origin + "data: ", data);
+
+                        window.parent.frames[frame].postMessage(data, redirect_origin);
                     }
                 }
 
                 function dataStored(frame) {
-                    for (const key in clientStore) {
-                        if (!clientStore[key].stored) {
+                    for (const prop in clientStore) {
+                        if (!clientStore[prop].stored) {
                             return false;
                         }
                     }
                     return true;
-                }
-
-                function putData(frame, key, value) {
-                    var data = {
-                        subject: 'lti.put_data',
-                        message_id: key + '_' + session_cookie_value,
-                        key: key,
-                        value: value
-                    };
-
-                    console.log("putData: " + data.key + 
-                                " = " + data.value + 
-                                ", msg_id: " + data.message_id + 
-                                ", frame: " + frame + 
-                                ", origin: " + redirect_origin);
-
-                    window.parent.frames[frame].postMessage(data, redirect_origin);
                 }
 
                 function ltiClientStoreResponse(event) {
@@ -92,12 +94,18 @@ debugger
                             var supported = message.supported_messages;
                             for (var i = 0; i < supported.length; i++) {
                                 if (supported[i].subject == "lti.put_data") {
-                                    storeData(supported[i].frame);
+                                    storeClientData(supported[i].frame);
                                 }
                             }
                         break;
                         case 'lti.put_data.response':
-                            clientStore[messsage.key].stored = true;
+                            const prop = message.key.split('_')[0];
+
+                            console.log("lti.put_data response: ", message);
+
+
+
+                            clientStore[prop].stored = true;
                             if (dataStored()) {
 debugger
                                 doRedirection();
@@ -113,7 +121,7 @@ debugger
                 }
 
                 function clientStoreAndRedirect() {
-                    if (nonce && state && redirect_origin && session_cookie_value) {
+                    if (validClientData()) {
                         window.parent.postMessage({subject: 'lti.capabilities'}, '*');
                         setTimeout(doRedirection, 10000);
                     } else {
