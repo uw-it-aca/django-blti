@@ -65,9 +65,9 @@ debugger
 
                 function storeClientData(frame) {
                     for (const prop in clientStore) {
-                        const data = {
+                        var data = {
                             subject: 'lti.put_data',
-                            message_id: prop '_' + session_cookie_value,
+                            message_id: prop + '_' + session_cookie_value,
                             key: prop + '_' + clientStore[prop].value
                             value:  clientStore[prop].value
                         };
