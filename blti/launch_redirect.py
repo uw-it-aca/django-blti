@@ -22,7 +22,7 @@ class BLTILaunchRedirect(DjangoRedirect):
                 <script type="text/javascript">
                 const redirect_location = "{self._location}",
                       parsed_redirect = URL.parse(redirect_location),
-                      redirect_origin = {self._origin},
+                      redirect_origin = "{self._origin}",
                       state = parsed_redirect.searchParams.get('state');
                 """
                 """
