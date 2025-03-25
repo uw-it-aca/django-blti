@@ -8,7 +8,7 @@ from pylti1p3.contrib.django.redirect import DjangoRedirect
 class BLTIRedirect(DjangoRedirect):
     def __init__(self, location, cookie_service=None,
                  session_service=None, origin=None):
-        self._origin = orgin
+        self._origin = origin
         self._session_cookie_name = (
             f"{session_service.data_storage._prefix}"
             f"{session_service.data_storage.get_session_cookie_name()}")
