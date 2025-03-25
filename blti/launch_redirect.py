@@ -99,8 +99,8 @@ debugger
                         break;
                         case 'lti.get_data.response':
 debugger
-                            const underscore = message.key.lastIndexOf('_');
-                            const prop = (underscore > 0) ? message.key.slice(0, underscore) : message.key;
+                            const underscore = message.key.lastIndexOf('_'),
+                                  prop = (underscore > 0) ? message.key.slice(0, underscore) : message.key;
 
                             client_data[prop].value = message.value;
                             if (dataFetched()) {
