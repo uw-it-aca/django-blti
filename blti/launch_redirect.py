@@ -21,31 +21,31 @@ class BLTILaunchRedirect(DjangoRedirect):
                 <script type="text/javascript">
                 const redirect_location = "{self._location}",
                       parsed_redirect = URL.parse(redirect_location),
-                      redirect_origin = parsed_redirect.origin,
-                      nonce,
-                      state = parsed_redirect.searchParams.get('state'),
-                      session_cookie_name,
-                      session_cookie_value,
+                      redirect_origin = window.location.origin,
+                      state = parsed_redirect.searchParams.get('state');
                 """
                 """
-                      client_data = {
-                          nonce: {
-                              value: nonce,
-                              stored: false
-                          },
-                          state: {
-                              value: state,
-                              stored: false
-                          },
-                          session_cookie_name: {
-                              value: session_cookie_name,
-                              stored: false
-                          },
-                          session_cookie_value: {
-                              value: session_cookie_value,
-                              stored: false
-                          }
-                     };
+                var nonce,
+                    session_cookie_name,
+                    session_cookie_value,
+                    client_data = {
+                        nonce: {
+                            value: nonce,
+                            stored: false
+                        },
+                        state: {
+                            value: state,
+                            stored: false
+                        },
+                        session_cookie_name: {
+                            value: session_cookie_name,
+                            stored: false
+                        },
+                        session_cookie_value: {
+                            value: session_cookie_value,
+                            stored: false
+                        }
+                    };
 
 debugger
                 function doRedirection() {
