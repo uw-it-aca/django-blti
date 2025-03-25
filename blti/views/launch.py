@@ -92,7 +92,7 @@ class BLTILaunchView(BLTIView):
                 f"state={params['state']}",
                 f"authenticity_token={params['authenticity_token']}",
                 f"id_token={params['id_token']}",
-                f"utf8={params['utf8']}")
+                f"utf8={params['utf8']}"]
             url = f"{redirect_uri}?{'&'.join(url_parameters)}"
             logger.info(f"client store add params: url: {url}")
 
