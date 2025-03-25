@@ -100,10 +100,7 @@ class BLTIRedirect(DjangoRedirect):
                         break;
                         case 'lti.put_data.response':
 debugger
-                            const underscore = message.key.lastIndexOf('_'),
-                                  prop = (underscore > 0) ? message.key.slice(0, underscore) : message.key;
-
-                            client_data[prop].stored = true;
+                            client_data[message.key].stored = true;
                             if (dataStored()) {
                                 doRedirection();
                             }

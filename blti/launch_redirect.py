@@ -68,7 +68,7 @@ debugger
                         ltiClientStore(frame, {
                             subject: 'lti.get_data',
                             message_id: prop + '_' + state,
-                            key: prop + '_' + state
+                            key: prop
                         });
                     }
                 }
@@ -83,6 +83,7 @@ debugger
                 }
 
                 function ltiClientStore(frame, data) {
+                    console.log("lti.get_data (" + redirect_origin + "): ", data);
                     window.parent.frames[frame].postMessage(data, redirect_origin);
                 }
 
@@ -98,11 +99,12 @@ debugger
                             }
                         break;
                         case 'lti.get_data.response':
-debugger
-                            const underscore = message.key.lastIndexOf('_'),
-                                  prop = (underscore > 0) ? message.key.slice(0, underscore) : message.key;
 
-                            client_data[prop].value = message.value;
+
+                            console.log("lti.get_data.response: key=" + message.key + ", value=" + message.value);
+
+
+                            client_data[message.key].value = message.value;
                             if (dataFetched()) {
                                 doRedirection();
                             }
