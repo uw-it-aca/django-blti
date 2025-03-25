@@ -47,8 +47,8 @@ class BLTILaunchRedirect(DjangoRedirect):
                         }
                     };
 
-debugger
                 function doRedirection() {
+debugger
                     window.location=redirect_location;
                 }
 
@@ -91,6 +91,7 @@ debugger
                     var message = event.data;
                     switch (message.subject) {
                         case 'lti.capabilities.response':
+debugger
                             var supported = message.supported_messages;
                             for (var i = 0; i < supported.length; i++) {
                                 if (supported[i].subject == "lti.get_data") {
@@ -102,7 +103,7 @@ debugger
 
 
                             console.log("lti.get_data.response: key=" + message.key + ", value=" + message.value);
-
+debugger
 
                             client_data[message.key].value = message.value;
                             if (dataFetched()) {
@@ -120,7 +121,7 @@ debugger
 
                 function clientStoreAndRedirect() {
                     window.parent.postMessage({subject: 'lti.capabilities'}, '*');
-                    setTimeout(doRedirection, 10000);
+                    setTimeout(doRedirection, 60000);
                 }
 
                 window.addEventListener("message", ltiClientStoreResponse);

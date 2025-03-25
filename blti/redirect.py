@@ -48,6 +48,7 @@ class BLTIRedirect(DjangoRedirect):
                      };
 
                 function doRedirection() {
+debugger
                     window.location=redirect_location;
                 }
 
@@ -63,6 +64,7 @@ class BLTIRedirect(DjangoRedirect):
                 }
 
                 function putClientData(frame) {
+debugger
                     for (const prop in client_data) {
                         ltiClientStore(frame, {
                             subject: 'lti.put_data',
@@ -90,6 +92,7 @@ class BLTIRedirect(DjangoRedirect):
                 function ltiClientStoreResponse(event) {
                     var message = event.data;
                     switch (message.subject) {
+debugger
                         case 'lti.capabilities.response':
                             var supported = message.supported_messages;
                             for (var i = 0; i < supported.length; i++) {
@@ -99,7 +102,12 @@ class BLTIRedirect(DjangoRedirect):
                             }
                         break;
                         case 'lti.put_data.response':
+
+
+                            console.log("lti.get_data.response: key=" + message.key + ", value=" + message.value);
 debugger
+
+
                             client_data[message.key].stored = true;
                             if (dataStored()) {
                                 doRedirection();
@@ -116,8 +124,9 @@ debugger
 
                 function clientStoreAndRedirect() {
                     if (validClientData()) {
+debugger
                         window.parent.postMessage({subject: 'lti.capabilities'}, '*');
-                        setTimeout(doRedirection, 10000);
+                        setTimeout(doRedirection, 60000);
                     } else {
                         doRedirection();
                     }
