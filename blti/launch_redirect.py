@@ -1,11 +1,11 @@
 # Copyright 2025 UW-IT, University of Washington
 # SPDX-License-Identifier: Apache-2.0
 
-from django.http import HttpResponse  # type: ignore
+from django.http import HttpResponse
 from pylti1p3.contrib.django.redirect import DjangoRedirect
 
 
-class BLTIRedirect(DjangoRedirect):
+class BLTILaunchRedirect(DjangoRedirect):
     def __init__(self, location, cookie_service=None, session_service=None):
         self._session_cookie_name = (
             f"{session_service.data_storage._prefix}"
@@ -22,10 +22,10 @@ class BLTIRedirect(DjangoRedirect):
                 const redirect_location = "{self._location}",
                       parsed_redirect = URL.parse(redirect_location),
                       redirect_origin = parsed_redirect.origin,
-                      nonce = parsed_redirect.searchParams.get('nonce'),
+                      nonce,
                       state = parsed_redirect.searchParams.get('state'),
-                      session_cookie_name = "{self._session_cookie_name}",
-                      session_cookie_value = "{self._session_cookie_value}",
+                      session_cookie_name,
+                      session_cookie_value,
                 """
                 """
                       client_data = {
@@ -47,6 +47,7 @@ class BLTIRedirect(DjangoRedirect):
                           }
                      };
 
+debugger
                 function doRedirection() {
                     window.location=redirect_location;
                 }
@@ -62,20 +63,19 @@ class BLTIRedirect(DjangoRedirect):
                     return true;
                 }
 
-                function putClientData(frame) {
+                function getClientData(frame) {
                     for (const prop in client_data) {
                         ltiClientStore(frame, {
-                            subject: 'lti.put_data',
+                            subject: 'lti.get_data',
                             message_id: prop + '_' + state,
-                            key: prop,
-                            value:  client_data[prop].value
+                            key: prop + '_' + state
                         });
                     }
                 }
 
-                function dataStored(frame) {
+                function dataFetched(frame) {
                     for (const prop in client_data) {
-                        if (!client_data[prop].stored) {
+                        if (!client_data[prop].value) {
                             return false;
                         }
                     }
@@ -83,7 +83,6 @@ class BLTIRedirect(DjangoRedirect):
                 }
 
                 function ltiClientStore(frame, data) {
-                    console.log("lti.put_data (" + redirect_origin + "): ", data);
                     window.parent.frames[frame].postMessage(data, redirect_origin);
                 }
 
@@ -93,16 +92,18 @@ class BLTIRedirect(DjangoRedirect):
                         case 'lti.capabilities.response':
                             var supported = message.supported_messages;
                             for (var i = 0; i < supported.length; i++) {
-                                if (supported[i].subject == "lti.put_data") {
-                                    putClientData(supported[i].frame);
+                                if (supported[i].subject == "lti.get_data") {
+                                    getClientData(supported[i].frame);
                                 }
                             }
                         break;
-                        case 'lti.put_data.response':
-                            const prop = message.key.slice(0, message.key.lastIndexOf('_'));
+                        case 'lti.get_data.response':
+debugger
+                            const underscore = message.key.lastIndexOf('_');
+                            const prop = (underscore > 0) ? message.key.slice(0, underscore) : message.key;
 
-                            client_data[prop].stored = true;
-                            if (dataStored()) {
+                            client_data[prop].value = message.value;
+                            if (dataFetched()) {
                                 doRedirection();
                             }
                         break;
@@ -116,12 +117,8 @@ class BLTIRedirect(DjangoRedirect):
                 }
 
                 function clientStoreAndRedirect() {
-                    if (validClientData()) {
-                        window.parent.postMessage({subject: 'lti.capabilities'}, '*');
-                        setTimeout(doRedirection, 10000);
-                    } else {
-                        doRedirection();
-                    }
+                    window.parent.postMessage({subject: 'lti.capabilities'}, '*');
+                    setTimeout(doRedirection, 10000);
                 }
 
                 window.addEventListener("message", ltiClientStoreResponse);

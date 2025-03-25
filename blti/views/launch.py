@@ -8,10 +8,12 @@ from django.views.decorators.csrf import csrf_exempt
 from blti.config import get_tool_conf, get_launch_data_storage
 from blti.exceptions import BLTIException
 from blti.validators import BLTIRequestValidator
+from blti.launch_redirect import BLTILaunchRedirect
 from pylti1p3.exception import OIDCException
 from pylti1p3.contrib.django import DjangoMessageLaunch
 from oauthlib.oauth1.rfc5849.endpoints.signature_only import (
     SignatureOnlyEndpoint)
+from pylti1p3.contrib.django.session import DjangoSessionService
 import logging
 
 
@@ -38,6 +40,20 @@ class BLTILaunchView(BLTIView):
             logger.debug(f"LTI 1.1 launch")
         except BLTIException as ex:
             try:
+                try:
+                    params = request.POST if request.method == 'POST' else request.GET
+                    logger.info(f"client store: params: {params}")
+                    lti_storage_frame = params.get('lti_storage_frame')
+                    logger.info(f"client store: lti_storage_frame: {lti_storage_frame}")
+                    session_id = request.COOKIES.get('lti1p3-session-id')
+                    logger.info(f"client store: session_id: {session_id}")
+
+                    # if client storage indicated, redirect to collect cookies
+                    if not session_id and lti_storage_frame:
+                        return self.client_store_redirect(request, params)
+                except KeyError:
+                    pass
+
                 launch_data = self.validate_1p3(request)
                 logger.debug(f"LTI 1.3 launch")
             except OIDCException as ex:
@@ -61,6 +77,31 @@ class BLTILaunchView(BLTIView):
             request, tool_conf, launch_data_storage=launch_data_storage)
         message_launch_data = message_launch.get_launch_data()
         return message_launch_data
+
+    def client_store_redirect(self, request, ex.url_parameters):
+        lti_storage_frame = params['lti_storage_frame']
+        redirect_uri = request.build_absolute_uri()
+        logger.info(f"client store: redirect_uri: {redirect_uri}")
+
+        if "lti_storage_frame" in redirect_uri:
+            url = redirect_uri.replace(
+                f"&lti_storage_frame={lti_storage_frame}", "")
+            logger.info(f"client store remove frame: url: {url}")
+        else:
+            url_parameters = [
+                f"state={params['state']}",
+                f"authenticity_token={params['authenticity_token']}",
+                f"id_token={params['id_token']}",
+                f"utf8={params['utf8']}"])
+            url = f"{redirect_uri}?{'&'.join(url_parameters)}"
+            logger.info(f"client store add params: url: {url}")
+
+        if url.startswith('http:') and request.is_secure():
+            url = f"https{uri[4:]}"
+
+        logger.info(f"client store: redirecting to: {url}")
+        return BLTILaunchRedirect(
+            url, DjangoCookieService(request), DjangoSessionService(request))
 
     def validate_1p1(self, request):
         request_validator = BLTIRequestValidator()
