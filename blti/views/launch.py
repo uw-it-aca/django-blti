@@ -43,13 +43,13 @@ class BLTILaunchView(BLTIView):
                 try:
                     params = request.POST if request.method == 'POST' else request.GET
                     logger.info(f"client store: params: {params}")
-                    lti_storage_frame = params.get('lti_storage_frame')
-                    logger.info(f"client store: lti_storage_frame: {lti_storage_frame}")
+                    lti_storage_target = params.get('lti_storage_target')
+                    logger.info(f"client store: lti_storage_target: {lti_storage_target}")
                     session_id = request.COOKIES.get('lti1p3-session-id')
                     logger.info(f"client store: session_id: {session_id}")
 
                     # if client storage indicated, redirect to collect cookies
-                    if not session_id and lti_storage_frame:
+                    if not session_id and lti_storage_target:
                         return self.client_store_redirect(request, params)
                 except KeyError:
                     pass
@@ -79,13 +79,13 @@ class BLTILaunchView(BLTIView):
         return message_launch_data
 
     def client_store_redirect(self, request, url_parameters):
-        lti_storage_frame = url_parameters['lti_storage_frame']
+        lti_storage_target = url_parameters['lti_storage_target']
         redirect_uri = request.build_absolute_uri()
         logger.info(f"client store: redirect_uri: {redirect_uri}")
 
-        if "lti_storage_frame" in redirect_uri:
+        if "lti_storage_target" in redirect_uri:
             url = redirect_uri.replace(
-                f"&lti_storage_frame={lti_storage_frame}", "")
+                f"&lti_storage_target={lti_storage_target}", "")
             logger.info(f"client store redirect url removed frame: url: {url}")
         else:
             bounce_parameters = [
