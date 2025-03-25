@@ -6,13 +6,14 @@ from pylti1p3.contrib.django.redirect import DjangoRedirect
 
 
 class BLTILaunchRedirect(DjangoRedirect):
-    def __init__(self, location, cookie_service=None, session_service=None):
+    def __init__(self, location, origin, session_service):
+        self._origin = origin
         self._session_cookie_name = (
             f"{session_service.data_storage._prefix}"
             f"{session_service.data_storage.get_session_cookie_name()}")
         self._session_cookie_value = (
             f"{session_service.data_storage.get_session_id()}")
-        super().__init__(location, cookie_service)
+        super().__init__(location)
 
     def do_js_redirect(self):
         return self._process_response(
@@ -21,7 +22,7 @@ class BLTILaunchRedirect(DjangoRedirect):
                 <script type="text/javascript">
                 const redirect_location = "{self._location}",
                       parsed_redirect = URL.parse(redirect_location),
-                      redirect_origin = window.location.origin,
+                      redirect_origin = {self._origin},
                       state = parsed_redirect.searchParams.get('state');
                 """
                 """

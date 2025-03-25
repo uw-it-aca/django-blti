@@ -21,7 +21,7 @@ class BLTIRedirect(DjangoRedirect):
                 <script type="text/javascript">
                 const redirect_location = "{self._location}",
                       parsed_redirect = URL.parse(redirect_location),
-                      redirect_origin = window.location.origin,
+                      redirect_origin = parsed_redirect.origin,
                       nonce = parsed_redirect.searchParams.get('nonce'),
                       state = parsed_redirect.searchParams.get('state'),
                       session_cookie_name = "{self._session_cookie_name}",
