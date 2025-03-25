@@ -13,6 +13,7 @@ from pylti1p3.exception import OIDCException
 from pylti1p3.contrib.django import DjangoMessageLaunch
 from oauthlib.oauth1.rfc5849.endpoints.signature_only import (
     SignatureOnlyEndpoint)
+from pylti1p3.contrib.django.cookie import DjangoCookieService
 from pylti1p3.contrib.django.session import DjangoSessionService
 import logging
 
@@ -51,7 +52,8 @@ class BLTILaunchView(BLTIView):
                     # if client storage indicated, redirect to collect cookies
                     if not session_id and lti_storage_target:
                         return self.client_store_redirect(request, params)
-                except KeyError:
+                except KeyError as ex:
+                    logger.error(f"client store: missing params: {ex}")
                     pass
 
                 launch_data = self.validate_1p3(request)
