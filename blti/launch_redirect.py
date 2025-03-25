@@ -115,8 +115,8 @@ debugger
 
                     if (message.error) {
                         console.error("event " + message.subject + 
-                                      ": error:  code: " + message.error.code +
-                                      " message: " + message.error.message);
+                                      " error (" + message.error.code +
+                                      "): " + message.error.message);
                     }
                 }
 
