@@ -64,6 +64,7 @@ debugger
                 }
 
                 function getClientData(frame) {
+debugger
                     for (const prop in client_data) {
                         ltiClientStore(frame, {
                             subject: 'lti.get_data',
@@ -91,7 +92,6 @@ debugger
                     var message = event.data;
                     switch (message.subject) {
                         case 'lti.capabilities.response':
-debugger
                             var supported = message.supported_messages;
                             for (var i = 0; i < supported.length; i++) {
                                 if (supported[i].subject == "lti.get_data") {

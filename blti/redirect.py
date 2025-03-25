@@ -92,7 +92,6 @@ debugger
                 function ltiClientStoreResponse(event) {
                     var message = event.data;
                     switch (message.subject) {
-debugger
                         case 'lti.capabilities.response':
                             var supported = message.supported_messages;
                             for (var i = 0; i < supported.length; i++) {
