@@ -6,7 +6,9 @@ from pylti1p3.contrib.django.redirect import DjangoRedirect
 
 
 class BLTIRedirect(DjangoRedirect):
-    def __init__(self, location, cookie_service=None, session_service=None):
+    def __init__(self, location, cookie_service=None,
+                 session_service=None, origin=None):
+        self._origin = orgin
         self._session_cookie_name = (
             f"{session_service.data_storage._prefix}"
             f"{session_service.data_storage.get_session_cookie_name()}")
@@ -21,7 +23,7 @@ class BLTIRedirect(DjangoRedirect):
                 <script type="text/javascript">
                 const redirect_location = "{self._location}",
                       parsed_redirect = URL.parse(redirect_location),
-                      redirect_origin = parsed_redirect.origin,
+                      origin = "{self._origin}",
                       nonce = parsed_redirect.searchParams.get('nonce'),
                       state = parsed_redirect.searchParams.get('state'),
                       session_cookie_name = "{self._session_cookie_name}",
@@ -85,8 +87,8 @@ debugger
                 }
 
                 function ltiClientStore(frame, data) {
-                    console.log("lti.put_data (" + redirect_origin + "): ", data);
-                    window.parent.frames[frame].postMessage(data, redirect_origin);
+                    console.log("lti.put_data (" + origin + "): ", data);
+                    window.parent.frames[frame].postMessage(data, origin);
                 }
 
                 function ltiClientStoreResponse(event) {
