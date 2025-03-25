@@ -78,23 +78,23 @@ class BLTILaunchView(BLTIView):
         message_launch_data = message_launch.get_launch_data()
         return message_launch_data
 
-    def client_store_redirect(self, request, ex.url_parameters):
-        lti_storage_frame = params['lti_storage_frame']
+    def client_store_redirect(self, request, url_parameters):
+        lti_storage_frame = url_parameters['lti_storage_frame']
         redirect_uri = request.build_absolute_uri()
         logger.info(f"client store: redirect_uri: {redirect_uri}")
 
         if "lti_storage_frame" in redirect_uri:
             url = redirect_uri.replace(
                 f"&lti_storage_frame={lti_storage_frame}", "")
-            logger.info(f"client store remove frame: url: {url}")
+            logger.info(f"client store redirect url removed frame: url: {url}")
         else:
-            url_parameters = [
-                f"state={params['state']}",
-                f"authenticity_token={params['authenticity_token']}",
-                f"id_token={params['id_token']}",
-                f"utf8={params['utf8']}"]
-            url = f"{redirect_uri}?{'&'.join(url_parameters)}"
-            logger.info(f"client store add params: url: {url}")
+            bounce_parameters = [
+                f"state={url_parameters['state']}",
+                f"authenticity_token={url_parameters['authenticity_token']}",
+                f"id_token={url_parameters['id_token']}",
+                f"utf8={url_parameters['utf8']}"]
+            url = f"{redirect_uri}?{'&'.join(bounce_parameters)}"
+            logger.info(f"client store redirect url added params: url: {url}")
 
         if url.startswith('http:') and request.is_secure():
             url = f"https{uri[4:]}"
