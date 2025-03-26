@@ -6,8 +6,7 @@ from pylti1p3.contrib.django.redirect import DjangoRedirect
 
 
 class BLTILaunchRedirect(DjangoRedirect):
-    def __init__(self, location, origin, session_service):
-        self._origin = origin
+    def __init__(self, location, session_service):
         self._session_cookie_name = (
             f"{session_service.data_storage._prefix}"
             f"{session_service.data_storage.get_session_cookie_name()}")
@@ -22,7 +21,7 @@ class BLTILaunchRedirect(DjangoRedirect):
                 <script type="text/javascript">
                 const redirect_location = "{self._location}",
                       parsed_redirect = URL.parse(redirect_location),
-                      redirect_origin = "{self._origin}",
+                      redirect_origin = parsed_redirect.origin,
                       state = parsed_redirect.searchParams.get('state');
                 """
                 """
