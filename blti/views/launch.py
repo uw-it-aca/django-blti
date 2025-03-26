@@ -15,6 +15,7 @@ from oauthlib.oauth1.rfc5849.endpoints.signature_only import (
     SignatureOnlyEndpoint)
 from pylti1p3.contrib.django.cookie import DjangoCookieService
 from pylti1p3.contrib.django.session import DjangoSessionService
+import json
 import logging
 
 
