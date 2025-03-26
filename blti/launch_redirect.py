@@ -6,16 +6,16 @@ from pylti1p3.contrib.django.redirect import DjangoRedirect
 
 
 class BLTILaunchRedirect(DjangoRedirect):
-    def __init__(self, location, session_service):
+    def __init__(self, location, session_service=None, cache_service=None):
         self._session_cookie_name = (
             f"{session_service.data_storage._prefix}"
             f"{session_service.data_storage.get_session_cookie_name()}")
         self._session_cookie_value = (
             f"{session_service.data_storage.get_session_id()}")
-        self._origin = session_service._get_value(
-            'lti_client_store_origin')
-        self._message_id = session_service._get_value(
-            'lti_client_store_messsage_id')
+        self._origin = cache_service.get_value(
+            f"lti_client_store_origin-{self._session_cookie_value}")
+        self._message_id = cache_service.get_value(
+            f"lti_client_store_messsage_id-{self._session_cookie_value}")
         super().__init__(location)
 
     def do_js_redirect(self):

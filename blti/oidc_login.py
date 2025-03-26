@@ -7,6 +7,8 @@ from blti.cookies_allowed_check_page import BLTICookiesAllowedCheckPage
 from pylti1p3.request import Request
 from pylti1p3.contrib.django import DjangoOIDCLogin
 from pylti1p3.contrib.django.request import DjangoRequest
+from pylti1p3.contrib.django.launch_data_storage.cache import (
+    DjangoCacheDataStorage)
 
 
 class BLTIOIDCLogin(DjangoOIDCLogin):
@@ -65,4 +67,5 @@ class BLTIOIDCLogin(DjangoOIDCLogin):
     def get_redirect(self, url):
         return BLTIRedirect(
             url, cookie_service=self._cookie_service,
-            session_service=self._session_service)
+            session_service=self._session_service
+            cache_service=DjangoCacheDataStorage())

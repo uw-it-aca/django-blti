@@ -15,6 +15,8 @@ from oauthlib.oauth1.rfc5849.endpoints.signature_only import (
     SignatureOnlyEndpoint)
 from pylti1p3.contrib.django.cookie import DjangoCookieService
 from pylti1p3.contrib.django.session import DjangoSessionService
+from pylti1p3.contrib.django.launch_data_storage.cache import (
+    DjangoCacheDataStorage)
 import logging
 
 
@@ -102,7 +104,9 @@ class BLTILaunchView(BLTIView):
             url = f"https{uri[4:]}"
 
         logger.info(f"client store: redirecting to: {url}")
-        redirect_obj = BLTILaunchRedirect(url, DjangoSessionService(request))
+        redirect_obj = BLTILaunchRedirect(
+            url, session_service=DjangoSessionService(request),
+            cache_service=DjangoCacheDataStorage())
         return redirect_obj.do_js_redirect()
 
     def validate_1p1(self, request):
