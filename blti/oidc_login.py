@@ -4,7 +4,6 @@
 from blti.cookie import BLTICookieService
 from blti.redirect import BLTIRedirect
 from blti.cookies_allowed_check_page import BLTICookiesAllowedCheckPage
-from blti.request import BLTIRequest
 from pylti1p3.request import Request
 from pylti1p3.contrib.django import DjangoOIDCLogin
 from pylti1p3.contrib.django.request import DjangoRequest
