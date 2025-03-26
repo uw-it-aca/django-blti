@@ -105,8 +105,7 @@ class BLTILaunchView(BLTIView):
 
         logger.info(f"client store: redirecting to: {url}")
         redirect_obj = BLTILaunchRedirect(
-            url, session_service=DjangoSessionService(request),
-            cache_service=DjangoCacheDataStorage())
+            url, cache_service=DjangoCacheDataStorage())
         return redirect_obj.do_js_redirect()
 
     def validate_1p1(self, request):
