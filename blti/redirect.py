@@ -20,7 +20,7 @@ class BLTIRedirect(DjangoRedirect):
             'lti_client_store_origin', self._origin)
         self._lti_message_id = f"{uuid4()}"
         session_service._set_value(
-            'lti_client_store_messsage_id', self._origin)
+            'lti_client_store_messsage_id', self._lti_message_id)
         super().__init__(location, cookie_service)
 
     def do_js_redirect(self):

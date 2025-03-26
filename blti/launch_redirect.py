@@ -8,10 +8,10 @@ from pylti1p3.contrib.django.redirect import DjangoRedirect
 class BLTILaunchRedirect(DjangoRedirect):
     def __init__(self, location, session_service):
         self._session_cookie_name = (
-            f"{session_service._prefix}"
-            f"{session_service.get_session_cookie_name()}")
+            f"{session_service.data_storage._prefix}"
+            f"{session_service.data_storage.get_session_cookie_name()}")
         self._session_cookie_value = (
-            f"{session_service.get_session_id()}")
+            f"{session_service.data_storage.get_session_id()}")
         self._origin = session_service._get_value(
             'lti_client_store_origin')
         self._message_id = session_service._get_value(
