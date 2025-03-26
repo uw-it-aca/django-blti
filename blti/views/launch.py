@@ -102,8 +102,7 @@ class BLTILaunchView(BLTIView):
             url = f"https{uri[4:]}"
 
         logger.info(f"client store: redirecting to: {url}")
-        redirect_obj = BLTILaunchRedirect(
-            url, DjangoSessionService(request), get_launch_data_storage())
+        redirect_obj = BLTILaunchRedirect(url, DjangoSessionService(request))
         return redirect_obj.do_js_redirect()
 
     def validate_1p1(self, request):

@@ -9,7 +9,6 @@ from uuid import uuid4
 
 class BLTIRedirect(DjangoRedirect):
     def __init__(self, location, cookie_service=None, session_service=None):
-        super().__init__(location, cookie_service)
         self._session_cookie_name = (
             f"{session_service.data_storage._prefix}"
             f"{session_service.data_storage.get_session_cookie_name()}")
@@ -17,11 +16,12 @@ class BLTIRedirect(DjangoRedirect):
             f"{session_service.data_storage.get_session_id()}")
         parsed_location = urlparse(location)
         self._origin = f"{parsed_location.scheme}://{parsed_location.netloc}"
-        self._session_service.data_storage.set_value(
+        session_service.data_storage.set_value(
             'lti_client_store_origin', self._origin)
         self._lti_message_id = f"{uuid4()}"
-        self._session_service.data_storage.set_value(
+        session_service.data_storage.set_value(
             'lti_client_store_messsage_id', self._origin)
+        super().__init__(location, cookie_service)
 
     def do_js_redirect(self):
         return self._process_response(
