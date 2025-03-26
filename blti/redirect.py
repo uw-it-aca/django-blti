@@ -16,10 +16,10 @@ class BLTIRedirect(DjangoRedirect):
             f"{session_service.data_storage.get_session_id()}")
         parsed_location = urlparse(location)
         self._origin = f"{parsed_location.scheme}://{parsed_location.netloc}"
-        session_service.data_storage.set_value(
+        session_service._set_value(
             'lti_client_store_origin', self._origin)
         self._lti_message_id = f"{uuid4()}"
-        session_service.data_storage.set_value(
+        session_service._set_value(
             'lti_client_store_messsage_id', self._origin)
         super().__init__(location, cookie_service)
 
