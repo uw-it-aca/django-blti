@@ -59,9 +59,6 @@ class BLTILaunchView(BLTIView):
 
     def validate_1p3(self, request):
         tool_conf = get_tool_conf()
-        launch_data_storage = get_launch_data_storage()
-        message_launch = DjangoMessageLaunch(
-            request, tool_conf, launch_data_storage=launch_data_storage)
 
         try:
             params = request.POST if request.method == 'POST' else request.GET
@@ -73,15 +70,27 @@ class BLTILaunchView(BLTIView):
 
             # if client storage indicated, redirect to collect cookies
             if not session_id and lti_storage_target:
-                iss = message_launch.get_iss()
+                iss = self.sniff_at_jwt('iss', params['id_token'])
                 reg = tool_conf.find_registration_by_issuer(iss)
                 auth_url = reg.get_auth_token_url()
                 return self.client_store_redirect(request, params, auth_url)
         except KeyError as ex:
             raise BLTIException("Missing client storage parameters")
 
+        launch_data_storage = get_launch_data_storage()
+        message_launch = DjangoMessageLaunch(
+            request, tool_conf, launch_data_storage=launch_data_storage)
         message_launch_data = message_launch.get_launch_data()
         return message_launch_data
+
+    def sniff_at_jwt(self, key, id_token):
+        parts = id_token.split('.')
+        if len(parts) != 3:
+            raise BLTIException("Invalid id_token")
+
+        raw_body = DjangoMessageLaunch.urlsafe_b64decode(parts[1])
+        body = json.loads(raw_body)
+        return body[key] if key in body else None
 
     def client_store_redirect(self, request, launch_params, auth_url):
         lti_storage_target = launch_params['lti_storage_target']
