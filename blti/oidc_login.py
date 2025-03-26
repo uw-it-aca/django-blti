@@ -67,5 +67,5 @@ class BLTIOIDCLogin(DjangoOIDCLogin):
     def get_redirect(self, url):
         return BLTIRedirect(
             url, cookie_service=self._cookie_service,
-            session_service=self._session_service
+            session_service=self._session_service,
             cache_service=DjangoCacheDataStorage())
