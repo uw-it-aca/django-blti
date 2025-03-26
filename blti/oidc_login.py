@@ -7,6 +7,7 @@ from blti.cookies_allowed_check_page import BLTICookiesAllowedCheckPage
 from blti.request import BLTIRequest
 from pylti1p3.request import Request
 from pylti1p3.contrib.django import DjangoOIDCLogin
+from pylti1p3.contrib.django.request import DjangoRequest
 
 
 class BLTIOIDCLogin(DjangoOIDCLogin):
@@ -19,7 +20,7 @@ class BLTIOIDCLogin(DjangoOIDCLogin):
         launch_data_storage=None,
     ):
         django_request = (
-            request if isinstance(request, Request) else BLTIRequest(request)
+            request if isinstance(request, Request) else DjangoRequest(request)
         )
         cookie_service = (
             cookie_service if cookie_service else BLTICookieService(django_request)
@@ -66,4 +67,4 @@ class BLTIOIDCLogin(DjangoOIDCLogin):
         return BLTIRedirect(
             url, cookie_service=self._cookie_service,
             session_service=self._session_service,
-            origin=self._request.get_origin())
+            origin=self._get_request_param('iss')
