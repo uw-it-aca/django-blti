@@ -8,23 +8,13 @@ from uuid import uuid4
 
 
 class BLTIRedirect(DjangoRedirect):
-    def __init__(self, location, cookie_service=None,
-                 session_service=None, cache_service=None):
+    def __init__(self, location, cookie_service=None, session_service=None):
         self._session_cookie_name = (
             f"{session_service.data_storage._prefix}"
             f"{session_service.data_storage.get_session_cookie_name()}")
         self._session_cookie_value = (
             f"{session_service.data_storage.get_session_id()}")
-        parsed_location = urlparse(location)
-        parsed_parameters = parse_qs(parsed_location.query)
-        self._origin = f"{parsed_location.scheme}://{parsed_location.netloc}"
-        self._nonce = parsed_parameters.get('nonce', [''])[0]
-        self._state = parsed_parameters.get('state', [''])[0]
-        self._lti_message_id = f"{uuid4()}"
-        cache_service.set_value(
-            f"lti_origin-{self._state}", self._origin)
-        cache_service.set_value(
-            f"lti_messsage_id-{self._state}", self._lti_message_id)
+        self._location = location
         super().__init__(location, cookie_service)
 
     def do_js_redirect(self):
@@ -33,32 +23,33 @@ class BLTIRedirect(DjangoRedirect):
                 f"""\
                 <script type="text/javascript">
                 const redirect_location = "{self._location}",
-                      origin = "{self._origin}",
-                      nonce = "{self._nonce}",
-                      state = "{self._state}",
+                      parsed_location = URL.parse(redirect_location),
+                      parsed_params = parsed_location.searchParams,
+                      origin = parsed_location.origin,
+                      nonce = parsed_params.get('nonce'),
+                      state = parsed_params.get('state'),
                       session_cookie_name = "{self._session_cookie_name}",
-                      session_cookie_value = "{self._session_cookie_value}",
-                      message_id = "{self._lti_message_id}";
+                      session_cookie_value = "{self._session_cookie_value}";
                 """
                 """
-                      client_data = {
-                          nonce: {
-                              value: nonce,
-                              stored: false
-                          },
-                          state: {
-                              value: state,
-                              stored: false
-                          },
-                          session_cookie_name: {
-                              value: session_cookie_name,
-                              stored: false
-                          },
-                          session_cookie_value: {
-                              value: session_cookie_value,
-                              stored: false
-                          }
-                     };
+                var client_data = {
+                        nonce: {
+                            value: nonce,
+                            stored: false
+                        },
+                        state: {
+                            value: state,
+                            stored: false
+                        },
+                        session_cookie_name: {
+                            value: session_cookie_name,
+                            stored: false
+                        },
+                        session_cookie_value: {
+                            value: session_cookie_value,
+                            stored: false
+                        }
+                    };
 
 debugger
                 function doRedirection() {
@@ -78,7 +69,7 @@ debugger
                 }
 
                 function clientDataMessageId(prop) {
-                    return prop + '_' + message_id;
+                    return prop + '_' + state;
                 }
 
                 function putClientData(frame) {
@@ -102,7 +93,6 @@ debugger
                 }
 
                 function ltiClientStore(frame, data) {
-                    console.log("lti.put_data (" + origin + "): ", data);
                     window.parent.frames[frame].postMessage(data, origin);
                 }
 

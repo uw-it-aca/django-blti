@@ -15,8 +15,6 @@ from oauthlib.oauth1.rfc5849.endpoints.signature_only import (
     SignatureOnlyEndpoint)
 from pylti1p3.contrib.django.cookie import DjangoCookieService
 from pylti1p3.contrib.django.session import DjangoSessionService
-from pylti1p3.contrib.django.launch_data_storage.cache import (
-    DjangoCacheDataStorage)
 import logging
 
 
@@ -43,21 +41,6 @@ class BLTILaunchView(BLTIView):
             logger.debug(f"LTI 1.1 launch")
         except BLTIException as ex:
             try:
-                try:
-                    params = request.POST if request.method == 'POST' else request.GET
-                    logger.info(f"client store: params: {params}")
-                    lti_storage_target = params.get('lti_storage_target')
-                    logger.info(f"client store: lti_storage_target: {lti_storage_target}")
-                    session_id = request.COOKIES.get('lti1p3-session-id')
-                    logger.info(f"client store: session_id: {session_id}")
-
-                    # if client storage indicated, redirect to collect cookies
-                    if not session_id and lti_storage_target:
-                        return self.client_store_redirect(request, params)
-                except KeyError as ex:
-                    logger.error(f"client store: missing params: {ex}")
-                    pass
-
                 launch_data = self.validate_1p3(request)
                 logger.debug(f"LTI 1.3 launch")
             except OIDCException as ex:
@@ -79,11 +62,29 @@ class BLTILaunchView(BLTIView):
         launch_data_storage = get_launch_data_storage()
         message_launch = DjangoMessageLaunch(
             request, tool_conf, launch_data_storage=launch_data_storage)
+
+        try:
+            params = request.POST if request.method == 'POST' else request.GET
+            logger.info(f"client store: params: {params}")
+            lti_storage_target = params.get('lti_storage_target')
+            logger.info(f"client store: lti_storage_target: {lti_storage_target}")
+            session_id = request.COOKIES.get('lti1p3-session-id')
+            logger.info(f"client store: session_id: {session_id}")
+
+            # if client storage indicated, redirect to collect cookies
+            if not session_id and lti_storage_target:
+                iss = message_launch.get_iss()
+                reg = tool_conf.find_registration_by_issuer(iss)
+                auth_url = reg.get_auth_token_url()
+                return self.client_store_redirect(request, params, auth_url)
+        except KeyError as ex:
+            raise BLTIException("Missing client storage parameters")
+
         message_launch_data = message_launch.get_launch_data()
         return message_launch_data
 
-    def client_store_redirect(self, request, url_parameters):
-        lti_storage_target = url_parameters['lti_storage_target']
+    def client_store_redirect(self, request, launch_params, auth_url):
+        lti_storage_target = launch_params['lti_storage_target']
         redirect_uri = request.build_absolute_uri()
         logger.info(f"client store: redirect_uri: {redirect_uri}")
 
@@ -92,20 +93,19 @@ class BLTILaunchView(BLTIView):
                 f"&lti_storage_target={lti_storage_target}", "")
             logger.info(f"client store redirect url removed frame: url: {url}")
         else:
-            bounce_parameters = [
-                f"state={url_parameters['state']}",
-                f"authenticity_token={url_parameters['authenticity_token']}",
-                f"id_token={url_parameters['id_token']}",
-                f"utf8={url_parameters['utf8']}"]
-            url = f"{redirect_uri}?{'&'.join(bounce_parameters)}"
+            params = [
+                f"state={launch_params['state']}",
+                f"authenticity_token={launch_params['authenticity_token']}",
+                f"id_token={launch_params['id_token']}",
+                f"utf8={launch_params['utf8']}"]
+            url = f"{lti_storage_target}?{'&'.join(params)}"
             logger.info(f"client store redirect url added params: url: {url}")
 
         if url.startswith('http:') and request.is_secure():
             url = f"https{uri[4:]}"
 
         logger.info(f"client store: redirecting to: {url}")
-        redirect_obj = BLTILaunchRedirect(
-            url, cache_service=DjangoCacheDataStorage())
+        redirect_obj = BLTILaunchRedirect(url, auth_url)
         return redirect_obj.do_js_redirect()
 
     def validate_1p1(self, request):

@@ -3,18 +3,12 @@
 
 from django.http import HttpResponse
 from pylti1p3.contrib.django.redirect import DjangoRedirect
-from urllib.parse import urlparse, parse_qs
 
 
 class BLTILaunchRedirect(DjangoRedirect):
-    def __init__(self, location, cache_service=None):
-        parsed_location = urlparse(location)
-        parsed_parameters = parse_qs(parsed_location.query)
-        self._state = parsed_parameters.get('state', [''])[0]
-        self._origin = cache_service.get_value(
-            f"lti_origin-{self._state}")
-        self._lti_message_id = cache_service.get_value(
-            f"lti_messsage_id-{self._state}")
+    def __init__(self, location, auth_url):
+        self._location = location
+        self._auth_url = auth_url
         super().__init__(location)
 
     def do_js_redirect(self):
@@ -23,14 +17,11 @@ class BLTILaunchRedirect(DjangoRedirect):
                 f"""\
                 <script type="text/javascript">
                 const redirect_location = "{self._location}",
-                      redirect_origin = "{self._origin}",
-                      state = "{self._state}",
-                      message_id = "{self._lti_message_id}";
+                      origin = URL.parse("{self._auth_url}").origin;
                 """
                 """
-                var nonce,
-                    session_cookie_name,
-                    session_cookie_value,
+                var parsed_redirect = URL.parse(redirect_location),
+                    parsed_params = parsed_redirect.searchParams,
                     client_data = {
                         nonce: {
                             value: nonce,
@@ -68,7 +59,7 @@ debugger
                 }
 
                 function clientDataMessageId(prop) {
-                    return prop + '_' + message_id;
+                    return prop + '_' + state;
                 }
 
                 function getClientData(frame) {
