@@ -24,7 +24,7 @@ class BLTILaunchRedirect(DjangoRedirect):
                 <script type="text/javascript">
                 const redirect_location = "{self._location}",
                       redirect_origin = "{self._origin}",
-                      state = f"{self._state}",
+                      state = "{self._state}",
                       message_id = "{self._lti_message_id}";
                 """
                 """
