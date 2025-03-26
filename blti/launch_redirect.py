@@ -6,12 +6,16 @@ from pylti1p3.contrib.django.redirect import DjangoRedirect
 
 
 class BLTILaunchRedirect(DjangoRedirect):
-    def __init__(self, location, session_service):
+    def __init__(self, location, session_service, launch_data_storage):
         self._session_cookie_name = (
             f"{session_service.data_storage._prefix}"
             f"{session_service.data_storage.get_session_cookie_name()}")
         self._session_cookie_value = (
             f"{session_service.data_storage.get_session_id()}")
+        self._origin = launch_data_storage.get_value(
+            'lti_client_store_origin')
+        self._message_id = launch_data_storage.get_value(
+            'lti_client_store_messsage_id')
         super().__init__(location)
 
     def do_js_redirect(self):
@@ -21,8 +25,9 @@ class BLTILaunchRedirect(DjangoRedirect):
                 <script type="text/javascript">
                 const redirect_location = "{self._location}",
                       parsed_redirect = URL.parse(redirect_location),
-                      redirect_origin = parsed_redirect.origin,
-                      state = parsed_redirect.searchParams.get('state');
+                      redirect_origin = "{self._origin}",
+                      state = parsed_redirect.searchParams.get('state'),
+                      message_id = "{self._message_id}";
                 """
                 """
                 var nonce,
@@ -47,6 +52,7 @@ class BLTILaunchRedirect(DjangoRedirect):
                         }
                     };
 
+debugger
                 function doRedirection() {
 debugger
                     window.location=redirect_location;
@@ -55,7 +61,7 @@ debugger
                 function validClientData() {
                     for (const prop in client_data) {
                         if (!client_data[prop].value) {
-                            console.log("incomplete client data: " + prop + " is missing");
+                            console.log("incomplete client data: " + prop);
                             return false;
                         }
                     }
@@ -63,12 +69,15 @@ debugger
                     return true;
                 }
 
+                function clientDataMessageId(prop) {
+                    return prop + '_' + message_id;
+                }
+
                 function getClientData(frame) {
-debugger
                     for (const prop in client_data) {
                         ltiClientStore(frame, {
                             subject: 'lti.get_data',
-                            message_id: prop + '_' + state,
+                            message_id: clientDataMessageId(prop),
                             key: prop
                         });
                     }
@@ -102,8 +111,9 @@ debugger
                         case 'lti.get_data.response':
 
 
-                            console.log("lti.get_data.response: key=" + message.key + ", value=" + message.value);
-debugger
+                            console.log(message.subject +
+                                        ": key=" + message.key +
+                                        ", value=" + message.value);
 
                             client_data[message.key].value = message.value;
                             if (dataFetched()) {

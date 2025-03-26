@@ -3,16 +3,25 @@
 
 from django.http import HttpResponse  # type: ignore
 from pylti1p3.contrib.django.redirect import DjangoRedirect
+from urllib.parse import urlparse
+from uuid import uuid4
 
 
 class BLTIRedirect(DjangoRedirect):
     def __init__(self, location, cookie_service=None, session_service=None):
+        super().__init__(location, cookie_service)
         self._session_cookie_name = (
             f"{session_service.data_storage._prefix}"
             f"{session_service.data_storage.get_session_cookie_name()}")
         self._session_cookie_value = (
             f"{session_service.data_storage.get_session_id()}")
-        super().__init__(location, cookie_service)
+        parsed_location = urlparse(location)
+        self._origin = f"{parsed_location.scheme}://{parsed_location.netloc}"
+        self._session_service.data_storage.set_value(
+            'lti_client_store_origin', self._origin)
+        self._lti_message_id = f"{uuid4()}"
+        self._session_service.data_storage.set_value(
+            'lti_client_store_messsage_id', self._origin)
 
     def do_js_redirect(self):
         return self._process_response(
@@ -21,11 +30,12 @@ class BLTIRedirect(DjangoRedirect):
                 <script type="text/javascript">
                 const redirect_location = "{self._location}",
                       parsed_redirect = URL.parse(redirect_location),
-                      origin = window.location.origin,
+                      origin = "{self._origin}",
                       nonce = parsed_redirect.searchParams.get('nonce'),
                       state = parsed_redirect.searchParams.get('state'),
                       session_cookie_name = "{self._session_cookie_name}",
                       session_cookie_value = "{self._session_cookie_value}",
+                      message_id = "{self._lti_message_id}";
                 """
                 """
                       client_data = {
@@ -47,6 +57,7 @@ class BLTIRedirect(DjangoRedirect):
                           }
                      };
 
+debugger
                 function doRedirection() {
 debugger
                     window.location=redirect_location;
@@ -55,7 +66,7 @@ debugger
                 function validClientData() {
                     for (const prop in client_data) {
                         if (!client_data[prop].value) {
-                            console.log("incomplete client data: " + prop + " is missing");
+                            console.log("incomplete client data: " + prop);
                             return false;
                         }
                     }
@@ -63,12 +74,15 @@ debugger
                     return true;
                 }
 
+                function clientDataMessageId(prop) {
+                    return prop + '_' + message_id;
+                }
+
                 function putClientData(frame) {
-debugger
                     for (const prop in client_data) {
                         ltiClientStore(frame, {
                             subject: 'lti.put_data',
-                            message_id: prop + '_' + state,
+                            message_id: clientDataMessageId(prop),
                             key: prop,
                             value:  client_data[prop].value
                         });
@@ -101,12 +115,9 @@ debugger
                             }
                         break;
                         case 'lti.put_data.response':
-
-
-                            console.log("lti.get_data.response: key=" + message.key + ", value=" + message.value);
-debugger
-
-
+                            console.log(message.subject +
+                                        ": key=" + message.key +
+                                        ", value=" + message.value);
                             client_data[message.key].stored = true;
                             if (dataStored()) {
                                 doRedirection();
@@ -123,7 +134,6 @@ debugger
 
                 function clientStoreAndRedirect() {
                     if (validClientData()) {
-debugger
                         window.parent.postMessage({subject: 'lti.capabilities'}, '*');
                         setTimeout(doRedirection, 60000);
                     } else {
