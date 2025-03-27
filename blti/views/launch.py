@@ -44,7 +44,7 @@ class BLTILaunchView(BLTIView):
         except BLTIException as ex:
             try:
                 # if client storage indicated, redirect to collect cookies
-                lti_storage = get_parameter(request, 'lti_storage_target')
+                lti_storage = self.get_parameter(request, 'lti_storage_target')
                 session_id = request.COOKIES.get('lti1p3-session-id')
                 if lti_storage and not session_id:
                     return self.client_store_redirect(request)
