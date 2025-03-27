@@ -6,9 +6,9 @@ from pylti1p3.contrib.django.redirect import DjangoRedirect
 
 
 class BLTILaunchRedirect(DjangoRedirect):
-    def __init__(self, location, auth_url):
+    def __init__(self, location, auth_origin):
         self._location = location
-        self._auth_url = auth_url
+        self._auth_origin = auth_origin
         super().__init__(location)
 
     def do_js_redirect(self):
@@ -17,7 +17,7 @@ class BLTILaunchRedirect(DjangoRedirect):
                 f"""\
                 <script type="text/javascript">
                 const redirect_location = "{self._location}",
-                      origin = URL.parse("{self._auth_url}").origin;
+                      origin = "{self._auth_origin};
                 """
                 """
                 var parsed_redirect = URL.parse(redirect_location),
