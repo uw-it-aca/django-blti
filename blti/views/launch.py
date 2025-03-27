@@ -48,13 +48,14 @@ class BLTILaunchView(BLTIView):
                 session_service = DjangoSessionService(request)
                 data_storage = session_service.data_storage
                 lti1p3_session_id_name = data_storage.get_session_cookie_name()
-                logger.debug(f"lti1p3_session_id_name: {session_id_name}")
-                session_id = request.COOKIES.get(session_id_name)
+                logger.debug("lti1p3_session_id_name: "
+                             f"{lti1p3_session_id_name}")
+                session_id = request.COOKIES.get(lti1p3_session_id_name)
                 if not session_id:
                     # additional params inserted from client side storage
                     # slide them into the request for usual validation
                     lti1p3_session_id = self.get_parameter(
-                        request, session_id_name)
+                        request, lti1p3_session_id_name)
                     if lti1p3_session_id:
                         logger.debug(f"LTI client store params found")
                         django_request = DjangoRequest(request)
@@ -62,10 +63,10 @@ class BLTILaunchView(BLTIView):
 
                         # insert session cookie
                         logger.debug(
-                            f"pseudo cookie: {session_id_name}: "
-                            f"{session_id_name}")
+                            f"pseudo cookie: {lti1p3_session_id_name}: "
+                            f"{lti1p3_session_id}")
                         cookie_serice.set_cookie(
-                            session_id_name, lti1p3_session_id)
+                            lti1p3_session_id_name, lti1p3_session_id)
 
                         # insert state cookie
                         logger.debug(
