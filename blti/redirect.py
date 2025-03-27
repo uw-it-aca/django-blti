@@ -126,7 +126,7 @@ class BLTIRedirect(DjangoRedirect):
                 function clientStoreAndRedirect() {
                     if (validClientData()) {
                         window.parent.postMessage({subject: 'lti.capabilities'}, '*');
-                        setTimeout(doRedirection, 60000);
+                        setTimeout(doRedirection, 5000);
                     } else {
                         doRedirection();
                     }

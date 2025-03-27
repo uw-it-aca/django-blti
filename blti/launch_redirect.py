@@ -34,7 +34,6 @@ class BLTILaunchRedirect(DjangoRedirect):
                 function doRedirection() {
                     var f = document.createElement('form');
                     f.method = 'POST';
-                    f.target = '_blank';
 
                     f.appendChild(formInput('nonce', client_data.nonce));
                     f.appendChild(formInput(client_data.session_cookie_name, client_data.session_cookie_value));
@@ -50,7 +49,6 @@ class BLTILaunchRedirect(DjangoRedirect):
                     f.action = parsed_redirect.toString();
 debugger
                     f.submit();
-                    // window.location=decodeURI(redirect_location);
                 }
 
                 function formInput(k, v) {
@@ -134,7 +132,6 @@ debugger
 
                 function clientStoreAndRedirect() {
                     window.parent.postMessage({subject: 'lti.capabilities'}, '*');
-                    setTimeout(doRedirection, 60000);
                 }
 
                 window.addEventListener("message", ltiClientStoreResponse);
