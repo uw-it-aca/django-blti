@@ -19,7 +19,7 @@ class BLTILaunchRedirect(DjangoRedirect):
         super().__init__(location)
 
     def _js_script(self):
-        s = f"""\
+        s = (f"""
             <script type="text/javascript">
             const redirect_location = "{self._location}",
                   redirect_origin = "{self._auth_origin}",
@@ -128,7 +128,7 @@ class BLTILaunchRedirect(DjangoRedirect):
             window.addEventListener("message", ltiClientStoreResponse);
             document.addEventListener("DOMContentLoaded", clientStoreAndRedirect);
             </script>
-            """
+            """)
         logger.info(f"js_script: {s}")
         return s
 
