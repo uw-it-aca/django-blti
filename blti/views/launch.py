@@ -53,7 +53,7 @@ class BLTILaunchView(BLTIView):
                     # additional params inserted from client side storage
                     # slide them into the request for usual validation
                     lti1p3_session_id = self.get_parameter(
-                        request, session_id_name):
+                        request, session_id_name)
                     if lti1p3_session_id:
                         logger.debug(f"LTI client store params found")
                         session_service = DjangoSessionService(request)

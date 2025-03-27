@@ -26,7 +26,7 @@ class BLTILaunchRedirect(DjangoRedirect):
                 """\
                 var client_data = {
                         nonce: null,
-                        state: state,
+                        state: null,
                         session_cookie_name: null,
                         session_cookie_value: null
                     };
@@ -35,8 +35,9 @@ class BLTILaunchRedirect(DjangoRedirect):
                     var f = document.createElement('form');
                     f.method = 'POST';
 
-                    f.appendChild(formInput('nonce', client_data.nonce));
                     f.appendChild(formInput(client_data.session_cookie_name, client_data.session_cookie_value));
+                    f.appendChild(formInput('lti1p3_state', client_data.state));
+                    f.appendChild(formInput('lti1p3_nonce', client_data.nonce));
 
                     for (const [k, v] of parsed_params) {
                         f.appendChild(formInput(k, v));
