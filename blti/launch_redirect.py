@@ -3,19 +3,23 @@
 
 from django.http import HttpResponse
 from pylti1p3.contrib.django.redirect import DjangoRedirect
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 
 class BLTILaunchRedirect(DjangoRedirect):
     def __init__(self, location, state, auth_origin):
+        logger.info(f"BLTILaunchRedirect: location={location}, "
+                    f"state={state}, auth_origin={auth_origin}")
         self._location = location
         self._state = state
         self._auth_origin = auth_origin
         super().__init__(location)
 
-    def do_js_redirect(self):
-        return self._process_response(
-            HttpResponse(
-                f"""\
+    def _js_script(self):
+        s = f"""\
                 <script type="text/javascript">
                 const redirect_location = "{self._location}",
                       redirect_origin = "{self._auth_origin}",
@@ -125,5 +129,10 @@ debugger
                 document.addEventListener("DOMContentLoaded", clientStoreAndRedirect);
                 </script>
                 """
-            )
+        logger.info(f"js_script: {s}")
+        return s
+
+    def do_js_redirect(self):
+        return self._process_response(
+            HttpResponse(self._js_script(), content_type="text/html")
         )

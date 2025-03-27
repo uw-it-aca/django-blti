@@ -47,8 +47,11 @@ class BLTILaunchView(BLTIView):
                 lti_storage = self.get_parameter(request, 'lti_storage_target')
                 session_id = request.COOKIES.get('lti1p3-session-id')
                 if lti_storage and not session_id:
-                    return self.client_store_redirect(request)
+                    r = self.client_store_redirect(request)
+                    logger.debug(f"client store RETURNING REDIRECT: {r}")
+                    return r
 
+                logger.debug("VALIDATING 1P3")
                 launch_data = self.validate_1p3(request)
                 logger.debug(f"LTI 1.3 launch")
             except OIDCException as ex:
@@ -120,16 +123,17 @@ class BLTILaunchView(BLTIView):
         if url.startswith('http:') and request.is_secure():
             url = f"https{uri[4:]}"
 
-        # dig auth url out of jwt
+        # dig oidc auth origin out of jwt
         iss = self.sniff_at_jwt('iss', params['id_token'])
         reg = get_tool_conf().find_registration_by_issuer(iss)
         auth_url = urlparse(reg.get_auth_token_url())
         auth_origin = f"{auth_url.scheme}://{auth_url.netloc}"
-        logger.info(f"client store: auth_url: {auth_origin}")
 
+        logger.info(f"client store: auth_url: {auth_origin}")
         logger.info(f"client store: redirecting to: {url}")
-        redirect_obj = BLTILaunchRedirect(url, params['state'], auth_origin)
-        return redirect_obj.do_js_redirect()
+
+        return BLTILaunchRedirect(
+            url, params['state'], auth_origin).do_js_redirect()
 
     def sniff_at_jwt(self, key, id_token):
         parts = id_token.split('.')
