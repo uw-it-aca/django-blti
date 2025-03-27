@@ -25,43 +25,48 @@ class BLTILaunchRedirect(DjangoRedirect):
                 """
                 """\
                 var client_data = {
-                        nonce: {
-                            value: null
-                        },
-                        state: {
-                            value: state
-                        },
-                        session_cookie_name: {
-                            value: null
-                        },
-                        session_cookie_value: {
-                            value: null
-                        }
+                        nonce: null,
+                        state: state,
+                        session_cookie_name: null,
+                        session_cookie_value: null
                     };
 
                 function doRedirection() {
+                    var f = document.createElement('form');
+                    f.method = 'POST';
+                    f.target = '_blank';
+
+                    for (const [k, v] of parsed_params) {
+                        f.appendChild(formInput(k, v));
+                    }
+
+                    for (const prop in client_data) {
+                        f.appendChild(formInput(prop, client_data[prop]));
+                    }
+
+                    document.body.appendChild(f);
+
+                    parsed_redirect.search = '';
+                    parsed_redirect.hash = '';
+                    f.action = parsed_redirect.toString();
 debugger
-                    //var f = document.createElement('form');
-                    //f.action='http://validator.w3.org/check';
-                    //f.method='POST';
-                    //f.target='_blank';
-
-                    //var i=document.createElement('input');
-                    //i.type='hidden';
-                    //i.name='fragment';
-                    //i.value='<!DOCTYPE html>'+document.documentElement.outerHTML;
-                    //f.appendChild(i);
-
-                    //document.body.appendChild(f);
                     //f.submit();
 
 
                     // window.location=decodeURI(redirect_location);
                 }
 
+                function formInput(k, v) {
+                    var i=document.createElement('input');
+                    i.type='hidden';
+                    i.name=k;
+                    i.value=v;
+                    return i;
+                }
+
                 function validClientData() {
                     for (const prop in client_data) {
-                        if (!client_data[prop].value) {
+                        if (!client_data[prop]) {
                             console.log("incomplete client data: " + prop);
                             return false;
                         }
@@ -86,7 +91,7 @@ debugger
 
                 function dataFetched(frame) {
                     for (const prop in client_data) {
-                        if (!client_data[prop].value) {
+                        if (!client_data[prop]) {
                             return false;
                         }
                     }
@@ -116,7 +121,7 @@ debugger
                                         ": key=" + message.key +
                                         ", value=" + message.value);
 
-                            client_data[message.key].value = message.value;
+                            client_data[message.key] = message.value;
                             if (dataFetched()) {
                                 doRedirection();
                             }
