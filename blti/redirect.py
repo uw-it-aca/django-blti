@@ -51,9 +51,7 @@ class BLTIRedirect(DjangoRedirect):
                         }
                     };
 
-debugger
                 function doRedirection() {
-debugger
                     window.location=redirect_location;
                 }
 

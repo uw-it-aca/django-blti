@@ -36,12 +36,11 @@ class BLTILaunchRedirect(DjangoRedirect):
                     f.method = 'POST';
                     f.target = '_blank';
 
+                    f.appendChild(formInput('nonce', client_data.nonce));
+                    f.appendChild(formInput(client_data.session_cookie_name, client_data.session_cookie_value));
+
                     for (const [k, v] of parsed_params) {
                         f.appendChild(formInput(k, v));
-                    }
-
-                    for (const prop in client_data) {
-                        f.appendChild(formInput(prop, client_data[prop]));
                     }
 
                     document.body.appendChild(f);
@@ -50,9 +49,7 @@ class BLTILaunchRedirect(DjangoRedirect):
                     parsed_redirect.hash = '';
                     f.action = parsed_redirect.toString();
 debugger
-                    //f.submit();
-
-
+                    f.submit();
                     // window.location=decodeURI(redirect_location);
                 }
 
