@@ -1,14 +1,12 @@
 # Copyright 2025 UW-IT, University of Washington
 # SPDX-License-Identifier: Apache-2.0
 
-from blti.cookie import BLTICookieService
 from blti.redirect import BLTIRedirect
 from blti.cookies_allowed_check_page import BLTICookiesAllowedCheckPage
 from pylti1p3.request import Request
 from pylti1p3.contrib.django import DjangoOIDCLogin
 from pylti1p3.contrib.django.request import DjangoRequest
-#from pylti1p3.contrib.django.launch_data_storage.cache import (
-#    DjangoCacheDataStorage)
+from pylti1p3.contrib.django.cookie import DjangoCookieService
 
 
 class BLTIOIDCLogin(DjangoOIDCLogin):
@@ -24,7 +22,7 @@ class BLTIOIDCLogin(DjangoOIDCLogin):
             request if isinstance(request, Request) else DjangoRequest(request)
         )
         cookie_service = (
-            cookie_service if cookie_service else BLTICookieService(django_request)
+            cookie_service if cookie_service else DjangoCookieService(django_request)
         )
         super().__init__(
             django_request,
@@ -67,5 +65,4 @@ class BLTIOIDCLogin(DjangoOIDCLogin):
     def get_redirect(self, url):
         return BLTIRedirect(
             url, cookie_service=self._cookie_service,
-            session_service=self._session_service)#,
-#            cache_service=DjangoCacheDataStorage())
+            session_service=self._session_service)

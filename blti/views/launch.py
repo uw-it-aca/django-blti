@@ -13,6 +13,7 @@ from pylti1p3.exception import OIDCException
 from pylti1p3.contrib.django import DjangoMessageLaunch
 from oauthlib.oauth1.rfc5849.endpoints.signature_only import (
     SignatureOnlyEndpoint)
+from pylti1p3.contrib.django.request import DjangoRequest
 from pylti1p3.contrib.django.cookie import DjangoCookieService
 from pylti1p3.contrib.django.session import DjangoSessionService
 from urllib.parse import urljoin, urlparse, urlencode
@@ -44,14 +45,44 @@ class BLTILaunchView(BLTIView):
         except BLTIException as ex:
             try:
                 # if client storage indicated, redirect to collect cookies
-                lti_storage = self.get_parameter(request, 'lti_storage_target')
-                session_id = request.COOKIES.get('lti1p3-session-id')
-                if lti_storage and not session_id:
-                    r = self.client_store_redirect(request)
-                    logger.debug(f"client store RETURNING REDIRECT: {r}")
-                    return r
+                data_storage = get_launch_data_storage()
+                session_id_name = data_storage.get_session_cookie_name()
+                logger.debug(f"session_id_name: {session_id_name}")
+                session_id = request.COOKIES.get(session_id_name)
+                if not session_id:
+                    # additional params inserted from client side storage
+                    # slide them into the request for usual validation
+                    lti1p3_session_id = self.get_parameter(
+                        request, session_id_name):
+                    if lti1p3_session_id:
+                        logger.debug(f"LTI client store params found")
+                        session_service = DjangoSessionService(request)
+                        django_request = DjangoRequest(request)
+                        cookie_serice = DjangoCookieService(django_request)
 
-                logger.debug("VALIDATING 1P3")
+                        # insert session cookie
+                        logger.debug(
+                            f"pseudo cookie: {session_id_name}: "
+                            f"{session_id_name}")
+                        cookie_serice.set_cookie(
+                            session_id_name, lti1p3_session_id)
+
+                        # insert state cookie
+                        logger.debug(
+                            f"pseudo cookie: lti1p3-{state}: {state}")
+                        state = self.get_parameter(request, 'lti1p3_state')
+                        cookie_serice.set_cookie(f"lti1p3-{state}", state)
+
+                        # add nonce to session
+                        logger.debug(f"pseudo session nonce: {nonce}")
+                        nonce = self.get_parameter(request, 'lti1p3_nonce')
+                        session_service.save_nonce(nonce)
+
+                    elif self.get_parameter(request, 'lti_storage_target'):
+                        logger.debug(f"LTI client store REDIRECT: {r}")
+                        return self.client_store_redirect(request)
+                        return r
+
                 launch_data = self.validate_1p3(request)
                 logger.debug(f"LTI 1.3 launch")
             except OIDCException as ex:
@@ -98,9 +129,8 @@ class BLTILaunchView(BLTIView):
         return message_launch_data
 
     def client_store_redirect(self, request):
-        lti_storage_target = self.get_parameter(request, 'lti_storage_target')
         redirect_uri = request.build_absolute_uri()
-        logger.info(f"client store: redirect_uri: {redirect_uri}")
+        logger.debug(f"client store: redirect_uri: {redirect_uri}")
 
         if request.method == 'GET':
             redirect_uri = urljoin(redirect_uri, urlparse(redirect_uri).path)
@@ -117,7 +147,6 @@ class BLTILaunchView(BLTIView):
             }
 
         url = f"{redirect_uri}?{urlencode(params)}"
-        logger.info(f"client store redirect url added params: url: {url}")
 
         if url.startswith('http:') and request.is_secure():
             url = f"https{uri[4:]}"
@@ -128,8 +157,8 @@ class BLTILaunchView(BLTIView):
         auth_url = urlparse(reg.get_auth_token_url())
         auth_origin = f"{auth_url.scheme}://{auth_url.netloc}"
 
-        logger.info(f"client store: auth_url: {auth_origin}")
-        logger.info(f"client store: redirecting to: {url}")
+        logger.debug(f"client store: auth_url: {auth_origin}")
+        logger.debug(f"client store: redirecting to: {url}")
 
         return BLTILaunchRedirect(
             url, params['state'], auth_origin).do_js_redirect()
