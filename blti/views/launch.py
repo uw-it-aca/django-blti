@@ -128,7 +128,7 @@ class BLTILaunchView(BLTIView):
         logger.info(f"client store: auth_url: {auth_origin}")
 
         logger.info(f"client store: redirecting to: {url}")
-        redirect_obj = BLTILaunchRedirect(url, auth_origin)
+        redirect_obj = BLTILaunchRedirect(url, params['state'], auth_origin)
         return redirect_obj.do_js_redirect()
 
     def sniff_at_jwt(self, key, id_token):
