@@ -18,7 +18,7 @@ class BLTILaunchRedirect(DjangoRedirect):
                 f"""\
                 <script type="text/javascript">
                 const redirect_location = "{self._location}",
-                      origin = "{self._auth_origin}",
+                      redirect_origin = "{self._auth_origin}",
                       state = "{self._state}",
                       parsed_redirect = URL.parse(redirect_location),
                       parsed_params = parsed_redirect.searchParams;
