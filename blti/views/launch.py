@@ -45,9 +45,10 @@ class BLTILaunchView(BLTIView):
         except BLTIException as ex:
             try:
                 # if client storage indicated, redirect to collect cookies
-                data_storage = get_launch_data_storage()
-                session_id_name = data_storage.get_session_cookie_name()
-                logger.debug(f"session_id_name: {session_id_name}")
+                session_service = DjangoSessionService(request)
+                data_storage = session_service.data_storage
+                lti1p3_session_id_name = data_storage.get_session_cookie_name()
+                logger.debug(f"lti1p3_session_id_name: {session_id_name}")
                 session_id = request.COOKIES.get(session_id_name)
                 if not session_id:
                     # additional params inserted from client side storage
@@ -56,7 +57,6 @@ class BLTILaunchView(BLTIView):
                         request, session_id_name)
                     if lti1p3_session_id:
                         logger.debug(f"LTI client store params found")
-                        session_service = DjangoSessionService(request)
                         django_request = DjangoRequest(request)
                         cookie_serice = DjangoCookieService(django_request)
 
