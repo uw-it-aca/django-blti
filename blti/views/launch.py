@@ -15,7 +15,7 @@ from oauthlib.oauth1.rfc5849.endpoints.signature_only import (
     SignatureOnlyEndpoint)
 from pylti1p3.contrib.django.cookie import DjangoCookieService
 from pylti1p3.contrib.django.session import DjangoSessionService
-from urllib.parse import urljoin, urlparse
+from urllib.parse import urljoin, urlparse, urlencode
 import json
 import logging
 
@@ -116,8 +116,7 @@ class BLTILaunchView(BLTIView):
                     request, 'utf8')
             }
 
-        search_params = '&'.join([f'{k}="{v}"' for k, v in params.items()])
-        url = f"{redirect_uri}?{search_params}"
+        url = f"{redirect_uri}?{urlencode(params)}"
         logger.info(f"client store redirect url added params: url: {url}")
 
         if url.startswith('http:') and request.is_secure():

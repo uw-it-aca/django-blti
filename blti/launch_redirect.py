@@ -21,7 +21,7 @@ class BLTILaunchRedirect(DjangoRedirect):
     def _js_script(self):
         s = (f"""
             <script type="text/javascript">
-            const redirect_location = "{self._location}",
+            const redirect_location = encodeURI("{self._location}"),
                   redirect_origin = "{self._auth_origin}",
                   state = "{self._state}",
                   parsed_redirect = URL.parse(redirect_location),
@@ -46,7 +46,7 @@ class BLTILaunchRedirect(DjangoRedirect):
             debugger
             function doRedirection() {
             debugger
-                window.location=redirect_location;
+                window.location=decodeURI(redirect_location);
             }
 
             function validClientData() {
