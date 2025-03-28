@@ -168,9 +168,6 @@ class BLTILaunchView(BLTIView):
         auth_url = urlparse(reg.get_auth_token_url())
         auth_origin = f"{auth_url.scheme}://{auth_url.netloc}"
 
-        logger.debug(f"client store: auth_url: {auth_origin}")
-        logger.debug(f"client store: redirecting to: {url}")
-
         return BLTILaunchRedirect(
             redirect_uri, params, auth_origin).do_js_redirect()
 
