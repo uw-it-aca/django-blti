@@ -60,6 +60,7 @@ class BLTILaunchView(BLTIView):
                 session_id = cookie_serice.get_cookie(session_cookie_name)
 
                 logger.debug(f"session cookie: {session_cookie_name} = "
+                             lti1p3-session-id
                              f"{session_id}")
 
                 if not session_id:
@@ -75,17 +76,17 @@ class BLTILaunchView(BLTIView):
                         logger.debug(f"BOUNCED: LTI client store params found")
 
                         # insert session cookie
-                        cookie_serice.set_cookie(
-                            data_storage.get_session_cookie_name(),
-                            session_id)
-                        logger.debug(
-                            "BOUNCED: set cookie: "
-                            f"{data_storage.get_session_cookie_name()} = "
-                            f"{session_id}")
+#                        cookie_serice.set_cookie(
+#                            data_storage.get_session_cookie_name(),
+#                            session_id)
+                        request.COOKIES[session_cookie_name] = session_id
+                        logger.debug("BOUNCED: set cookie: "
+                                     f"{session_cookie_name} = {session_id}")
 
                         # insert state cookie
                         state = self.get_parameter(request, 'lti1p3_state')
-                        cookie_serice.set_cookie(f"lti1p3-{state}", state)
+                        request.COOKIES[f"lti1p3-{state}"] = state
+#                        cookie_serice.set_cookie(f"lti1p3-{state}", state)
                         logger.debug(
                             f"BOUNCED: set cookie: lti1p3-{state}: {state}")
 
