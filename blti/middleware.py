@@ -9,7 +9,6 @@ This module provides middleware that implements protection
 against request forgeries from other sites.
 """
 
-from http import cookies
 from django.conf import settings
 from django.contrib.auth import authenticate, login
 from blti import BLTI
@@ -18,10 +17,6 @@ import logging
 
 
 logger = logging.getLogger(__name__)
-
-
-cookies.Morsel._flags.add("partitioned")
-cookies.Morsel._reserved.setdefault("partitioned", "Partitioned")
 
 
 class CSRFHeaderMiddleware:
@@ -67,20 +62,6 @@ class LTISessionAuthenticationMiddleware:
             pass
 
         return self.get_response(request)
-
-
-class PartitionedCookieMiddleware:
-    def __init__(self, get_response):
-        self.get_response = get_response
-
-    def __call__(self, request):
-        response = self.get_response(request)
-
-        for k, v in response.cookies.items():
-            logger.info(f"Settings Partitioned on cookie {k}")
-            response.cookies[k]['Partitioned'] = True
-
-        return response
 
 
 class SameSiteMiddleware:

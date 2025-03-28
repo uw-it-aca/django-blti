@@ -43,7 +43,6 @@ class BLTILaunchRedirect(DjangoRedirect):
                     }
 
                     document.body.appendChild(f);
-debugger
                     f.submit();
                 }
 
@@ -79,7 +78,6 @@ debugger
                 }
 
                 function ltiClientStore(frame, data) {
-                    console.log("lti.get_data (" + redirect_origin + "): ", data);
                     window.parent.frames[frame].postMessage(data, redirect_origin);
                 }
 
@@ -95,12 +93,6 @@ debugger
                             }
                         break;
                         case 'lti.get_data.response':
-
-
-                            console.log(message.subject +
-                                        ": key=" + message.key +
-                                        ", value=" + message.value);
-
                             client_data[message.key] = message.value;
                             if (dataFetched()) {
                                 doRedirection();

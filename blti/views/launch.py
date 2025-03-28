@@ -53,51 +53,28 @@ class BLTILaunchView(BLTIView):
 
                 session_cookie_name = data_storage._prepare_key(
                     data_storage.get_session_cookie_name())
-
-                logger.debug("session id: lti1p3_session_id_name: "
-                             f"{session_cookie_name}")
-
                 session_id = cookie_serice.get_cookie(session_cookie_name)
-
-                logger.debug(f"session cookie: {session_cookie_name} = "
-                             f"{session_id}")
-
                 if not session_id:
                     # peel params inserted from client side storage
                     # off and insert them into the request validation
                     session_id = self.get_parameter(
                         request, 'lti1p3_session_id')
-
-                    logger.debug(f"parameter: lti1p3_session_cookie = "
-                                 f"{session_id}")
-
                     if session_id:
-                        logger.debug(f"BOUNCED: LTI client store params found")
-
                         # insert session cookie
-#                        cookie_serice.set_cookie(
-#                            data_storage.get_session_cookie_name(),
-#                            session_id)
                         request.COOKIES[session_cookie_name] = session_id
-                        logger.debug("BOUNCED: set cookie: "
-                                     f"{session_cookie_name} = {session_id}")
 
                         # insert state cookie
                         state = self.get_parameter(request, 'lti1p3_state')
                         request.COOKIES[f"lti1p3-{state}"] = state
-#                        cookie_serice.set_cookie(f"lti1p3-{state}", state)
-                        logger.debug(
-                            f"BOUNCED: set cookie: lti1p3-{state}: {state}")
 
                         # add nonce to session
                         nonce = self.get_parameter(request, 'lti1p3_nonce')
                         session_service.save_nonce(nonce)
-                        logger.debug(f"BOUNCED: saved session nonce: {nonce}")
 
-                        logger.debug(f"BOUNCED: falling thru to validate")
+                        # fall thru to 1.3 launch
 
                     elif self.get_parameter(request, 'lti_storage_target'):
-                        logger.debug(f"LTI client store REDIRECT")
+                        logger.debug(f"LTI 1.3 client side store redirect")
                         return self.client_store_redirect(request)
 
                 launch_data = self.validate_1p3(request)
@@ -147,7 +124,6 @@ class BLTILaunchView(BLTIView):
 
     def client_store_redirect(self, request):
         redirect_uri = request.build_absolute_uri()
-        logger.debug(f"client store: redirect_uri: {redirect_uri}")
         params = {
             'state': self.get_parameter(
                 request, 'state'),
@@ -162,7 +138,7 @@ class BLTILaunchView(BLTIView):
         if redirect_uri.startswith('http:') and request.is_secure():
             redirect_uri = f"https{uri[4:]}"
 
-        # dig oidc auth origin out of jwt
+        # dig iss out of jwt to get oidc auth origin
         iss = self.sniff_at_jwt('iss', params['id_token'])
         reg = get_tool_conf().find_registration_by_issuer(iss)
         auth_url = urlparse(reg.get_auth_token_url())

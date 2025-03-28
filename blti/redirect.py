@@ -50,7 +50,6 @@ class BLTIRedirect(DjangoRedirect):
                 function validClientData() {
                     for (const prop in client_data) {
                         if (!client_data[prop].value) {
-                            console.log("incomplete client data: " + prop);
                             return false;
                         }
                     }
@@ -98,9 +97,6 @@ class BLTIRedirect(DjangoRedirect):
                             }
                         break;
                         case 'lti.put_data.response':
-                            console.log(message.subject +
-                                        ": key=" + message.key +
-                                        ", value=" + message.value);
                             client_data[message.key].stored = true;
                             if (dataStored()) {
                                 doRedirection();
