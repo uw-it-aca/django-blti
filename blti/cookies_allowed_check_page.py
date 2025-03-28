@@ -69,24 +69,16 @@ class BLTICookiesAllowedCheckPage(CookiesAllowedCheckPage):
 
             document.cookie = cookie;
             var res = document.cookie.indexOf("lti1p3_test_cookie") !== -1;
-
-
-// REMOVE "false && " BEFORE FLIGHT
-            if (false && res) {
-
-
-
+            if (res) {
                 // remove test cookie and reload page
                 document.cookie = "lti1p3_test_cookie=1; expires=Thu, 01-Jan-1970 00:00:01 GMT";
                 displayLoadingBlock();
                 window.location.href = getUpdatedUrl();
-            } else {
-                if ('lti_storage_target' in urlParams) {
-                    var frame = urlParams['lti_storage_target'];
+            } else if ('lti_storage_target' in urlParams) {
+                var frame = urlParams['lti_storage_target'];
 
-                    displayLoadingBlock();
-                    window.location.href = getUpdatedUrl(frame);
-                }
+                displayLoadingBlock();
+                window.location.href = getUpdatedUrl(frame);
             }
         }
 
