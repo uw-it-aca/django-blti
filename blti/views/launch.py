@@ -60,7 +60,6 @@ class BLTILaunchView(BLTIView):
                 session_id = cookie_serice.get_cookie(session_cookie_name)
 
                 logger.debug(f"session cookie: {session_cookie_name} = "
-                             lti1p3-session-id
                              f"{session_id}")
 
                 if not session_id:
