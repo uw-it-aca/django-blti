@@ -56,7 +56,7 @@ debugger
                 }
 
                 function clientDataMessageId(prop) {
-                    return prop + '_' + state;
+                    return prop + '_' + parameters.state;
                 }
 
                 function getClientData(frame) {
