@@ -97,7 +97,7 @@ class BLTILaunchView(BLTIView):
                         logger.debug(f"BOUNCED: falling thru to validate")
 
                     elif self.get_parameter(request, 'lti_storage_target'):
-                        logger.debug(f"LTI client store REDIRECT: {r}")
+                        logger.debug(f"LTI client store REDIRECT")
                         return self.client_store_redirect(request)
 
                 launch_data = self.validate_1p3(request)
