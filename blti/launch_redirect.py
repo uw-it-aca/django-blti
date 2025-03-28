@@ -3,12 +3,13 @@
 
 from django.http import HttpResponse
 from pylti1p3.contrib.django.redirect import DjangoRedirect
+import json
 
 
 class BLTILaunchRedirect(DjangoRedirect):
-    def __init__(self, location, state, auth_origin):
+    def __init__(self, location, params, auth_origin):
         self._location = location
-        self._state = state
+        self._params = params
         self._auth_origin = auth_origin
         super().__init__(location)
 
@@ -17,11 +18,9 @@ class BLTILaunchRedirect(DjangoRedirect):
             HttpResponse(
                 f"""\
                 <script type="text/javascript">
-                const redirect_location = encodeURI("{self._location}"),
-                      redirect_origin = "{self._auth_origin}",
-                      state = "{self._state}",
-                      parsed_redirect = URL.parse(redirect_location),
-                      parsed_params = parsed_redirect.searchParams;
+                const redirect_location = "{self._location}",
+                      parameters = {json.dumps(self._params, indent=4)},
+                      redirect_origin = "{self._auth_origin}";
                 """
                 """\
                 var client_data = {
@@ -31,61 +30,29 @@ class BLTILaunchRedirect(DjangoRedirect):
                     };
 
                 function doRedirection() {
-                    var body = {
-                        lti1p3_session_cookie: client_data.session_cookie_value,
-                        lti1p3_state: client_data.state,
-                        lti1p3_nonce: client_data.nonce
-                    };
-
-                    for (const [k, v] of parsed_params) {
-                        body[k] = v;
-                    }
-debugger
-                    fetch("https://jsonplaceholder.typicode.com/todos", {
-                      method: "POST",
-                      body: JSON.stringify(body),
-                      headers: {
-                        "Content-type": "application/json; charset=UTF-8"
-                      }
-                    });
-/*
                     var f = document.createElement('form');
+                    f.action = parsed_redirect.toString();
                     f.method = 'POST';
 
-                    f.appendChild(formInput('lti1p3_session_id', client_data.session_cookie_value));
-                    f.appendChild(formInput('lti1p3_state', client_data.state));
-                    f.appendChild(formInput('lti1p3_nonce', client_data.nonce));
+                    formInput(f, 'lti1p3_session_id', client_data.session_cookie_value);
+                    formInput(f, 'lti1p3_state', client_data.state);
+                    formInput(f, 'lti1p3_nonce', client_data.nonce);
 
-                    for (const [k, v] of parsed_params) {
-                        f.appendChild(formInput(k, v));
+                    for (const p in parameters) {
+                        formInput(f, p, parameters[p]);
                     }
 
                     document.body.appendChild(f);
-
-                    parsed_redirect.search = '';
-                    parsed_redirect.hash = '';
-                    f.action = parsed_redirect.toString();
+debugger
                     f.submit();
-*/
                 }
 
-                function formInput(k, v) {
+                function formInput(f, k, v) {
                     var i=document.createElement('input');
                     i.type='hidden';
                     i.name=k;
                     i.value=v;
-                    return i;
-                }
-
-                function validClientData() {
-                    for (const prop in client_data) {
-                        if (!client_data[prop]) {
-                            console.log("incomplete client data: " + prop);
-                            return false;
-                        }
-                    }
-
-                    return true;
+                    f.appendChild(i);
                 }
 
                 function clientDataMessageId(prop) {

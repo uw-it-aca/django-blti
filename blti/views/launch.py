@@ -148,25 +148,19 @@ class BLTILaunchView(BLTIView):
     def client_store_redirect(self, request):
         redirect_uri = request.build_absolute_uri()
         logger.debug(f"client store: redirect_uri: {redirect_uri}")
-
-        if request.method == 'GET':
-            redirect_uri = urljoin(redirect_uri, urlparse(redirect_uri).path)
-        else:
-            params = {
-                'state': self.get_parameter(
-                    request, 'state'),
-                'authenticity_token': self.get_parameter(
-                    request, 'authenticity_token'),
-                'id_token': self.get_parameter(
-                    request, 'id_token'),
-                'utf8': self.get_parameter(
-                    request, 'utf8')
+        params = {
+            'state': self.get_parameter(
+                request, 'state'),
+            'authenticity_token': self.get_parameter(
+                request, 'authenticity_token'),
+            'id_token': self.get_parameter(
+                request, 'id_token'),
+            'utf8': self.get_parameter(
+                request, 'utf8')
             }
 
-        url = f"{redirect_uri}?{urlencode(params)}"
-
-        if url.startswith('http:') and request.is_secure():
-            url = f"https{uri[4:]}"
+        if redirect_uri.startswith('http:') and request.is_secure():
+            redirect_uri = f"https{uri[4:]}"
 
         # dig oidc auth origin out of jwt
         iss = self.sniff_at_jwt('iss', params['id_token'])
@@ -178,7 +172,7 @@ class BLTILaunchView(BLTIView):
         logger.debug(f"client store: redirecting to: {url}")
 
         return BLTILaunchRedirect(
-            url, params['state'], auth_origin).do_js_redirect()
+            redirect_uri, params, auth_origin).do_js_redirect()
 
     def sniff_at_jwt(self, key, id_token):
         parts = id_token.split('.')
