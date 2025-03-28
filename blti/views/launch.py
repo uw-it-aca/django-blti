@@ -66,7 +66,7 @@ class BLTILaunchView(BLTIView):
                     # peel params inserted from client side storage
                     # off and insert them into the request validation
                     session_id = self.get_parameter(
-                        request, 'session_id')
+                        request, 'lti1p3_session_id')
 
                     logger.debug(f"parameter: lti1p3_session_cookie = "
                                  f"{session_id}")
@@ -84,10 +84,10 @@ class BLTILaunchView(BLTIView):
                             f"{session_id}")
 
                         # insert state cookie
+                        state = self.get_parameter(request, 'lti1p3_state')
                         cookie_serice.set_cookie(f"lti1p3-{state}", state)
                         logger.debug(
                             f"BOUNCED: set cookie: lti1p3-{state}: {state}")
-                        state = self.get_parameter(request, 'lti1p3_state')
 
                         # add nonce to session
                         nonce = self.get_parameter(request, 'lti1p3_nonce')
