@@ -31,7 +31,7 @@ class BLTILaunchRedirect(DjangoRedirect):
 
                 function doRedirection() {
                     var f = document.createElement('form');
-                    f.action = parsed_redirect.toString();
+                    f.action = redirect_location;
                     f.method = 'POST';
 
                     formInput(f, 'lti1p3_session_id', client_data.session_cookie_value);
