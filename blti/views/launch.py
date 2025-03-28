@@ -45,44 +45,59 @@ class BLTILaunchView(BLTIView):
         except BLTIException as ex:
             try:
                 # if client storage indicated, redirect to collect cookies
+                django_request = DjangoRequest(request)
+                cookie_serice = DjangoCookieService(django_request)
                 session_service = DjangoSessionService(request)
-                data_storage = session_service.data_storage
-                lti1p3_session_id_name = data_storage.get_session_cookie_name()
-                logger.debug("lti1p3_session_id_name: "
-                             f"{lti1p3_session_id_name}")
-                session_id = request.COOKIES.get(lti1p3_session_id_name)
+                data_storage = get_launch_data_storage()
+                data_storage.set_request(django_request)
+
+                session_cookie_name = data_storage.get_session_cookie_name()
+
+                logger.debug("session id: lti1p3_session_id_name: "
+                             f"{session_cookie_name}")
+
+                session_id = cookie_serice.get_cookie(session_cookie_name)
+
+                logger.debug(f"session cookie: {session_cookie_name} = "
+                             f"{session_id}")
+
                 if not session_id:
-                    # additional params inserted from client side storage
-                    # slide them into the request for usual validation
-                    lti1p3_session_id = self.get_parameter(
-                        request, lti1p3_session_id_name)
+                    # peel params inserted from client side storage
+                    # off and insert them into the request validation
+                    session_id = self.get_parameter(
+                        request, 'lti1p3_session_cookie')
+
+                    logger.debug(f"parameter: lti1p3_session_cookie = "
+                                 f"{session_id}")
+
                     if lti1p3_session_id:
-                        logger.debug(f"LTI client store params found")
-                        django_request = DjangoRequest(request)
-                        cookie_serice = DjangoCookieService(django_request)
+                        logger.debug(f"BOUNCED: LTI client store params found")
 
                         # insert session cookie
-                        logger.debug(
-                            f"pseudo cookie: {lti1p3_session_id_name}: "
-                            f"{lti1p3_session_id}")
                         cookie_serice.set_cookie(
-                            lti1p3_session_id_name, lti1p3_session_id)
+                            data_storage.get_session_cookie_name(),
+                            lti1p3_session_id)
+                        logger.debug(
+                            "BOUNCED: set cookie: "
+                            f"{data_storage.get_session_cookie_name()} = "
+                            f"{lti1p3_session_id}")
 
                         # insert state cookie
-                        logger.debug(
-                            f"pseudo cookie: lti1p3-{state}: {state}")
-                        state = self.get_parameter(request, 'lti1p3_state')
                         cookie_serice.set_cookie(f"lti1p3-{state}", state)
+                        logger.debug(
+                            f"BOUNCED: set cookie: lti1p3-{state}: {state}")
+                        state = self.get_parameter(request, 'lti1p3_state')
 
                         # add nonce to session
-                        logger.debug(f"pseudo session nonce: {nonce}")
                         nonce = self.get_parameter(request, 'lti1p3_nonce')
                         session_service.save_nonce(nonce)
+                        logger.debug(f"BOUNCED: saved session nonce: {nonce}")
+
+                        logger.debug(f"BOUNCED: falling thru to validate")
 
                     elif self.get_parameter(request, 'lti_storage_target'):
                         logger.debug(f"LTI client store REDIRECT: {r}")
                         return self.client_store_redirect(request)
-                        return r
 
                 launch_data = self.validate_1p3(request)
                 logger.debug(f"LTI 1.3 launch")

@@ -27,15 +27,32 @@ class BLTILaunchRedirect(DjangoRedirect):
                 var client_data = {
                         nonce: null,
                         state: null,
-                        session_cookie_name: null,
                         session_cookie_value: null
                     };
 
                 function doRedirection() {
+                    var body = {
+                        lti1p3_session_cookie: client_data.session_cookie_value,
+                        lti1p3_state: client_data.state,
+                        lti1p3_nonce: client_data.nonce
+                    };
+
+                    for (const [k, v] of parsed_params) {
+                        body[k] = v;
+                    }
+debugger
+                    fetch("https://jsonplaceholder.typicode.com/todos", {
+                      method: "POST",
+                      body: JSON.stringify(body),
+                      headers: {
+                        "Content-type": "application/json; charset=UTF-8"
+                      }
+                    });
+/*
                     var f = document.createElement('form');
                     f.method = 'POST';
 
-                    f.appendChild(formInput(client_data.session_cookie_name, client_data.session_cookie_value));
+                    f.appendChild(formInput('lti1p3_session_id', client_data.session_cookie_value));
                     f.appendChild(formInput('lti1p3_state', client_data.state));
                     f.appendChild(formInput('lti1p3_nonce', client_data.nonce));
 
@@ -48,8 +65,8 @@ class BLTILaunchRedirect(DjangoRedirect):
                     parsed_redirect.search = '';
                     parsed_redirect.hash = '';
                     f.action = parsed_redirect.toString();
-debugger
                     f.submit();
+*/
                 }
 
                 function formInput(k, v) {
