@@ -21,7 +21,8 @@ class BLTICookiesAllowedCheckPage(CookiesAllowedCheckPage):
 
         function unescapeHtmlEntities(str) {
             for (var htmlCode in htmlEntities) {
-                str = str.replace(new RegExp(htmlCode, "g"), htmlEntities[htmlCode]);
+                str = str.replace(
+                    new RegExp(htmlCode, "g"), htmlEntities[htmlCode]);
             }
             return str;
         }
@@ -30,15 +31,18 @@ class BLTICookiesAllowedCheckPage(CookiesAllowedCheckPage):
             var newSearchParams = [];
             for (var key in urlParams) {
                 if (window.location.search.indexOf(key + '=') === -1) {
-                    newSearchParams.push(key + '=' + encodeURIComponent(unescapeHtmlEntities(urlParams[key])));
+                    newSearchParams.push(key + '=' + encodeURIComponent(
+                        unescapeHtmlEntities(urlParams[key])));
                 }
             }
             if (lti_storage_frame) {
-                newSearchParams.push('lti_storage_frame=' + encodeURIComponent(lti_storage_frame));
+                newSearchParams.push('lti_storage_frame=' +
+                                     encodeURIComponent(lti_storage_frame));
             }
             var searchParamsStr = newSearchParams.join('&');
             if (window.location.search !== '') {
-                searchParamsStr = window.location.search + '&' + searchParamsStr;
+                searchParamsStr = window.location.search +
+                    '&' + searchParamsStr;
             } else {
                 searchParamsStr = '?' + searchParamsStr;
             }
@@ -48,11 +52,13 @@ class BLTICookiesAllowedCheckPage(CookiesAllowedCheckPage):
         }
 
         function displayLoadingBlock() {
-            document.getElementById("lti1p3-loading-msg").style.display = "block";
+            document.getElementById(
+                "lti1p3-loading-msg").style.display = "block";
         }
 
         function displayWarningBlock() {
-            document.getElementById("lti1p3-warning-msg").style.display = "block";
+            document.getElementById(
+                "lti1p3-warning-msg").style.display = "block";
             var newTabLink = document.getElementById("lti1p3-new-tab-link");
             var contentUrl = getUpdatedUrl();
             newTabLink.onclick = function() {
@@ -71,11 +77,12 @@ class BLTICookiesAllowedCheckPage(CookiesAllowedCheckPage):
             var res = document.cookie.indexOf("lti1p3_test_cookie") !== -1;
             if (res) {
                 // remove test cookie and reload page
-                document.cookie = "lti1p3_test_cookie=1; expires=Thu, 01-Jan-1970 00:00:01 GMT";
+                document.cookie = "lti1p3_test_cookie=1; " +
+                                  "expires=Thu, 01-Jan-1970 00:00:01 GMT";
                 displayLoadingBlock();
                 window.location.href = getUpdatedUrl();
             } else if ('lti_storage_target' in urlParams) {
-                var frame = urlParams['lti_storage_target'];
+                var frame = urlParams.lti_storage_target;
 
                 displayLoadingBlock();
                 window.location.href = getUpdatedUrl(frame);

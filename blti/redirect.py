@@ -105,15 +105,16 @@ class BLTIRedirect(DjangoRedirect):
                     }
 
                     if (message.error) {
-                        console.error("event " + message.subject + 
-                                      ": error:  code: " + message.error.code +
-                                      " message: " + message.error.message);
+                        console.error("event error:" + message.subject +
+                                      ", code: " + message.error.code +
+                                      ", message: " + message.error.message);
                     }
                 }
 
                 function clientStoreAndRedirect() {
                     if (validClientData()) {
-                        window.parent.postMessage({subject: 'lti.capabilities'}, '*');
+                        window.parent.postMessage(
+                             {subject: 'lti.capabilities'}, '*');
                         setTimeout(doRedirection, 5000);
                     } else {
                         doRedirection();
@@ -121,7 +122,8 @@ class BLTIRedirect(DjangoRedirect):
                 }
 
                 window.addEventListener("message", ltiClientStoreResponse);
-                document.addEventListener("DOMContentLoaded", clientStoreAndRedirect);
+                document.addEventListener(
+                    "DOMContentLoaded", clientStoreAndRedirect);
                 </script>
                 """
             )

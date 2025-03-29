@@ -19,10 +19,12 @@ class BLTIOIDCLogin(DjangoOIDCLogin):
         launch_data_storage=None,
     ):
         django_request = (
-            request if isinstance(request, Request) else DjangoRequest(request)
+            request if isinstance(
+                request, Request) else DjangoRequest(request)
         )
         cookie_service = (
-            cookie_service if cookie_service else DjangoCookieService(django_request)
+            cookie_service if (
+                cookie_service) else DjangoCookieService(django_request)
         )
         super().__init__(
             django_request,
