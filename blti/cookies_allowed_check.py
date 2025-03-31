@@ -86,6 +86,8 @@ class BLTICookiesAllowedCheckPage(CookiesAllowedCheckPage):
 
                 displayLoadingBlock();
                 window.location.href = getUpdatedUrl(frame);
+            } else {
+                displayWarningBlock();
             }
         }
 
