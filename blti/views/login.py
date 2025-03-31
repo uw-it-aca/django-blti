@@ -19,13 +19,7 @@ def login(request):
         oidc_login = BLTIOIDCLogin(
             request, tool_conf, launch_data_storage=launch_data_storage)
         target_link_uri = getattr(request, request.method)['target_link_uri']
-        js_redirect = request.GET.get('lti_storage_frame', None) != None
-
-
-
-        logger.info(f"js_redirect: {js_redirect}")
-
-
+        js_redirect = request.GET.get('lti_storage_frame', None) is not None
 
         if target_link_uri.startswith('http:') and request.is_secure():
             target_link_uri = f"https:{target_link_uri[5:]}"

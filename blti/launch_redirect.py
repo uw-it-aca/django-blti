@@ -34,9 +34,12 @@ class BLTILaunchRedirect(DjangoRedirect):
                     f.action = redirect_location;
                     f.method = 'POST';
 
-                    formInput(f, 'lti1p3_session_id', client_data.session_cookie_value);
-                    formInput(f, 'lti1p3_state', client_data.state);
-                    formInput(f, 'lti1p3_nonce', client_data.nonce);
+                    formInput(f, 'lti1p3_session_id',
+                        client_data.session_cookie_value);
+                    formInput(f, 'lti1p3_state',
+                        client_data.state);
+                    formInput(f, 'lti1p3_nonce',
+                        client_data.nonce);
 
                     for (const p in parameters) {
                         formInput(f, p, parameters[p]);
@@ -78,7 +81,8 @@ class BLTILaunchRedirect(DjangoRedirect):
                 }
 
                 function ltiClientStore(frame, data) {
-                    window.parent.frames[frame].postMessage(data, redirect_origin);
+                    window.parent.frames[frame].postMessage(
+                        data, redirect_origin);
                 }
 
                 function ltiClientStoreResponse(event) {
@@ -108,11 +112,13 @@ class BLTILaunchRedirect(DjangoRedirect):
                 }
 
                 function clientStoreAndRedirect() {
-                    window.parent.postMessage({subject: 'lti.capabilities'}, '*');
+                    window.parent.postMessage({
+                        subject: 'lti.capabilities'}, '*');
                 }
 
                 window.addEventListener("message", ltiClientStoreResponse);
-                document.addEventListener("DOMContentLoaded", clientStoreAndRedirect);
+                document.addEventListener("DOMContentLoaded",
+                                          clientStoreAndRedirect);
                 </script>
                 """
             )
