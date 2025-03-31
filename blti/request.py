@@ -8,5 +8,5 @@ class BLTIRequest(DjangoRequest):
     def __init__(self, request, post_only=False, default_params=None):
         super().__init__(request, post_only, default_params)
 
-    def set_cookie(self, key, value):
+    def set_request_cookie(self, key, value):
         self._request.COOKIES[key] = value
