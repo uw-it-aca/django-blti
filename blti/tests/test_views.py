@@ -12,12 +12,12 @@ class TestLaunchViews(TestCase):
         self.client = Client()
 
     def test_dev_launch_view(self):
-        response = self.client.get(reverse('dev-launch', secure=True), {
+        response = self.client.get(reverse('dev-launch'), {
             'role': 'Instructor',
             'campus': 'seattle',
-        })
+        }, secure=True)
 
         self.assertEqual(response.status_code, 200)
 
-        response = self.client.post(reverse('lti-launch', secure=True))
+        response = self.client.post(reverse('lti-launch'), secure=True)
         self.assertEqual(response.status_code, 200)
