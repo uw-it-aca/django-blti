@@ -3,6 +3,7 @@
 
 from pylti1p3.contrib.django.cookie import DjangoCookieService
 
+
 class BLTICookieService(DjangoCookieService):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
