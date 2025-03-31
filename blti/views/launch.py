@@ -107,12 +107,13 @@ class BLTILaunchView(BLTIView):
             session_id = self.get_parameter(request, 'lti1p3_session_id')
             if session_id:
                 # insert request session cookie
+
                 cookie_serice.set_request_cookie(
                     session_cookie_name, session_id)
 
                 # insert request state cookie
                 state = self.get_parameter(request, 'lti1p3_state')
-                blti_request.set_cookie(f"lti1p3-{state}", state)
+                cookie_serice.set_request_cookie(state, state)
 
                 # add nonce to session
                 nonce = self.get_parameter(request, 'lti1p3_nonce')
