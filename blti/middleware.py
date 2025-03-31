@@ -13,10 +13,6 @@ from django.conf import settings
 from django.contrib.auth import authenticate, login
 from blti import BLTI
 from blti.exceptions import BLTIException
-import logging
-
-
-logger = logging.getLogger(__name__)
 
 
 class CSRFHeaderMiddleware:
@@ -73,7 +69,6 @@ class SameSiteMiddleware:
 
         for cookie in ['sessionid', 'csrftoken']:
             if cookie in response.cookies:
-                logger.info(f"Setting SameSite=None for {cookie}")
                 response.cookies[cookie]['samesite'] = 'None'
 
         return response
