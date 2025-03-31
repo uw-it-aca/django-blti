@@ -94,13 +94,13 @@ class BLTILaunchView(BLTIView):
 
     def _missing_lti_parameters(self, request):
         blti_request = BLTIRequest(request)
-        cookie_serice = BLTICookieService(blti_request)
+        cookie_service = BLTICookieService(blti_request)
         session_service = DjangoSessionService(request)
         data_storage = get_launch_data_storage()
         data_storage.set_request(blti_request)
 
         session_cookie_name = data_storage.get_session_cookie_name()
-        session_id = cookie_serice.get_cookie(session_cookie_name)
+        session_id = cookie_service.get_cookie(session_cookie_name)
         if not session_id:
             # peel parameters inserted from client side storage
             # off and insert them into the request validation
@@ -108,12 +108,12 @@ class BLTILaunchView(BLTIView):
             if session_id:
                 # insert request session cookie
 
-                cookie_serice.set_request_cookie(
+                cookie_service.set_request_cookie(
                     session_cookie_name, session_id)
 
                 # insert request state cookie
                 state = self.get_parameter(request, 'lti1p3_state')
-                cookie_serice.set_request_cookie(state, state)
+                cookie_service.set_request_cookie(state, state)
 
                 # add nonce to session
                 nonce = self.get_parameter(request, 'lti1p3_nonce')
