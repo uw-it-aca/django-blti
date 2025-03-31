@@ -45,7 +45,7 @@ class BLTILaunchView(BLTIView):
         except BLTIException as ex:
             try:
                 if self._missing_lti_parameters(request):
-                    return self.client_store_redirect(request)
+                    return self._client_store_redirect(request)
 
                 launch_data = self.validate_1p3(request)
                 logger.debug(f"LTI 1.3 launch")
@@ -103,7 +103,7 @@ class BLTILaunchView(BLTIView):
             data_storage.get_session_cookie_name())
         session_id = cookie_serice.get_cookie(session_cookie_name)
         if not session_id:
-            # peel params inserted from client side storage
+            # peel parameters inserted from client side storage
             # off and insert them into the request validation
             session_id = self.get_parameter(request, 'lti1p3_session_id')
             if session_id:
@@ -119,13 +119,13 @@ class BLTILaunchView(BLTIView):
                 session_service.save_nonce(nonce)
 
                 # fall thru to 1.3 launch
-                return False
 
             elif self.get_parameter(request, 'lti_storage_target'):
-                logger.debug(f"LTI 1.3 client side store redirect")
                 return True
 
-    def client_store_redirect(self, request):
+        return False
+
+    def _client_store_redirect(self, request):
         redirect_uri = request.build_absolute_uri()
         params = {
             'state': self.get_parameter(
@@ -137,12 +137,12 @@ class BLTILaunchView(BLTIView):
             'utf8': self.get_parameter(
                 request, 'utf8')
             }
+        auth_origin = self._login_origin_from_iss(params['id_token'])
 
         if redirect_uri.startswith('http:') and request.is_secure():
             redirect_uri = f"https{uri[4:]}"
 
-        auth_origin = self._login_origin_from_iss(params['id_token'])
-
+        logger.debug(f"LTI 1.3 client side store redirect")
         return BLTILaunchRedirect(
             redirect_uri, params, auth_origin).do_js_redirect()
 
