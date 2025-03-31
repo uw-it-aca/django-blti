@@ -3,6 +3,10 @@
 
 from pylti1p3.contrib.django.cookie import DjangoCookieService
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> feature/additive-1-point-3
 class BLTICookieService(DjangoCookieService):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
