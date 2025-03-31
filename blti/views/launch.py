@@ -10,11 +10,11 @@ from blti.request import BLTIRequest
 from blti.exceptions import BLTIException
 from blti.validators import BLTIRequestValidator
 from blti.launch_redirect import BLTILaunchRedirect
+from blti.cookie import BLTICookieService
 from pylti1p3.exception import OIDCException
 from pylti1p3.contrib.django import DjangoMessageLaunch
 from oauthlib.oauth1.rfc5849.endpoints.signature_only import (
     SignatureOnlyEndpoint)
-from pylti1p3.contrib.django.cookie import DjangoCookieService
 from pylti1p3.contrib.django.session import DjangoSessionService
 from urllib.parse import urljoin, urlparse, urlencode
 import json
@@ -94,13 +94,12 @@ class BLTILaunchView(BLTIView):
 
     def _missing_lti_parameters(self, request):
         blti_request = BLTIRequest(request)
-        cookie_serice = DjangoCookieService(blti_request)
+        cookie_serice = BLTICookieService(blti_request)
         session_service = DjangoSessionService(request)
         data_storage = get_launch_data_storage()
         data_storage.set_request(blti_request)
 
-        session_cookie_name = data_storage._prepare_key(
-            data_storage.get_session_cookie_name())
+        session_cookie_name = data_storage.get_session_cookie_name()
         session_id = cookie_serice.get_cookie(session_cookie_name)
         if not session_id:
             # peel parameters inserted from client side storage
@@ -108,11 +107,13 @@ class BLTILaunchView(BLTIView):
             session_id = self.get_parameter(request, 'lti1p3_session_id')
             if session_id:
                 # insert request session cookie
-                blti_request.set_cookie(session_cookie_name, session_id)
+
+                cookie_serice.set_request_cookie(
+                    session_cookie_name, session_id)
 
                 # insert request state cookie
                 state = self.get_parameter(request, 'lti1p3_state')
-                blti_request.set_cookie(f"lti1p3-{state}", state)
+                cookie_serice.set_request_cookie(state, state)
 
                 # add nonce to session
                 nonce = self.get_parameter(request, 'lti1p3_nonce')
