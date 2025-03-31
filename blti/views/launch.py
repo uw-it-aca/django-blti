@@ -99,8 +99,7 @@ class BLTILaunchView(BLTIView):
         data_storage = get_launch_data_storage()
         data_storage.set_request(blti_request)
 
-        session_cookie_name = data_storage._prepare_key(
-            data_storage.get_session_cookie_name())
+        session_cookie_name = data_storage.get_session_cookie_name()
         logger.debug(f"session_cookie_name: {session_cookie_name}")
         session_id = cookie_serice.get_cookie(session_cookie_name)
         logger.debug(f"session_id: {session_id}")
