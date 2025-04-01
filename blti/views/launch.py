@@ -111,7 +111,6 @@ class BLTILaunchView(BLTIView):
                 request, self._oidc_launch_client_store_session_id)
             if session_id:
                 # insert request session cookie
-
                 cookie_service.set_request_cookie(
                     session_cookie_name, session_id)
 
