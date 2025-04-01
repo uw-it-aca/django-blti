@@ -28,6 +28,9 @@ logger = logging.getLogger(__name__)
 class BLTILaunchView(BLTIView):
     http_method_names = ['get', 'post']
     _oidc_launch_keys = ['state', 'authenticity_token', 'id_token', 'utf8']
+    _oidc_launch_client_store_state = 'lti1p3_state'
+    _oidc_launch_client_store_session_id = 'lti1p3_session_id'
+    _oidc_launch_client_store_nonce = 'lti1p3_nonce'
 
     def post(self, request, *args, **kwargs):
         return self._launch(request, *args, **kwargs)
@@ -104,7 +107,8 @@ class BLTILaunchView(BLTIView):
         if not session_id:
             # peel parameters inserted from client side storage
             # off and insert them into the request validation
-            session_id = self.get_parameter(request, 'lti1p3_session_id')
+            session_id = self.get_parameter(
+                request, self._oidc_launch_client_store_session_id)
             if session_id:
                 # insert request session cookie
 
@@ -112,11 +116,13 @@ class BLTILaunchView(BLTIView):
                     session_cookie_name, session_id)
 
                 # insert request state cookie
-                state = self.get_parameter(request, 'lti1p3_state')
+                state = self.get_parameter(
+                    request, self._oidc_launch_client_store_state)
                 cookie_service.set_request_cookie(state, state)
 
                 # add nonce to session
-                nonce = self.get_parameter(request, 'lti1p3_nonce')
+                nonce = self.get_parameter(
+                    request, self._oidc_launch_client_store_nonce)
                 session_service.save_nonce(nonce)
 
                 # fall thru to 1.3 launch
