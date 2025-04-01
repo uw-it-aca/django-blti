@@ -39,4 +39,3 @@ class TestLaunchViews(TestCase):
         self.assertContains(response, 'getClientData')
         self.assertContains(response, 'ltiClientStoreResponse')
         self.assertContains(response, 'doRedirection')
-
