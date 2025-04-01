@@ -27,6 +27,7 @@ logger = logging.getLogger(__name__)
 @method_decorator(csrf_exempt, name='dispatch')
 class BLTILaunchView(BLTIView):
     http_method_names = ['get', 'post']
+    _oidc_launch_keys = ['state', 'authenticity_token', 'id_token', 'utf8']
 
     def post(self, request, *args, **kwargs):
         return self._launch(request, *args, **kwargs)
@@ -89,8 +90,7 @@ class BLTILaunchView(BLTIView):
         launch_data_storage = get_launch_data_storage()
         message_launch = DjangoMessageLaunch(
             request, tool_conf, launch_data_storage=launch_data_storage)
-        message_launch_data = message_launch.get_launch_data()
-        return message_launch_data
+        return message_launch.get_launch_data()
 
     def _missing_lti_parameters(self, request):
         blti_request = BLTIRequest(request)
@@ -128,24 +128,17 @@ class BLTILaunchView(BLTIView):
 
     def _client_store_redirect(self, request):
         redirect_uri = request.build_absolute_uri()
-        params = {
-            'state': self.get_parameter(
-                request, 'state'),
-            'authenticity_token': self.get_parameter(
-                request, 'authenticity_token'),
-            'id_token': self.get_parameter(
-                request, 'id_token'),
-            'utf8': self.get_parameter(
-                request, 'utf8')
-            }
-        auth_origin = self._login_origin_from_iss(params['id_token'])
 
         if redirect_uri.startswith('http:') and request.is_secure():
             redirect_uri = f"https{uri[4:]}"
 
-        logger.debug(f"LTI 1.3 client side store redirect")
+        parameters = {k: self.get_parameter(request, k) for (
+            k) in self._oidc_launch_keys}
+        auth_origin = self._login_origin_from_iss(parameters['id_token'])
+
+        logger.debug(f"LTI 1.3 client side storage redirect")
         return BLTILaunchRedirect(
-            redirect_uri, params, auth_origin).do_js_redirect()
+            redirect_uri, parameters, auth_origin).do_js_redirect()
 
     def _login_origin_from_iss(self, id_token):
         # oidc auth origin from iss dug out of jwt
