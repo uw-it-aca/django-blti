@@ -19,8 +19,8 @@ class SystemAdministratorRole(AbstractRole):
 
 # Instructor and student roles are specific to the given context (course)
 class TeacherRole(AbstractRole):
-    _common_roles = ("Instructor", "Administrator")
-    _context_roles = ("Instructor", "Administrator")
+    _common_roles = ("Instructor")
+    _context_roles = ("Instructor")
 
 
 class StudentRole(AbstractRole):
@@ -50,8 +50,12 @@ class LTILaunchData(object):
                 TeachingAssistantRole(self._data).check() or
                 DesignerRole(self._data).check())
 
-        self.is_staff = self._1p1_roles(
+        self.is_canvas_administrator = self._1p1_roles(
             ['Administrator']) or (
+                SystemAdministratorRole(self._data).check())
+
+        self.is_staff = self._1p1_roles(
+            ['Administrator', 'Instructor']) or (
                 StaffRole(self._data).check())
 
         self.is_instructor = self._1p1_roles(
