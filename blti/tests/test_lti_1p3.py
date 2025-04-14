@@ -86,6 +86,13 @@ class CanvasRolesTest(TestCase):
 
         self._set_role('Administrator')
         self.launch_data = CanvasData(**self.params)
+        self.assertRaises(
+            BLTIException, Roles(
+                CanvasData(**self.params)).authorize, role='member')
+        self.assertEquals(None, self._authorize('admin'))
+
+        self._set_role('Instructor')
+        self.launch_data = CanvasData(**self.params)
         self.assertEquals(None, self._authorize('member'))
 
         self._set_role('Learner')
