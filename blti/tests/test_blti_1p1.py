@@ -107,12 +107,12 @@ class RequestValidator1p1Test(TestCase):
 
     def test_get_client_secret(self):
         with self.settings(LTI_CONSUMERS={}):
-            self.assertEquals(
+            self.assertEqual(
                 BLTIRequestValidator().get_client_secret('X', self.request),
                 'dummy')
 
         with self.settings(LTI_CONSUMERS={'A': '12345'}):
-            self.assertEquals(
+            self.assertEqual(
                 BLTIRequestValidator().get_client_secret('A', self.request),
                 '12345')
 
@@ -148,8 +148,8 @@ class CanvasRolesTest(TestCase):
             ImproperlyConfigured, Roles(None).authorize, role='member')
 
     def test_authorize_public(self):
-        self.assertEquals(None, self._authorize('public'))
-        self.assertEquals(None, self._authorize(None))
+        self.assertEqual(None, self._authorize('public'))
+        self.assertEqual(None, self._authorize(None))
 
     def test_authorize_member(self):
         self.params['roles'] = 'User'
@@ -159,11 +159,11 @@ class CanvasRolesTest(TestCase):
 
         self.params['roles'] = 'Administrator'
         self.launch_data = CanvasData(**self.params)
-        self.assertEquals(None, self._authorize('member'))
+        self.assertEqual(None, self._authorize('member'))
 
         self.params['roles'] = 'urn:lti:instrole:ims/lis/Observer'
         self.launch_data = CanvasData(**self.params)
-        self.assertEquals(None, self._authorize('member'))
+        self.assertEqual(None, self._authorize('member'))
 
     def test_authorize_admin(self):
         self.assertRaises(
@@ -176,15 +176,15 @@ class CanvasRolesTest(TestCase):
 
         self.params['roles'] = 'urn:lti:instrole:ims/lis/Administrator'
         self.launch_data = CanvasData(**self.params)
-        self.assertEquals(None, self._authorize('admin'))
+        self.assertEqual(None, self._authorize('admin'))
 
         self.params['roles'] = 'urn:lti:role:ims/lis/TeachingAssistant'
         self.launch_data = CanvasData(**self.params)
-        self.assertEquals(None, self._authorize('admin'))
+        self.assertEqual(None, self._authorize('admin'))
 
         self.params['roles'] = 'Learner,ContentDeveloper'
         self.launch_data = CanvasData(**self.params)
-        self.assertEquals(None, self._authorize('admin'))
+        self.assertEqual(None, self._authorize('admin'))
 
         # ignores ext_roles
         self.params['roles'] = 'Learner'
@@ -196,11 +196,11 @@ class CanvasRolesTest(TestCase):
     def test_authorize_specific(self):
         self.params['roles'] = 'Learner'
         self.launch_data = CanvasData(**self.params)
-        self.assertEquals(None, self._authorize('Learner'))
+        self.assertEqual(None, self._authorize('Learner'))
 
         self.params['roles'] = 'urn:lti:role:ims/lis/Learner'
         self.launch_data = CanvasData(**self.params)
-        self.assertEquals(None, self._authorize('Learner'))
+        self.assertEqual(None, self._authorize('Learner'))
 
         self.params['roles'] = 'Learner,ContentDeveloper'
         self.assertRaises(
@@ -237,13 +237,13 @@ class BLTI1p1SessionTest(TestCase):
     def test_filter_oauth_params(self):
         data = LTI_LAUNCH_PARAMS
 
-        self.assertEquals(len(data), 43)
-        self.assertEquals(data['oauth_consumer_key'], 'XXXXXXXXXXXXXX')
+        self.assertEqual(len(data), 43)
+        self.assertEqual(data['oauth_consumer_key'], 'XXXXXXXXXXXXXX')
 
         blti = BLTI()
         blti.set_session(self.request, **data)
         blti_data = blti.get_session(self.request)
-        self.assertEquals(len(blti_data), 36)
+        self.assertEqual(len(blti_data), 36)
         self.assertRaises(KeyError, lambda: blti_data['oauth_consumer_key'])
 
 
