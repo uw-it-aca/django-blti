@@ -32,33 +32,33 @@ class LTICanvasDataTest(TestCase):
         data = Mock1p3Data().launch_data()
         blti = CanvasData(**data)
 
-        self.assertEquals(blti.link_title,
-                          'PSYCH 101 A Au 19, Introduction To Psychology')
-        self.assertEquals(blti.return_url,
-                          ("https://uw.test.instructure.com/courses/"
-                           "9752574/external_content/success/"
-                           "external_tool_redirect"))
-        self.assertEquals(blti.canvas_course_id, '9752574')
-        self.assertEquals(blti.course_sis_id, '2019-autumn-PSYCH-101-A')
-        self.assertEquals(blti.course_short_name, 'PSYCH 101 A')
-        self.assertEquals(blti.course_long_name,
-                          'PSYCH 101 A Au 19, Introduction To Psychology')
-        self.assertEquals(blti.canvas_user_id, '700007')
-        self.assertEquals(blti.user_login_id, 'javerage')
-        self.assertEquals(blti.user_sis_id, '0C8F043FA5CBE23F2B1E1A63B1BD80B8')
-        self.assertEquals(blti.user_full_name, 'James Average')
-        self.assertEquals(blti.user_first_name, 'James')
-        self.assertEquals(blti.user_last_name, 'Average')
-        self.assertEquals(blti.user_email, 'javerage@u.washington.edu')
-        self.assertEquals(
+        self.assertEqual(blti.link_title,
+                         'PSYCH 101 A Au 19, Introduction To Psychology')
+        self.assertEqual(blti.return_url, (
+            "https://uw.test.instructure.com/courses/"
+            "9752574/external_content/success/"
+            "external_tool_redirect"))
+        self.assertEqual(blti.canvas_course_id, '9752574')
+        self.assertEqual(blti.course_sis_id, '2019-autumn-PSYCH-101-A')
+        self.assertEqual(blti.course_short_name, 'PSYCH 101 A')
+        self.assertEqual(blti.course_long_name,
+                         'PSYCH 101 A Au 19, Introduction To Psychology')
+        self.assertEqual(blti.canvas_user_id, '700007')
+        self.assertEqual(blti.user_login_id, 'javerage')
+        self.assertEqual(blti.user_sis_id, '0C8F043FA5CBE23F2B1E1A63B1BD80B8')
+        self.assertEqual(blti.user_full_name, 'James Average')
+        self.assertEqual(blti.user_first_name, 'James')
+        self.assertEqual(blti.user_last_name, 'Average')
+        self.assertEqual(blti.user_email, 'javerage@u.washington.edu')
+        self.assertEqual(
             blti.user_avatar_url, (
                 "/images/thumbnails/8140331/"
                 "ynu8th19hg8afjfy1y1bnzvi4nfewe7l6tsqf7kp"))
-        self.assertEquals(blti.canvas_account_id, '5171292')
-        self.assertEquals(blti.account_sis_id,
-                          "uwcourse:seattle:a-and-s:pych:psych")
-        self.assertEquals(blti.canvas_api_domain,
-                          "uw.test.instructure.com")
+        self.assertEqual(blti.canvas_account_id, '5171292')
+        self.assertEqual(blti.account_sis_id,
+                         "uwcourse:seattle:a-and-s:pych:psych")
+        self.assertEqual(blti.canvas_api_domain,
+                         "uw.test.instructure.com")
 
 
 class CanvasRolesTest(TestCase):
@@ -75,8 +75,8 @@ class CanvasRolesTest(TestCase):
             ImproperlyConfigured, Roles(None).authorize, role='member')
 
     def test_authorize_public(self):
-        self.assertEquals(None, self._authorize('public'))
-        self.assertEquals(None, self._authorize(None))
+        self.assertEqual(None, self._authorize('public'))
+        self.assertEqual(None, self._authorize(None))
 
     def test_authorize_member(self):
         self._set_role('User')
@@ -89,19 +89,19 @@ class CanvasRolesTest(TestCase):
         self.assertRaises(
             BLTIException, Roles(
                 CanvasData(**self.params)).authorize, role='member')
-        self.assertEquals(None, self._authorize('admin'))
+        self.assertEqual(None, self._authorize('admin'))
 
         self._set_role('Instructor')
         self.launch_data = CanvasData(**self.params)
-        self.assertEquals(None, self._authorize('member'))
+        self.assertEqual(None, self._authorize('member'))
 
         self._set_role('Learner')
         self.launch_data = CanvasData(**self.params)
-        self.assertEquals(None, self._authorize('member'))
+        self.assertEqual(None, self._authorize('member'))
 
         self._set_role('Observer')
         self.launch_data = CanvasData(**self.params)
-        self.assertEquals(None, self._authorize('member'))
+        self.assertEqual(None, self._authorize('member'))
 
     def test_authorize_admin(self):
         self._set_role('User')
@@ -115,15 +115,15 @@ class CanvasRolesTest(TestCase):
 
         self._set_role('Administrator')
         self.launch_data = CanvasData(**self.params)
-        self.assertEquals(None, self._authorize('admin'))
+        self.assertEqual(None, self._authorize('admin'))
 
         self._set_role('TeachingAssistant')
         self.launch_data = CanvasData(**self.params)
-        self.assertEquals(None, self._authorize('admin'))
+        self.assertEqual(None, self._authorize('admin'))
 
         self._set_role('ContentDeveloper')
         self.launch_data = CanvasData(**self.params)
-        self.assertEquals(None, self._authorize('admin'))
+        self.assertEqual(None, self._authorize('admin'))
 
         self._set_role('Student')
         self.assertRaises(
@@ -133,7 +133,7 @@ class CanvasRolesTest(TestCase):
     def test_authorize_specific(self):
         self._set_role('Learner')
         self.launch_data = CanvasData(**self.params)
-        self.assertEquals(None, self._authorize('Learner'))
+        self.assertEqual(None, self._authorize('Learner'))
 
         self._set_role('ContentDeveloper')
         self.assertRaises(

@@ -19,8 +19,8 @@ setup(
     packages=['blti'],
     include_package_data=True,
     install_requires=[
-        'Django>=3.2,<5',
-        'PyLTI1p3==2.0.0',
+        'django>=3.2,<6',
+        'pylti1p3==2.0.0',
         'oauthlib',
         'cryptography',
         'pycryptodome',
@@ -31,7 +31,7 @@ setup(
     description='A Django Application on which to build IMS BLTI Tool Providers',
     long_description=README,
     url='https://github.com/uw-it-aca/django-blti',
-    author="UW-IT T&LS",
+    author="UW-IT Student & Educational Technology Services",
     author_email="aca-it@uw.edu",
     classifiers=[
         'Environment :: Web Environment',
