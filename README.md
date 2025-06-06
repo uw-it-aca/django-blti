@@ -5,7 +5,7 @@
 
 # Documentation
 
-django-blti is a Django web framework application intended so serve
+django-blti is a Django web framework application intended to serve
 as a base for [IMS LTI 1.3](https://www.imsglobal.org/spec/lti/v1p3)
 Tool projects. It implements common class-based views providing launch
 authentication, payload normalization, and role based authorization.
@@ -72,6 +72,25 @@ In addition, a management command is available to simplify key
 pair generation during configuration.
 ```
     # python manage.py generate_credentials private.key public.key jwt.json
+```
+## Platform Specific Configuration
+The normalized launch data pseudo-model is easily extensible.  Currently only a
+Canvas extension has been added.  To populate the Canvas extended values, the
+Canvas Platform LTI 1.3 configuration will need to include a Custom Fields JSON
+object:
+```
+  "custom_fields": {
+      "application_type": "ViewStudentProfile",
+      "userid_parameter": "lis_person_sourcedid",
+      "courseid_parameter": "lis_course_offering_sourcedid",
+      "custom_canvas_user_id": "$Canvas.user.id",
+      "custom_canvas_course_id": "$Canvas.course.id",
+      "custom_canvas_account_id": "$Canvas.account.id",
+      "custom_canvas_api_domain": "$Canvas.api.domain",
+      "custom_canvas_user_login_id": "$Canvas.user.loginId",
+      "custom_canvas_account_sis_id": "$Canvas.account.sisSourceId",
+      "custom_canvas_membership_roles": "$Canvas.membership.roles"
+    },
 ```
 ## Tool Development
 This app also provides an optional development environment activated by
