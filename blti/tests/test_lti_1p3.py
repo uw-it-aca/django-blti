@@ -59,6 +59,7 @@ class LTICanvasDataTest(TestCase):
                          "uwcourse:seattle:a-and-s:pych:psych")
         self.assertEqual(blti.canvas_api_domain,
                          "uw.test.instructure.com")
+        self.assertEqual(blti.user_roles, "TeacherEnrollment")
 
 
 class CanvasRolesTest(TestCase):

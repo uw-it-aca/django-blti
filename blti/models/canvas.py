@@ -38,6 +38,7 @@ class CanvasData(LTILaunchData):
             'lis_person_contact_email_primary', data.get('email'))
         self.user_avatar_url = data.get(
             'user_image', data.get('picture'))
+        self.user_roles = self.claim_custom('canvas_membership_roles')
 
         # LTI app attributes
         self.link_title = self.claim_resource_link('title')

@@ -76,7 +76,8 @@
         "canvas_account_id": "5171292",
         "canvas_api_domain": "uw.test.instructure.com",
         "canvas_user_login_id": "javerage",
-        "canvas_account_sis_id": "uwcourse:seattle:a-and-s:pych:psych"
+        "canvas_account_sis_id": "uwcourse:seattle:a-and-s:pych:psych",
+        "canvas_membership_roles": "TeacherEnrollment"
     },
     "https://purl.imsglobal.org/spec/lti-nrps/claim/namesroleservice": {
         "context_memberships_url": "https://uw.test.instructure.com/api/lti/courses/9752574/names_and_roles",
