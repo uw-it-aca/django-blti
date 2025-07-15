@@ -102,8 +102,8 @@ class BLTILaunchView(BLTIView):
         data_storage = get_launch_data_storage()
         data_storage.set_request(blti_request)
 
-        session_cookie_name = data_storage.get_session_cookie_name() or ""
-        session_id = cookie_service.get_cookie(session_cookie_name) or ""
+        session_cookie_name = data_storage.get_session_cookie_name()
+        session_id = cookie_service.get_cookie(session_cookie_name)
         if not session_id:
             # peel parameters inserted from client side storage
             # off and insert them into the request validation
