@@ -1,7 +1,7 @@
 [![Build Status](https://github.com/uw-it-aca/django-blti/workflows/tests/badge.svg)](https://github.com/uw-it-aca/django-blti/actions)
 [![Coverage Status](https://coveralls.io/repos/github/uw-it-aca/django-blti/badge.svg?branch=main)](https://coveralls.io/github/uw-it-aca/django-blti?branch=main)
 [![PyPi Version](https://img.shields.io/pypi/v/django-blti.svg)](https://pypi.python.org/pypi/django-blti)
-![Python versions](https://img.shields.io/badge/python-3.10-blue.svg)
+![Python versions](https://img.shields.io/badge/python-3.12-blue.svg)
 
 # Documentation
 
