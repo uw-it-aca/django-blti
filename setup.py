@@ -1,3 +1,6 @@
+# Copyright 2025 UW-IT, University of Washington
+# SPDX-License-Identifier: Apache-2.0
+
 import os
 from setuptools import setup
 
@@ -19,7 +22,7 @@ setup(
     packages=['blti'],
     include_package_data=True,
     install_requires=[
-        'django>=3.2,<6',
+        'django',
         'pylti1p3==2.0.0',
         'oauthlib',
         'cryptography',
