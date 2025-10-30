@@ -103,13 +103,15 @@ class BLTILaunchView(BLTIView):
         data_storage.set_request(blti_request)
 
         session_cookie_name = data_storage.get_session_cookie_name()
-        session_id = cookie_service.get_cookie(session_cookie_name)
+        session_id = cookie_service.get_cookie(session_cookie_name) if (
+            session_cookie_name) else None
+
         if not session_id:
             # peel parameters inserted from client side storage
             # off and insert them into the request validation
             session_id = self.get_parameter(
                 request, self._oidc_launch_client_store_session_id)
-            if session_id:
+            if session_cookie_name and session_id:
                 # insert request session cookie
                 cookie_service.set_request_cookie(
                     session_cookie_name, session_id)
@@ -123,8 +125,6 @@ class BLTILaunchView(BLTIView):
                 nonce = self.get_parameter(
                     request, self._oidc_launch_client_store_nonce)
                 session_service.save_nonce(nonce)
-
-                # fall thru to 1.3 launch
 
             elif self.get_parameter(request, 'lti_storage_target'):
                 return True
