@@ -133,4 +133,5 @@ class LTILaunchData(object):
 
     def _normalize_unset_value(self, value):
         # treat lti 1.3 unset substitution value as null string
-        return "" if value and value[0] == '$' else value
+        return "" if (
+            isinstance(value, str) and value and value[0] == '$') else value
