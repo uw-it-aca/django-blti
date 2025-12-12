@@ -124,8 +124,14 @@ class LTILaunchData(object):
     def _claim_data(self, claim, key, default=None):
         # sniff at the 1.3 claim, then sniff at corresponding 1.1 key
         return self._data.get(self._claim(claim), {}).get(
-            key, self._data.get(f"{claim}_{key}", default))
+            self._normalize_unset_value(key),
+            self._data.get(f"{claim}_{key}", default))
 
     def _claim(self, claim):
         # specific claim key
         return f"{LTI_DATA_CLAIM_BASE}{claim}"
+
+    def _normalize_unset_value(self, value):
+        # treat lti 1.3 unset substitution value as null string
+        return "" if (
+            isinstance(value, str) and value and value[0] == '$') else value
