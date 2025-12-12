@@ -132,4 +132,5 @@ class LTILaunchData(object):
         return f"{LTI_DATA_CLAIM_BASE}{claim}"
 
     def _normalize_unset_value(self, value):
+        # treat lti 1.3 unset substitution value as null string
         return "" if value and value[0] == '$' else value
