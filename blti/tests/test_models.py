@@ -24,7 +24,7 @@ class TestCanvasModel(TestCase):
             blti_data.user_sis_id, '0C8F043FA5CBE23F2B1E1A63B1BD80B8')
         self.assertEqual(blti_data.course_sis_id, '2019-autumn-PSYCH-101-A')
 
-    def test_canvas_model_unset_course_sid_id(self):
+    def test_canvas_model_unset_course_sis_id(self):
         jwt = self.get_launch_jwt()
 
         jwt['https://purl.imsglobal.org/spec/lti/claim/lis'][
