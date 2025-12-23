@@ -34,4 +34,4 @@ class TestCanvasModel(TestCase):
         self.assertEqual(blti_data.canvas_user_id, '700007')
         self.assertEqual(
             blti_data.user_sis_id, '0C8F043FA5CBE23F2B1E1A63B1BD80B8')
-        self.assertEqual(blti_data.course_sis_id, '')
+        self.assertIsNone(blti_data.course_sis_id)
