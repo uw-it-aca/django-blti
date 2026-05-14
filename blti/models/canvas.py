@@ -27,7 +27,7 @@ class CanvasData(LTILaunchData):
         self.course_long_name = self.claim_context('title')
 
         # User attributes
-        self.user_login_id = self.claim_custom('canvas_user_login_id')
+        self.user_login_id = self.claim_custom('canvas_login_id')
         self.user_full_name = data.get(
             'lis_person_name_full', data.get('name'))
         self.user_first_name = data.get(
